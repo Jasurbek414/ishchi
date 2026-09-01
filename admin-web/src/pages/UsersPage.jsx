@@ -1,0 +1,340 @@
+import { useEffect, useState, useCallback } from 'react';
+import { api, ApiError } from '../api/client.js';
+import { useAppSettings } from '../settings/AppSettingsContext.jsx';
+
+const ROLE_LABELS = { WORKER: 'Ishchi', EMPLOYER: 'Ish beruvchi', ADMIN: 'Administrator' };
+
+export default function UsersPage() {
+  const { walletEnabled } = useAppSettings();
+  const [role, setRole] = useState('');
+  const [searchInput, setSearchInput] = useState('');
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(0);
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
+  const [busyId, setBusyId] = useState(null);
+  const [walletUser, setWalletUser] = useState(null);
+  const [detailUser, setDetailUser] = useState(null);
+  const [messageUser, setMessageUser] = useState(null);
+
+  useEffect(() => {
+    const t = setTimeout(() => { setSearch(searchInput.trim()); setPage(0); }, 350);
+    return () => clearTimeout(t);
+  }, [searchInput]);
+
+  const load = useCallback(() => {
+    setError(null);
+    api.get('/api/admin/users', { role: role || undefined, search: search || undefined, page, size: 20, sort: 'id,desc' })
+      .then(setData)
+      .catch((e) => setError(e instanceof ApiError ? e.message : "Yuklab bo'lmadi"));
+  }, [role, search, page]);
+
+  useEffect(() => { load(); }, [load]);
+
+  async function toggleActive(user) {
+    setBusyId(user.id);
+    try {
+      await api.patch(`/api/admin/users/${user.id}/active`, { active: !user.active });
+      load();
+    } catch (e) {
+      alert(e instanceof ApiError ? e.message : "Amalni bajarib bo'lmadi");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  return (
+    <div>
+      <h1>Foydalanuvchilar</h1>
+
+      <div className="toolbar">
+        <input
+          type="text"
+          className="input"
+          style={{ minWidth: 220 }}
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          placeholder="Ism yoki telefon raqami bo'yicha qidirish..."
+        />
+        <select className="select" value={role} onChange={(e) => { setRole(e.target.value); setPage(0); }}>
+          <option value="">Barcha rollar</option>
+          <option value="WORKER">Ishchi</option>
+          <option value="EMPLOYER">Ish beruvchi</option>
+          <option value="ADMIN">Administrator</option>
+        </select>
+      </div>
+
+      {error && <div className="error-text">{error}</div>}
+
+      <div className="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Foydalanuvchi</th>
+              <th>Rol</th>
+              <th>Holat</th>
+              <th>Ro'yxatdan o'tgan</th>
+              <th>Amallar</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data?.content.map((u) => (
+              <tr key={u.id}>
+                <td>{u.id}</td>
+                <td>
+                  <div style={{ whiteSpace: 'normal' }}>{u.fullName || '—'}</div>
+                  <div style={{ color: 'var(--text-secondary)', fontSize: 12 }}>{u.phone}</div>
+                  {u.regionName && <div style={{ color: 'var(--text-secondary)', fontSize: 12 }}>{u.regionName}</div>}
+                </td>
+                <td>{ROLE_LABELS[u.role] || u.role}</td>
+                <td>
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                    <span className={`badge ${u.active ? 'badge-success' : 'badge-danger'}`}>
+                      {u.active ? 'Faol' : 'Bloklangan'}
+                    </span>
+                    {!u.verified && <span className="badge badge-neutral">Tasdiqlanmagan</span>}
+                    <span className={`badge ${u.telegramLinked ? 'badge-success' : 'badge-neutral'}`}>
+                      {u.telegramLinked ? 'Telegram' : 'Telegram yoʻq'}
+                    </span>
+                  </div>
+                </td>
+                <td>{new Date(u.createdAt).toLocaleDateString('uz-UZ')}</td>
+                <td style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {u.role !== 'ADMIN' && (
+                    <button className="btn btn-outline" onClick={() => setDetailUser(u)}>Batafsil</button>
+                  )}
+                  {u.role !== 'ADMIN' && (
+                    <button
+                      className={u.active ? 'btn btn-outline-danger' : 'btn btn-primary'}
+                      disabled={busyId === u.id}
+                      onClick={() => toggleActive(u)}
+                    >
+                      {u.active ? 'Bloklash' : 'Faollashtirish'}
+                    </button>
+                  )}
+                  {walletEnabled && u.role !== 'ADMIN' && (
+                    <button className="btn btn-outline" onClick={() => setWalletUser(u)}>Hamyon</button>
+                  )}
+                  {u.telegramLinked && (
+                    <button className="btn btn-outline" onClick={() => setMessageUser(u)}>Xabar yuborish</button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {data && data.content.length === 0 && <div className="empty-state">Foydalanuvchilar topilmadi</div>}
+      </div>
+
+      {data && data.totalPages > 1 && (
+        <div className="pagination">
+          <button className="btn btn-outline" disabled={page === 0} onClick={() => setPage((p) => p - 1)}>Oldingi</button>
+          <span style={{ alignSelf: 'center', fontSize: 13 }}>{page + 1} / {data.totalPages}</span>
+          <button className="btn btn-outline" disabled={data.last} onClick={() => setPage((p) => p + 1)}>Keyingi</button>
+        </div>
+      )}
+
+      {walletUser && (
+        <WalletModal user={walletUser} onClose={() => setWalletUser(null)} />
+      )}
+      {detailUser && (
+        <UserDetailModal user={detailUser} onClose={() => setDetailUser(null)} />
+      )}
+      {messageUser && (
+        <SendMessageModal user={messageUser} onClose={() => setMessageUser(null)} />
+      )}
+    </div>
+  );
+}
+
+function SendMessageModal({ user, onClose }) {
+  const [text, setText] = useState('');
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
+  const [sending, setSending] = useState(false);
+
+  async function send(e) {
+    e.preventDefault();
+    if (!text.trim()) return;
+    setSending(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      await api.post(`/api/admin/users/${user.id}/telegram-message`, { text: text.trim() });
+      setSuccess('Xabar yuborildi');
+      setText('');
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : "Yuborib bo'lmadi");
+    } finally {
+      setSending(false);
+    }
+  }
+
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <h3>Telegram xabar — {user.fullName || user.phone}</h3>
+        <p style={{ margin: '0 0 14px', color: 'var(--text-secondary)', fontSize: 13 }}>
+          Xabar to'g'ridan-to'g'ri shu foydalanuvchining Telegram botiga yuboriladi.
+        </p>
+        <form onSubmit={send}>
+          <div className="field">
+            <label>Xabar matni</label>
+            <textarea value={text} onChange={(e) => setText(e.target.value)} rows={5} placeholder="Xabar matnini kiriting..." />
+          </div>
+          {error && <div className="error-text">{error}</div>}
+          {success && <div style={{ color: 'var(--success)', fontSize: 13, marginBottom: 14 }}>{success}</div>}
+          <div className="modal-actions">
+            <button type="button" className="btn btn-outline" onClick={onClose}>Yopish</button>
+            <button type="submit" className="btn btn-primary" disabled={sending || !text.trim()}>
+              {sending ? 'Yuborilmoqda...' : 'Yuborish'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function UserDetailModal({ user, onClose }) {
+  const [profile, setProfile] = useState(null);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    api.get(`/api/admin/users/${user.id}/profile`)
+      .then(setProfile)
+      .catch((e) => setError(e instanceof ApiError ? e.message : "Yuklab bo'lmadi"));
+  }, [user.id]);
+
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 560, maxHeight: '85vh', overflowY: 'auto' }}>
+        <h3>Foydalanuvchi profili</h3>
+        {error && <div className="error-text">{error}</div>}
+        {!profile && !error && <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Yuklanmoqda...</p>}
+        {profile && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, fontSize: 14 }}>
+            {profile.avatarUrl && (
+              <img src={profile.avatarUrl} alt="" style={{ width: 72, height: 72, borderRadius: '50%', objectFit: 'cover' }} />
+            )}
+            <DetailRow label="Ism-familiya" value={`${profile.firstName} ${profile.lastName}`} />
+            <DetailRow label="Telefon" value={profile.phone} />
+            <DetailRow label="Rol" value={ROLE_LABELS[profile.role] || profile.role} />
+            <DetailRow label="Hudud" value={`${profile.regionName}, ${profile.districtName}`} />
+            <DetailRow label="Holat" value={user.active ? 'Faol' : 'Bloklangan'} />
+            <DetailRow label="Tasdiqlangan" value={user.verified ? 'Ha' : "Yo'q"} />
+            <DetailRow label="Telegram" value={user.telegramLinked ? 'Ulangan' : 'Ulanmagan'} />
+            <DetailRow label="Ro'yxatdan o'tgan" value={new Date(user.createdAt).toLocaleString('uz-UZ')} />
+            {profile.about && <DetailRow label="O'zi haqida" value={profile.about} />}
+            {profile.role === 'WORKER' && (
+              <>
+                <DetailRow label="Tajriba" value={profile.experienceYears != null ? `${profile.experienceYears} yil` : "Ko'rsatilmagan"} />
+                <DetailRow label="Mavjudligi" value={profile.available ? 'Ish qidirmoqda' : 'Band'} />
+                <DetailRow label="Ish turi" value={profile.workPreference || "Ko'rsatilmagan"} />
+                <DetailRow label="Kasblar" value={profile.professions?.length ? profile.professions.map((p) => p.name).join(', ') : '—'} />
+                <DetailRow
+                  label="Haydovchilik guvohnomasi"
+                  value={profile.hasDriverLicense ? (profile.driverLicenseCategories || 'Bor') : "Yo'q"}
+                />
+                {profile.experiences?.length > 0 && (
+                  <div>
+                    <span style={{ color: 'var(--text-secondary)', fontSize: 12 }}>Ish tajribasi</span>
+                    <ul style={{ margin: '6px 0 0', paddingLeft: 18 }}>
+                      {profile.experiences.map((e) => (
+                        <li key={e.id}>
+                          <strong>{e.positionTitle}</strong> — {e.companyName}
+                          <br />
+                          <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+                            {e.startDate} — {e.endDate || 'hozirgacha'}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
+        <div className="modal-actions">
+          <button type="button" className="btn btn-outline" onClick={onClose}>Yopish</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DetailRow({ label, value }) {
+  return (
+    <div>
+      <span style={{ color: 'var(--text-secondary)', fontSize: 12 }}>{label}</span>
+      <div>{value}</div>
+    </div>
+  );
+}
+
+function WalletModal({ user, onClose }) {
+  const [wallet, setWallet] = useState(null);
+  const [amount, setAmount] = useState('');
+  const [note, setNote] = useState('');
+  const [error, setError] = useState(null);
+  const [busy, setBusy] = useState(false);
+
+  const load = useCallback(() => {
+    api.get(`/api/admin/wallets/${user.id}`)
+      .then(setWallet)
+      .catch((e) => setError(e instanceof ApiError ? e.message : "Hamyonni yuklab bo'lmadi"));
+  }, [user.id]);
+
+  useEffect(() => { load(); }, [load]);
+
+  async function submit(e) {
+    e.preventDefault();
+    const parsed = Number(amount);
+    if (!parsed) {
+      setError("To'g'ri summa kiriting (musbat — qo'shish, manfiy — ayirish)");
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    try {
+      await api.post(`/api/admin/wallets/${user.id}/adjust`, { amount: parsed, note: note || null });
+      setAmount('');
+      setNote('');
+      load();
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : "Amalni bajarib bo'lmadi");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <h3>Hamyon — {user.phone}</h3>
+        {wallet && (
+          <p style={{ fontSize: 22, fontWeight: 800, color: 'var(--primary)', margin: '0 0 16px' }}>
+            {Number(wallet.balance).toLocaleString('uz-UZ')} so'm
+          </p>
+        )}
+        <form onSubmit={submit}>
+          <div className="field">
+            <label>Summa (musbat — qo'shish, manfiy — ayirish)</label>
+            <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="masalan: 50000 yoki -20000" />
+          </div>
+          <div className="field">
+            <label>Izoh (ixtiyoriy)</label>
+            <input type="text" value={note} onChange={(e) => setNote(e.target.value)} placeholder="Sabab" />
+          </div>
+          {error && <div className="error-text">{error}</div>}
+          <div className="modal-actions">
+            <button type="button" className="btn btn-outline" onClick={onClose}>Yopish</button>
+            <button type="submit" className="btn btn-primary" disabled={busy}>Qo'llash</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}

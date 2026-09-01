@@ -1,0 +1,31 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1024" y2="1024">
+      <stop offset="0" stop-color="#FF9A4D"/>
+      <stop offset="1" stop-color="#E24A1F"/>
+    </linearGradient>
+    <linearGradient id="mark" gradientUnits="userSpaceOnUse" x1="512" y1="480" x2="512" y2="770">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#FFF3EA"/>
+    </linearGradient>
+    <linearGradient id="accent" gradientUnits="userSpaceOnUse" x1="512" y1="396" x2="512" y2="598">
+      <stop offset="0" stop-color="#8B5A2B"/>
+      <stop offset="1" stop-color="#5C3317"/>
+    </linearGradient>
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#7A1E00" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <rect x="0" y="0" width="1024" height="1024" rx="224" fill="url(#bg)"/>
+
+  <g filter="url(#shadow)">
+    <rect x="270" y="480" width="484" height="290" rx="46" fill="url(#mark)"/>
+    <rect x="432" y="396" width="160" height="104" rx="20" fill="url(#accent)"/>
+    <path d="M 316,480 L 708,480 A 46,46 0 0 1 754,526 L 754,598 L 270,598 L 270,526 A 46,46 0 0 1 316,480 Z" fill="url(#accent)"/>
+  </g>
+
+  <rect x="456" y="414" width="112" height="54" rx="18" fill="url(#bg)"/>
+  <rect x="472" y="572" width="80" height="54" rx="12" fill="url(#mark)"/>
+  <rect x="488" y="592" width="48" height="14" rx="7" fill="url(#accent)"/>
+</svg>

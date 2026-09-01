@@ -1,0 +1,51 @@
+# secrets
+.env
+*.env.local
+backend/secrets/
+mobile/android/app/google-services.json
+
+# backend (Maven/Java)
+backend/target/
+backend/uploads/
+*.class
+*.log
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# mobile (Flutter)
+mobile/.dart_tool/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/.packages
+mobile/build/
+mobile/.pub-cache/
+mobile/.pub/
+mobile/android/.gradle/
+mobile/android/local.properties
+mobile/android/key.properties
+mobile/android/keystore/
+*.jks
+*.keystore
+mobile/ios/Pods/
+mobile/ios/.symlinks/
+mobile/**/generated_plugin_registrant.dart
+mobile/lib/l10n/gen/
+*.g.dart
+*.freezed.dart
+
+# build artifacts
+apk/
+*.apk
+*.aab
+releases/
+
+# admin-web (Node/Vite)
+admin-web/node_modules/
+admin-web/dist/
+
+# os
+.DS_Store
+Thumbs.db

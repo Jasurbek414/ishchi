@@ -1,0 +1,57 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: ishchi-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-ishchi}
+      POSTGRES_USER: ${DB_USER:-ishchi}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+    volumes:
+      - ishchi_db_data:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5439:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-ishchi} -d ${DB_NAME:-ishchi}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+    container_name: ishchi-backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-ishchi}
+      DB_USER: ${DB_USER:-ishchi}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      JWT_ACCESS_TTL_MIN: ${JWT_ACCESS_TTL_MIN:-30}
+      JWT_REFRESH_TTL_DAYS: ${JWT_REFRESH_TTL_DAYS:-30}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-*}
+      ADMIN_PHONE: ${ADMIN_PHONE:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      FIREBASE_CREDENTIALS_PATH: ${FIREBASE_CREDENTIALS_PATH:-}
+    volumes:
+      - ishchi_uploads:/app/uploads
+      - ./backend/secrets/firebase-service-account.json:/app/firebase-service-account.json:ro
+    ports:
+      - "127.0.0.1:8090:8080"
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: ishchi-tunnel
+    restart: unless-stopped
+    depends_on:
+      - backend
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN:?CLOUDFLARE_TUNNEL_TOKEN is required}
+
+volumes:
+  ishchi_db_data:
+  ishchi_uploads:

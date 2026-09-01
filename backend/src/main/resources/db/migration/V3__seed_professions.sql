@@ -1,0 +1,30 @@
+insert into professions (name, category, is_active) values
+    ('G''isht teruvchi', 'Qurilish', true),
+    ('Betonchi', 'Qurilish', true),
+    ('Suvoqchi', 'Qurilish', true),
+    ('Kafelchi', 'Qurilish', true),
+    ('Santexnik', 'Qurilish', true),
+    ('Elektrik', 'Qurilish', true),
+    ('Payvandchi', 'Qurilish', true),
+    ('Bo''yoqchi', 'Qurilish', true),
+    ('Tom yopuvchi', 'Qurilish', true),
+
+    ('Uy tozalash', 'Uy va maishiy xizmatlar', true),
+    ('Mebel yig''ish', 'Uy va maishiy xizmatlar', true),
+    ('Yuk tashish', 'Uy va maishiy xizmatlar', true),
+    ('Ko''chirish xizmati', 'Uy va maishiy xizmatlar', true),
+    ('Konditsioner ustasi', 'Uy va maishiy xizmatlar', true),
+    ('Maishiy texnika ustasi', 'Uy va maishiy xizmatlar', true),
+
+    ('Avtomexanik', 'Avtomobil', true),
+    ('Avtomobil elektrigi', 'Avtomobil', true),
+    ('Shinomontaj', 'Avtomobil', true),
+    ('Avtomobil bo''yoqchisi', 'Avtomobil', true),
+
+    ('Kunlik ishchi', 'Boshqa', true),
+    ('Yuk tashuvchi', 'Boshqa', true),
+    ('Ombor ishchisi', 'Boshqa', true),
+    ('Sotuvchi', 'Boshqa', true),
+    ('Oshpaz', 'Boshqa', true),
+    ('Ofitsiant', 'Boshqa', true),
+    ('Kuryer', 'Boshqa', true);
