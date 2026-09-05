@@ -39,12 +39,12 @@ function FeedbackCard() {
   }
 
   return (
-    <div className="card" style={{ marginTop: 24 }}>
-      <h3 style={{ margin: '0 0 4px' }}>Fikr-mulohazalar va muammolar</h3>
-      <p style={{ margin: '0 0 16px', color: 'var(--text-secondary)', fontSize: 13 }}>
+    <div className="card mt-6">
+      <h3 className="mt-0 mx-0 mb-1">Fikr-mulohazalar va muammolar</h3>
+      <p className="mt-0 mx-0 mb-4 text-text-secondary text-[13px]">
         Foydalanuvchilar botdagi "💬 Fikr-mulohaza / Muammo" tugmasi orqali yozgan xabarlar shu yerda ko'rinadi.
       </p>
-      <div className="toolbar" style={{ marginBottom: 14 }}>
+      <div className="toolbar mb-3.5">
         <select className="select" value={filter} onChange={(e) => { setFilter(e.target.value); setPage(0); }}>
           <option value="">Barchasi</option>
           <option value="false">Yangi</option>
@@ -52,32 +52,32 @@ function FeedbackCard() {
         </select>
       </div>
       {error && <div className="error-text">{error}</div>}
-      {!data && !error && <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Yuklanmoqda...</p>}
+      {!data && !error && <p className="text-[13px] text-text-secondary">Yuklanmoqda...</p>}
       {data && data.content.length === 0 && <div className="empty-state">Xabarlar topilmadi</div>}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div className="flex flex-col gap-3">
         {data?.content.map((f) => (
-          <div key={f.id} style={{ border: '1px solid var(--border)', borderRadius: 12, padding: 14 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, marginBottom: 8, flexWrap: 'wrap' }}>
+          <div key={f.id} className="border border-line rounded-xl p-3.5">
+            <div className="flex justify-between gap-2.5 mb-2 flex-wrap">
               <div>
                 <strong>{f.userName || f.userPhone || `Noma'lum (chat ${f.chatId})`}</strong>
                 {f.userPhone && f.userName && (
-                  <span style={{ color: 'var(--text-secondary)', fontSize: 12 }}> · {f.userPhone}</span>
+                  <span className="text-text-secondary text-[12px]"> · {f.userPhone}</span>
                 )}
               </div>
               <span className={`badge ${f.resolved ? 'badge-success' : 'badge-danger'}`}>
                 {f.resolved ? 'Hal qilingan' : 'Yangi'}
               </span>
             </div>
-            <p style={{ margin: '0 0 8px', fontSize: 14, whiteSpace: 'pre-wrap' }}>{f.message}</p>
-            <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 10 }}>
+            <p className="mt-0 mx-0 mb-2 text-[14px] whitespace-pre-wrap">{f.message}</p>
+            <div className="text-[12px] text-text-secondary mb-2.5">
               {new Date(f.createdAt).toLocaleString('uz-UZ')}
             </div>
             {f.adminReply && (
-              <div style={{ background: 'var(--surface-alt, rgba(127,127,127,0.08))', borderRadius: 8, padding: 10, marginBottom: 10, fontSize: 13 }}>
-                <strong style={{ fontSize: 12 }}>Javob:</strong> {f.adminReply}
+              <div className="bg-[rgba(127,127,127,0.08)] rounded-lg p-2.5 mb-2.5 text-[13px]">
+                <strong className="text-[12px]">Javob:</strong> {f.adminReply}
               </div>
             )}
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <div className="flex gap-2 flex-wrap">
               <button className="btn btn-outline" onClick={() => setReplyTarget(f)}>Javob yozish</button>
               <button className="btn btn-outline" onClick={() => toggleResolved(f)}>
                 {f.resolved ? "Qayta ochish" : "Hal qilindi deb belgilash"}
@@ -89,7 +89,7 @@ function FeedbackCard() {
       {data && data.totalPages > 1 && (
         <div className="pagination">
           <button className="btn btn-outline" disabled={page === 0} onClick={() => setPage((p) => p - 1)}>Oldingi</button>
-          <span style={{ alignSelf: 'center', fontSize: 13 }}>{page + 1} / {data.totalPages}</span>
+          <span className="self-center text-[13px]">{page + 1} / {data.totalPages}</span>
           <button className="btn btn-outline" disabled={data.last} onClick={() => setPage((p) => p + 1)}>Keyingi</button>
         </div>
       )}
@@ -124,7 +124,7 @@ function ReplyModal({ feedback, onClose, onSent }) {
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <h3>Javob yozish</h3>
-        <p style={{ margin: '0 0 14px', color: 'var(--text-secondary)', fontSize: 13 }}>{feedback.message}</p>
+        <p className="mt-0 mx-0 mb-3.5 text-text-secondary text-[13px]">{feedback.message}</p>
         <form onSubmit={send}>
           <div className="field">
             <label>Javob matni</label>
@@ -186,29 +186,29 @@ function TelegramBotSettingsCard() {
   }
 
   return (
-    <div className="card" style={{ marginTop: 24 }}>
-      <h3 style={{ margin: '0 0 4px' }}>Bot ulanishi (SMS tasdiqlash)</h3>
-      <p style={{ margin: '0 0 16px', color: 'var(--text-secondary)', fontSize: 13 }}>
+    <div className="card mt-6">
+      <h3 className="mt-0 mx-0 mb-1">Bot ulanishi (SMS tasdiqlash)</h3>
+      <p className="mt-0 mx-0 mb-4 text-text-secondary text-[13px]">
         Ro'yxatdan o'tish va parolni tiklashda tasdiqlash kodi shu bot orqali yuboriladi.
         Bog'lanmagan bo'lsa, kod avtomatik "1234" bo'lib qoladi (test rejimi).
       </p>
-      {!settings && <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Yuklanmoqda...</p>}
+      {!settings && <p className="text-[13px] text-text-secondary">Yuklanmoqda...</p>}
       {settings && (
         <>
-          <p style={{ fontSize: 13.5, marginBottom: 14 }}>
+          <p className="text-[13.5px] mb-3.5">
             Holati:{' '}
             {settings.telegramConfigured ? (
-              <span style={{ color: 'var(--success)' }}>
+              <span className="text-success">
                 Ulangan — @{settings.telegramBotUsername}
               </span>
             ) : (
-              <span style={{ color: 'var(--text-secondary)' }}>Ulanmagan (test rejimi)</span>
+              <span className="text-text-secondary">Ulanmagan (test rejimi)</span>
             )}
           </p>
           <form onSubmit={save}>
             <div className="field">
               <label>Bot tokeni (BotFather'dan olinadi)</label>
-              <div style={{ display: 'flex', gap: 8 }}>
+              <div className="flex gap-2">
               <input
                 type={showToken ? 'text' : 'password'}
                 autoComplete="off"
@@ -216,7 +216,7 @@ function TelegramBotSettingsCard() {
                 onChange={(e) => setToken(e.target.value)}
                 placeholder="123456789:AAExxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
                 disabled={busy}
-                style={{ flex: 1 }}
+                className="flex-1"
               />
               <button type="button" className="btn btn-outline" onClick={() => setShowToken((v) => !v)}>
                 {showToken ? 'Yashirish' : "Ko'rsatish"}
@@ -224,8 +224,8 @@ function TelegramBotSettingsCard() {
               </div>
             </div>
             {error && <div className="error-text">{error}</div>}
-            {success && <div style={{ color: 'var(--success)', fontSize: 13, marginBottom: 14 }}>{success}</div>}
-            <div style={{ display: 'flex', gap: 10 }}>
+            {success && <div className="text-success text-[13px] mb-3.5">{success}</div>}
+            <div className="flex gap-2.5">
               <button type="submit" className="btn btn-primary" disabled={busy || !token.trim()}>
                 {busy ? 'Saqlanmoqda...' : settings.telegramConfigured ? 'Tokenni almashtirish' : 'Ulash'}
               </button>
@@ -286,14 +286,14 @@ function TelegramBroadcastCard() {
   }
 
   return (
-    <div className="card" style={{ marginTop: 24 }}>
-      <h3 style={{ margin: '0 0 4px' }}>Botga xabar yuborish</h3>
-      <p style={{ margin: '0 0 16px', color: 'var(--text-secondary)', fontSize: 13 }}>
+    <div className="card mt-6">
+      <h3 className="mt-0 mx-0 mb-1">Botga xabar yuborish</h3>
+      <p className="mt-0 mx-0 mb-4 text-text-secondary text-[13px]">
         Faqat botga ulangan (raqamini ulashgan) foydalanuvchilarga yuboriladi — ilovani o'rnatmagan bo'lsa ham yetadi.
         {!settings?.telegramConfigured && (
           <>
             {' '}
-            <strong style={{ color: 'var(--danger, #dc2626)' }}>
+            <strong className="text-danger">
               Diqqat: Telegram bot hozir ulanmagan (yuqoridagi bo'limdan ulang).
             </strong>
           </>
@@ -328,7 +328,7 @@ function TelegramBroadcastCard() {
           </div>
         )}
         {error && <div className="error-text">{error}</div>}
-        {success && <div style={{ color: 'var(--success)', fontSize: 13, marginBottom: 14 }}>{success}</div>}
+        {success && <div className="text-success text-[13px] mb-3.5">{success}</div>}
         <button type="submit" className="btn btn-primary" disabled={sending || !settings?.telegramConfigured}>
           {sending ? 'Yuborilmoqda...' : 'Yuborish'}
         </button>

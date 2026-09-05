@@ -32,8 +32,8 @@ export default function LoginPage() {
     <div className="login-screen">
       <form className="login-card" onSubmit={handleSubmit}>
         <div className="login-logo">I</div>
-        <h1 style={{ textAlign: 'center', marginBottom: 4 }}>Admin panel</h1>
-        <p style={{ textAlign: 'center', color: 'var(--text-secondary)', marginTop: 0, marginBottom: 24, fontSize: 13.5 }}>
+        <h1 className="text-center mb-1">Admin panel</h1>
+        <p className="text-center text-text-secondary mt-0 mb-6 text-[13.5px]">
           Administrator hisobingiz bilan kiring
         </p>
 

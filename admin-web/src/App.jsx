@@ -12,6 +12,7 @@ import PromoBannersPage from './pages/PromoBannersPage.jsx';
 import TelegramPage from './pages/TelegramPage.jsx';
 import WalletPage from './pages/WalletPage.jsx';
 import SettingsPage from './pages/SettingsPage.jsx';
+import LandingPage from './pages/LandingPage.jsx';
 
 export default function App() {
   return (
@@ -36,6 +37,7 @@ export default function App() {
             <Route path="promo-banners" element={<PromoBannersPage />} />
             <Route path="telegram" element={<TelegramPage />} />
             <Route path="wallet" element={<WalletPage />} />
+            <Route path="landing" element={<LandingPage />} />
             <Route path="settings" element={<SettingsPage />} />
           </Route>
         </Routes>

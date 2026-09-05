@@ -34,113 +34,331 @@ class JobDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final cs = Theme.of(context).colorScheme;
     final jobAsync = ref.watch(jobDetailProvider(jobId));
+    // Read once so the app bar style, body, and bottom bar all agree on the same
+    // loaded-or-not state within a single build — the hero header needs a
+    // transparent app bar floating over it, but the loading/error states need a
+    // normal opaque one with a title.
+    final job = jobAsync.valueOrNull;
 
     return Scaffold(
-      appBar: AppBar(title: Text(context.l10n.jobDetailTitle)),
+      extendBodyBehindAppBar: job != null,
+      appBar: AppBar(
+        backgroundColor: job != null ? Colors.transparent : null,
+        foregroundColor: job != null ? Colors.white : null,
+        elevation: 0,
+        title: job == null ? Text(context.l10n.jobDetailTitle) : null,
+      ),
       body: AsyncView(
         value: jobAsync,
         onRetry: () => ref.invalidate(jobDetailProvider(jobId)),
-        data: (job) => ListView(
-          padding: const EdgeInsets.all(20),
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(job.title, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
-                ),
-                StatusBadge(status: job.status),
-              ],
+        data: (job) => _JobDetailBody(job: job),
+      ),
+      bottomNavigationBar: job == null
+          ? null
+          : Container(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
+                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 20, offset: const Offset(0, -6))],
+              ),
+              child: job.unlocked && job.employerPhone != null
+                  ? ElevatedButton.icon(
+                      onPressed: () => _call(context, job.employerPhone!),
+                      icon: const Icon(Icons.call, color: Colors.white),
+                      label: Text(context.l10n.contactPhoneValue(job.employerPhone!)),
+                    )
+                  : _UnlockContactCard(jobId: jobId),
             ),
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                Icon(Icons.location_on_outlined, size: 18, color: cs.onSurfaceVariant),
-                const SizedBox(width: 6),
-                Text(job.location, style: TextStyle(color: cs.onSurfaceVariant)),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                Icon(Icons.badge_outlined, size: 18, color: cs.onSurfaceVariant),
-                const SizedBox(width: 6),
-                Text(job.professionName, style: TextStyle(color: cs.onSurfaceVariant)),
-              ],
-            ),
-            if (job.images.isNotEmpty) ...[
-              const SizedBox(height: 16),
-              _JobImagesGallery(images: job.images),
-            ],
-            const SizedBox(height: 20),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: _StatColumn(
-                        icon: Icons.payments_outlined,
-                        label: job.paymentType.label(context),
-                        value: Formatters.money(context, job.payment),
-                      ),
-                    ),
-                    Expanded(
-                      child: _StatColumn(
-                        icon: Icons.category_outlined,
-                        label: context.l10n.jobTypeLabel,
-                        value: job.jobType.label(context),
-                      ),
-                    ),
-                    if (job.durationLabel(context) != null)
+    );
+  }
+}
+
+class _JobDetailBody extends StatelessWidget {
+  const _JobDetailBody({required this.job});
+
+  final Job job;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return ListView(
+      padding: EdgeInsets.zero,
+      children: [
+        _JobHeader(job: job),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(job.title, style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w800, height: 1.25)),
+                  ),
+                  const SizedBox(width: 10),
+                  StatusBadge(status: job.status),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 18,
+                runSpacing: 8,
+                children: [
+                  _InfoRow(icon: Icons.location_on_outlined, text: job.location),
+                  _InfoRow(icon: Icons.badge_outlined, text: job.professionName),
+                ],
+              ),
+              const SizedBox(height: 22),
+              _PriceCard(job: job),
+              const SizedBox(height: 14),
+              Card(
+                margin: EdgeInsets.zero,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
                       Expanded(
                         child: _StatColumn(
-                          icon: Icons.schedule,
-                          label: context.l10n.durationLabel,
-                          value: job.durationLabel(context)!,
+                          icon: Icons.category_outlined,
+                          label: context.l10n.jobTypeLabel,
+                          value: job.jobType.label(context),
                         ),
                       ),
+                      Expanded(
+                        child: _StatColumn(
+                          icon: Icons.groups_outlined,
+                          label: context.l10n.workersNeededLabel,
+                          value: '${job.workersNeeded}',
+                        ),
+                      ),
+                      if (job.durationLabel(context) != null)
+                        Expanded(
+                          child: _StatColumn(
+                            icon: Icons.schedule,
+                            label: context.l10n.durationLabel,
+                            value: job.durationLabel(context)!,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              if (job.startDate != null) ...[
+                const SizedBox(height: 14),
+                _InfoRow(
+                  icon: Icons.event_outlined,
+                  text: context.l10n.startDateValue(Formatters.date(job.startDate!)),
+                ),
+              ],
+              const SizedBox(height: 28),
+              Text(context.l10n.descriptionLabel, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+              const SizedBox(height: 10),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: cs.surfaceContainerLow,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Text(job.description, style: const TextStyle(height: 1.5)),
+              ),
+              const SizedBox(height: 28),
+              Text(context.l10n.employerLabel, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: cs.surfaceContainerLow,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Row(
+                  children: [
+                    UserAvatar(url: job.employerAvatarUrl, name: job.employerName, radius: 24),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(job.employerName, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+                    ),
                   ],
                 ),
               ),
-            ),
-            const SizedBox(height: 20),
-            if (job.startDate != null) ...[
-              Text(context.l10n.startDateValue(Formatters.date(job.startDate!)),
-                  style: TextStyle(color: cs.onSurfaceVariant)),
-              const SizedBox(height: 8),
             ],
-            Text(context.l10n.workersNeededValue(job.workersNeeded),
-                style: TextStyle(color: cs.onSurfaceVariant)),
-            const SizedBox(height: 20),
-            Text(context.l10n.descriptionLabel, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
-            const SizedBox(height: 8),
-            Text(job.description, style: const TextStyle(height: 1.5)),
-            const SizedBox(height: 28),
-            Text(context.l10n.employerLabel, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
-            const SizedBox(height: 10),
-            Row(
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _JobHeader extends StatefulWidget {
+  const _JobHeader({required this.job});
+
+  final Job job;
+
+  @override
+  State<_JobHeader> createState() => _JobHeaderState();
+}
+
+class _JobHeaderState extends State<_JobHeader> {
+  final _controller = PageController();
+  int _page = 0;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _openViewer(BuildContext context, int index) {
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) => _ImageViewerScreen(images: widget.job.images, initialIndex: index),
+    ));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final images = widget.job.images;
+
+    if (images.isEmpty) {
+      return Container(
+        height: 200,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [cs.primary, Color.lerp(cs.primary, Colors.black, 0.35)!],
+          ),
+        ),
+        child: Center(
+          child: Icon(Icons.work_outline, size: 68, color: Colors.white.withValues(alpha: 0.35)),
+        ),
+      );
+    }
+
+    return SizedBox(
+      height: 260,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          PageView.builder(
+            controller: _controller,
+            itemCount: images.length,
+            onPageChanged: (i) => setState(() => _page = i),
+            itemBuilder: (context, i) => GestureDetector(
+              onTap: () => _openViewer(context, i),
+              child: CachedNetworkImage(
+                imageUrl: ApiConfig.resolveMediaUrl(images[i].url),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          IgnorePointer(
+            child: Container(
+              alignment: Alignment.bottomCenter,
+              height: 90,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.transparent, Colors.black.withValues(alpha: 0.4)],
+                ),
+              ),
+            ),
+          ),
+          if (images.length > 1)
+            Positioned(
+              bottom: 14,
+              left: 0,
+              right: 0,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(images.length, (i) {
+                  final active = i == _page;
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    margin: const EdgeInsets.symmetric(horizontal: 3),
+                    width: active ? 18 : 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: active ? 0.95 : 0.5),
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  );
+                }),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PriceCard extends StatelessWidget {
+  const _PriceCard({required this.job});
+
+  final Job job;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(colors: [cs.primary, Color.lerp(cs.primary, Colors.black, 0.18)!]),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [BoxShadow(color: cs.primary.withValues(alpha: 0.3), blurRadius: 20, offset: const Offset(0, 8))],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.18), shape: BoxShape.circle),
+            child: const Icon(Icons.payments_outlined, color: Colors.white, size: 22),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                UserAvatar(url: job.employerAvatarUrl, name: job.employerName, radius: 24),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(job.employerName, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+                Text(
+                  Formatters.money(context, job.payment),
+                  style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  job.paymentType.label(context),
+                  style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 12.5, fontWeight: FontWeight.w600),
                 ),
               ],
             ),
-            const SizedBox(height: 24),
-            if (job.unlocked && job.employerPhone != null)
-              ElevatedButton.icon(
-                onPressed: () => _call(context, job.employerPhone!),
-                icon: const Icon(Icons.call, color: Colors.white),
-                label: Text(context.l10n.contactPhoneValue(job.employerPhone!)),
-              )
-            else
-              _UnlockContactCard(jobId: jobId),
-          ],
-        ),
+          ),
+        ],
       ),
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  const _InfoRow({required this.icon, required this.text});
+
+  final IconData icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 17, color: cs.onSurfaceVariant),
+        const SizedBox(width: 6),
+        Text(text, style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13.5)),
+      ],
     );
   }
 }
@@ -197,7 +415,7 @@ class _UnlockContactCardState extends ConsumerState<_UnlockContactCard> {
     final fee = settings?.jobViewFee ?? 0;
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: cs.primaryContainer.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(16),
@@ -227,42 +445,6 @@ class _UnlockContactCardState extends ConsumerState<_UnlockContactCard> {
             label: Text(context.l10n.unlockForFeeAction(Formatters.money(context, fee))),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _JobImagesGallery extends StatelessWidget {
-  const _JobImagesGallery({required this.images});
-
-  final List<JobImage> images;
-
-  void _openViewer(BuildContext context, int initialIndex) {
-    Navigator.of(context).push(MaterialPageRoute(
-      builder: (_) => _ImageViewerScreen(images: images, initialIndex: initialIndex),
-    ));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 120,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: images.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 10),
-        itemBuilder: (context, index) => GestureDetector(
-          onTap: () => _openViewer(context, index),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(14),
-            child: CachedNetworkImage(
-              imageUrl: ApiConfig.resolveMediaUrl(images[index].url),
-              width: 120,
-              height: 120,
-              fit: BoxFit.cover,
-            ),
-          ),
-        ),
       ),
     );
   }

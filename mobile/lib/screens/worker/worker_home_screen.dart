@@ -92,7 +92,7 @@ class _WorkerHomeScreenState extends ConsumerState<WorkerHomeScreen> {
           final bannersAsync = ref.watch(promoBannersProvider((audience: 'WORKER', regionId: profile.regionId)));
           final apiBanners = bannersAsync.valueOrNull ?? const [];
           final banners = apiBanners.isNotEmpty
-              ? PromoBanners.fromApi(context, apiBanners)
+              ? PromoBanners.fromApi(context, ref, apiBanners)
               : PromoBanners.workerFor(context);
           final available = profile.available ?? true;
 

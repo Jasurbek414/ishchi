@@ -14,6 +14,19 @@ const LABELS = {
   telegramLinkedUsers: 'Telegram botga ulangan',
 };
 
+/** Where each stat card should take the admin when clicked — optional pre-filter passed
+ *  as router state, read once on mount by the target page. */
+const LABEL_LINKS = {
+  totalUsers: { to: '/users' },
+  totalWorkers: { to: '/users', state: { role: 'WORKER' } },
+  totalEmployers: { to: '/users', state: { role: 'EMPLOYER' } },
+  activeJobs: { to: '/jobs', state: { status: 'ACTIVE' } },
+  newUsersToday: { to: '/users' },
+  newJobsToday: { to: '/jobs' },
+  blockedUsers: { to: '/users', state: { status: 'blocked' } },
+  telegramLinkedUsers: { to: '/telegram' },
+};
+
 const JOB_STATUS_LABELS = {
   ACTIVE: 'Faol',
   IN_PROGRESS: 'Jarayonda',
@@ -46,19 +59,26 @@ export default function DashboardPage() {
       {stats && (
         <>
           <div className="stat-grid">
-            {Object.entries(LABELS).map(([key, label]) => (
-              <div key={key} className="stat-card">
-                <div className="stat-value">{stats[key]}</div>
-                <div className="stat-label">{label}</div>
-              </div>
-            ))}
+            {Object.entries(LABELS).map(([key, label]) => {
+              const link = LABEL_LINKS[key];
+              return (
+                <div
+                  key={key}
+                  className={link ? 'stat-card cursor-pointer' : 'stat-card'}
+                  onClick={link ? () => navigate(link.to, { state: link.state }) : undefined}
+                  title={link ? `${link.to.slice(1)} bo'limiga o'tish` : undefined}
+                >
+                  <div className="stat-value">{stats[key]}</div>
+                  <div className="stat-label">{label}</div>
+                </div>
+              );
+            })}
             <div
-              className="stat-card"
-              style={{ cursor: 'pointer', outline: stats.pendingFeedback > 0 ? '2px solid var(--danger, #dc2626)' : 'none' }}
+              className={`stat-card cursor-pointer ${stats.pendingFeedback > 0 ? 'outline outline-2 outline-danger' : ''}`}
               onClick={() => navigate('/telegram')}
               title="Telegram bo'limiga o'tish"
             >
-              <div className="stat-value" style={{ color: stats.pendingFeedback > 0 ? 'var(--danger, #dc2626)' : undefined }}>
+              <div className={`stat-value ${stats.pendingFeedback > 0 ? 'text-danger' : ''}`}>
                 {stats.pendingFeedback}
               </div>
               <div className="stat-label">Yangi fikr-mulohazalar</div>
@@ -71,20 +91,20 @@ export default function DashboardPage() {
             )}
           </div>
 
-          <div className="card" style={{ marginTop: 24 }}>
-            <h3 style={{ margin: '0 0 16px' }}>Buyurtmalar holati bo'yicha taqsimot</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div className="card mt-6">
+            <h3 className="mt-0 mx-0 mb-4">Buyurtmalar holati bo'yicha taqsimot</h3>
+            <div className="flex flex-col gap-3">
               {JOB_STATUS_ORDER.map((status) => {
                 const count = stats.jobsByStatus?.[status] ?? 0;
                 const pct = Math.round((count / maxJobsByStatus) * 100);
                 return (
                   <div key={status}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 4 }}>
+                    <div className="flex justify-between text-[13px] mb-1">
                       <span>{JOB_STATUS_LABELS[status] || status}</span>
                       <strong>{count}</strong>
                     </div>
-                    <div style={{ background: 'var(--border)', borderRadius: 6, height: 8, overflow: 'hidden' }}>
-                      <div style={{ width: `${pct}%`, background: 'var(--primary)', height: '100%', borderRadius: 6 }} />
+                    <div className="bg-line rounded-md h-2 overflow-hidden">
+                      <div className="bg-primary h-full rounded-md" style={{ width: `${pct}%` }} />
                     </div>
                   </div>
                 );

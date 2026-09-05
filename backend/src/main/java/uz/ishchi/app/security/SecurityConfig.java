@@ -50,11 +50,13 @@ public class SecurityConfig {
                                 "/api/professions/**",
                                 "/api/promo-banners/**",
                                 "/api/app-settings/**",
+                                "/api/landing/**",
                                 "/api/telegram/webhook/**",
                                 "/uploads/**",
                                 "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html",
                                 "/actuator/health", "/actuator/info",
-                                "/admin", "/admin/**"
+                                "/admin", "/admin/**",
+                                "/", "/index.html", "/favicon.ico", "/assets/**", "/vite.svg"
                         ).permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()

@@ -151,7 +151,7 @@
   "previewCityTashkent": "Тошкент",
 
   "adminNotAvailableTitle": "Администратор панели мобил иловада мавжуд эмас",
-  "adminNotAvailableMessage": "Администратор функциялари веб панел орқали бошқарилади: ishchi-api.ecos.uz/admin — браузерингиздан (шу жумладан телефондан ҳам) шу манзилга киринг.",
+  "adminNotAvailableMessage": "Администратор функциялари веб панел орқали бошқарилади: api.uzbishchi.uz/admin — браузерингиздан (шу жумладан телефондан ҳам) шу манзилга киринг.",
 
   "appTagline": "Иш берувчи ва ишчини боғлайдиган платформа",
   "appVersionLabel": "Версия {version} ({build})",
@@ -188,6 +188,7 @@
   "@callFailedError": {"placeholders": {"phone": {"type": "String"}}},
   "jobTypeLabel": "Иш тури",
   "durationLabel": "Давомийлиги",
+  "workersNeededLabel": "Керакли ишчи",
   "startDateValue": "Бошланиш санаси: {date}",
   "@startDateValue": {"placeholders": {"date": {"type": "String"}}},
   "workersNeededValue": "Керакли ишчилар сони: {count, plural, other{{count}}}",

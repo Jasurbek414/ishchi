@@ -9,6 +9,7 @@ const NAV_ITEMS = [
   { to: '/promo-banners', label: 'Reklama' },
   { to: '/telegram', label: 'Telegram bot' },
   { to: '/wallet', label: 'Hamyon' },
+  { to: '/landing', label: 'Landing sahifa' },
   { to: '/settings', label: 'Sozlamalar' },
 ];
 

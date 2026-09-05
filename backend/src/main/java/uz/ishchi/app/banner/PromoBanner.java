@@ -9,6 +9,8 @@ import uz.ishchi.app.common.BannerAudience;
 import uz.ishchi.app.location.Region;
 
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "promo_banners")
@@ -37,16 +39,34 @@ public class PromoBanner {
     @Column(nullable = false, length = 20)
     private BannerAudience audience = BannerAudience.ALL;
 
-    /** Null = barcha hududlarga ko'rinadi; belgilansa, faqat shu viloyatdagi foydalanuvchilarga. */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "region_id")
-    private Region region;
+    /** Bo'sh = barcha hududlarga ko'rinadi; belgilansa, faqat shu hududlardagi foydalanuvchilarga. */
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "promo_banner_regions",
+            joinColumns = @JoinColumn(name = "promo_banner_id"),
+            inverseJoinColumns = @JoinColumn(name = "region_id")
+    )
+    private Set<Region> regions = new HashSet<>();
 
     @Column(name = "sort_order", nullable = false)
     private Integer sortOrder = 0;
 
     @Column(name = "is_active", nullable = false)
     private boolean active = true;
+
+    /** Null = darhol boshlanadi. */
+    @Column(name = "start_at")
+    private Instant startAt;
+
+    /** Null = muddatsiz. */
+    @Column(name = "end_at")
+    private Instant endAt;
+
+    @Column(name = "view_count", nullable = false)
+    private long viewCount = 0;
+
+    @Column(name = "click_count", nullable = false)
+    private long clickCount = 0;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

@@ -1,10 +1,7 @@
 package uz.ishchi.app.banner;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import uz.ishchi.app.banner.dto.PromoBannerResponse;
 import uz.ishchi.app.common.BannerAudience;
 
@@ -21,5 +18,15 @@ public class PromoBannerController {
     public List<PromoBannerResponse> list(@RequestParam(required = false) BannerAudience audience,
                                            @RequestParam(required = false) Long regionId) {
         return promoBannerService.forAudience(audience, regionId);
+    }
+
+    @PostMapping("/{id}/view")
+    public void recordView(@PathVariable Long id) {
+        promoBannerService.recordView(id);
+    }
+
+    @PostMapping("/{id}/click")
+    public void recordClick(@PathVariable Long id) {
+        promoBannerService.recordClick(id);
     }
 }

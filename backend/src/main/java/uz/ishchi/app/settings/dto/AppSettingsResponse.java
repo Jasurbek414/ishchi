@@ -13,6 +13,8 @@ public record AppSettingsResponse(
         boolean jobPostingFeeEnabled,
         BigDecimal jobPostingFee,
         boolean jobViewFeeEnabled,
-        BigDecimal jobViewFee
+        BigDecimal jobViewFee,
+        String defaultThemeMode,
+        String defaultSeedColor
 ) {
 }

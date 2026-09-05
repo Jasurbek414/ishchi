@@ -1,12 +1,23 @@
 import { useEffect, useState, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import { api, ApiError } from '../api/client.js';
 import { useAppSettings } from '../settings/AppSettingsContext.jsx';
 
 const ROLE_LABELS = { WORKER: 'Ishchi', EMPLOYER: 'Ish beruvchi', ADMIN: 'Administrator' };
 
+const STATUS_OPTIONS = [
+  { value: '', label: 'Barcha holatlar' },
+  { value: 'active', label: 'Faol' },
+  { value: 'blocked', label: 'Bloklangan' },
+  { value: 'unverified', label: 'Tasdiqlanmagan' },
+];
+
 export default function UsersPage() {
   const { walletEnabled } = useAppSettings();
-  const [role, setRole] = useState('');
+  const location = useLocation();
+  // Dashboard stat cards link here with an optional pre-filter in router state.
+  const [role, setRole] = useState(location.state?.role || '');
+  const [status, setStatus] = useState(location.state?.status || '');
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
@@ -24,10 +35,16 @@ export default function UsersPage() {
 
   const load = useCallback(() => {
     setError(null);
-    api.get('/api/admin/users', { role: role || undefined, search: search || undefined, page, size: 20, sort: 'id,desc' })
+    api.get('/api/admin/users', {
+      role: role || undefined,
+      active: status === 'active' ? true : status === 'blocked' ? false : undefined,
+      verified: status === 'unverified' ? false : undefined,
+      search: search || undefined,
+      page, size: 20, sort: 'id,desc',
+    })
       .then(setData)
       .catch((e) => setError(e instanceof ApiError ? e.message : "Yuklab bo'lmadi"));
-  }, [role, search, page]);
+  }, [role, status, search, page]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -45,13 +62,17 @@ export default function UsersPage() {
 
   return (
     <div>
-      <h1>Foydalanuvchilar</h1>
+      <div className="flex flex-wrap items-end justify-between gap-3 mb-5">
+        <div>
+          <h1 className="mb-1">Foydalanuvchilar</h1>
+          {data && <p className="text-[13px] text-text-secondary m-0">{data.totalElements.toLocaleString('uz-UZ')} ta natija topildi</p>}
+        </div>
+      </div>
 
       <div className="toolbar">
         <input
           type="text"
-          className="input"
-          style={{ minWidth: 220 }}
+          className="input min-w-[220px]"
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
           placeholder="Ism yoki telefon raqami bo'yicha qidirish..."
@@ -61,6 +82,9 @@ export default function UsersPage() {
           <option value="WORKER">Ishchi</option>
           <option value="EMPLOYER">Ish beruvchi</option>
           <option value="ADMIN">Administrator</option>
+        </select>
+        <select className="select" value={status} onChange={(e) => { setStatus(e.target.value); setPage(0); }}>
+          {STATUS_OPTIONS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
         </select>
       </div>
 
@@ -83,13 +107,13 @@ export default function UsersPage() {
               <tr key={u.id}>
                 <td>{u.id}</td>
                 <td>
-                  <div style={{ whiteSpace: 'normal' }}>{u.fullName || '—'}</div>
-                  <div style={{ color: 'var(--text-secondary)', fontSize: 12 }}>{u.phone}</div>
-                  {u.regionName && <div style={{ color: 'var(--text-secondary)', fontSize: 12 }}>{u.regionName}</div>}
+                  <div className="whitespace-normal">{u.fullName || '—'}</div>
+                  <div className="text-text-secondary text-[12px]">{u.phone}</div>
+                  {u.regionName && <div className="text-text-secondary text-[12px]">{u.regionName}</div>}
                 </td>
                 <td>{ROLE_LABELS[u.role] || u.role}</td>
                 <td>
-                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  <div className="flex gap-1.5 flex-wrap">
                     <span className={`badge ${u.active ? 'badge-success' : 'badge-danger'}`}>
                       {u.active ? 'Faol' : 'Bloklangan'}
                     </span>
@@ -100,7 +124,7 @@ export default function UsersPage() {
                   </div>
                 </td>
                 <td>{new Date(u.createdAt).toLocaleDateString('uz-UZ')}</td>
-                <td style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <td className="flex gap-2 flex-wrap">
                   {u.role !== 'ADMIN' && (
                     <button className="btn btn-outline" onClick={() => setDetailUser(u)}>Batafsil</button>
                   )}
@@ -130,7 +154,7 @@ export default function UsersPage() {
       {data && data.totalPages > 1 && (
         <div className="pagination">
           <button className="btn btn-outline" disabled={page === 0} onClick={() => setPage((p) => p - 1)}>Oldingi</button>
-          <span style={{ alignSelf: 'center', fontSize: 13 }}>{page + 1} / {data.totalPages}</span>
+          <span className="self-center text-[13px]">{page + 1} / {data.totalPages}</span>
           <button className="btn btn-outline" disabled={data.last} onClick={() => setPage((p) => p + 1)}>Keyingi</button>
         </div>
       )}
@@ -175,7 +199,7 @@ function SendMessageModal({ user, onClose }) {
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <h3>Telegram xabar — {user.fullName || user.phone}</h3>
-        <p style={{ margin: '0 0 14px', color: 'var(--text-secondary)', fontSize: 13 }}>
+        <p className="mt-0 mx-0 mb-3.5 text-text-secondary text-[13px]">
           Xabar to'g'ridan-to'g'ri shu foydalanuvchining Telegram botiga yuboriladi.
         </p>
         <form onSubmit={send}>
@@ -184,7 +208,7 @@ function SendMessageModal({ user, onClose }) {
             <textarea value={text} onChange={(e) => setText(e.target.value)} rows={5} placeholder="Xabar matnini kiriting..." />
           </div>
           {error && <div className="error-text">{error}</div>}
-          {success && <div style={{ color: 'var(--success)', fontSize: 13, marginBottom: 14 }}>{success}</div>}
+          {success && <div className="text-success text-[13px] mb-3.5">{success}</div>}
           <div className="modal-actions">
             <button type="button" className="btn btn-outline" onClick={onClose}>Yopish</button>
             <button type="submit" className="btn btn-primary" disabled={sending || !text.trim()}>
@@ -209,14 +233,14 @@ function UserDetailModal({ user, onClose }) {
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 560, maxHeight: '85vh', overflowY: 'auto' }}>
+      <div className="modal max-w-[560px] max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <h3>Foydalanuvchi profili</h3>
         {error && <div className="error-text">{error}</div>}
-        {!profile && !error && <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Yuklanmoqda...</p>}
+        {!profile && !error && <p className="text-[13px] text-text-secondary">Yuklanmoqda...</p>}
         {profile && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, fontSize: 14 }}>
+          <div className="flex flex-col gap-3 text-[14px]">
             {profile.avatarUrl && (
-              <img src={profile.avatarUrl} alt="" style={{ width: 72, height: 72, borderRadius: '50%', objectFit: 'cover' }} />
+              <img src={profile.avatarUrl} alt="" className="w-[72px] h-[72px] rounded-full object-cover" />
             )}
             <DetailRow label="Ism-familiya" value={`${profile.firstName} ${profile.lastName}`} />
             <DetailRow label="Telefon" value={profile.phone} />
@@ -239,13 +263,13 @@ function UserDetailModal({ user, onClose }) {
                 />
                 {profile.experiences?.length > 0 && (
                   <div>
-                    <span style={{ color: 'var(--text-secondary)', fontSize: 12 }}>Ish tajribasi</span>
-                    <ul style={{ margin: '6px 0 0', paddingLeft: 18 }}>
+                    <span className="text-text-secondary text-[12px]">Ish tajribasi</span>
+                    <ul className="mt-1.5 mx-0 mb-0 pl-[18px]">
                       {profile.experiences.map((e) => (
                         <li key={e.id}>
                           <strong>{e.positionTitle}</strong> — {e.companyName}
                           <br />
-                          <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+                          <span className="text-[12px] text-text-secondary">
                             {e.startDate} — {e.endDate || 'hozirgacha'}
                           </span>
                         </li>
@@ -268,7 +292,7 @@ function UserDetailModal({ user, onClose }) {
 function DetailRow({ label, value }) {
   return (
     <div>
-      <span style={{ color: 'var(--text-secondary)', fontSize: 12 }}>{label}</span>
+      <span className="text-text-secondary text-[12px]">{label}</span>
       <div>{value}</div>
     </div>
   );
@@ -315,7 +339,7 @@ function WalletModal({ user, onClose }) {
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <h3>Hamyon — {user.phone}</h3>
         {wallet && (
-          <p style={{ fontSize: 22, fontWeight: 800, color: 'var(--primary)', margin: '0 0 16px' }}>
+          <p className="text-[22px] font-extrabold text-primary mt-0 mx-0 mb-4">
             {Number(wallet.balance).toLocaleString('uz-UZ')} so'm
           </p>
         )}

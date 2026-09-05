@@ -26,8 +26,6 @@ import java.time.Instant;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class TelegramService {
@@ -38,28 +36,29 @@ public class TelegramService {
     private final TelegramClient telegramClient;
     private final UserRepository userRepository;
     private final TelegramFeedbackRepository feedbackRepository;
+    private final TelegramAwaitingFeedbackRepository awaitingFeedbackRepository;
     private final WorkerProfileRepository workerProfileRepository;
     private final EmployerProfileRepository employerProfileRepository;
+    private final TelegramJobWizardService jobWizardService;
     // Self-injected proxy so broadcast()'s call into sendBroadcast() goes through the Spring
     // proxy and actually picks up @Async — a plain `this.sendBroadcast(...)` would run inline
     // and block the admin request for the whole (rate-limited) send loop.
     private final TelegramService self;
 
-    /** Chat ids that just tapped "feedback" and whose next free-text message should be
-     *  captured as feedback rather than matched against the menu buttons. In-memory is fine —
-     *  worst case a restart mid-conversation makes the user tap the button again. */
-    private final Set<Long> awaitingFeedback = ConcurrentHashMap.newKeySet();
-
     public TelegramService(AppSettingsService appSettingsService, TelegramClient telegramClient,
                             UserRepository userRepository, TelegramFeedbackRepository feedbackRepository,
+                            TelegramAwaitingFeedbackRepository awaitingFeedbackRepository,
                             WorkerProfileRepository workerProfileRepository,
-                            EmployerProfileRepository employerProfileRepository, @Lazy TelegramService self) {
+                            EmployerProfileRepository employerProfileRepository,
+                            TelegramJobWizardService jobWizardService, @Lazy TelegramService self) {
         this.appSettingsService = appSettingsService;
         this.telegramClient = telegramClient;
         this.userRepository = userRepository;
         this.feedbackRepository = feedbackRepository;
+        this.awaitingFeedbackRepository = awaitingFeedbackRepository;
         this.workerProfileRepository = workerProfileRepository;
         this.employerProfileRepository = employerProfileRepository;
+        this.jobWizardService = jobWizardService;
         this.self = self;
     }
 
@@ -73,6 +72,10 @@ public class TelegramService {
     private static final String BTN_DOWNLOAD = "📱 Ilovani yuklab olish";
     private static final String BTN_SHARE_PHONE = "📲 Telefon raqamni ulash";
     private static final String BTN_FEEDBACK = "💬 Fikr-mulohaza / Muammo";
+    private static final String BTN_JOB_MENU = "📋 Buyurtma joylashtirish / Ish topish";
+    private static final String BTN_ROLE_EMPLOYER = "🔨 Men ish beruvchiman";
+    private static final String BTN_ROLE_WORKER = "👷 Men ishchiman";
+    private static final String BTN_BACK = "◀️ Orqaga";
 
     public record LinkedUser(User user, OtpPurpose pendingPurpose) {
     }
@@ -160,6 +163,14 @@ public class TelegramService {
             return handleContact(token, chatId, update.message().contact());
         }
 
+        // Photos only ever matter mid-wizard (the "post a job" image step) — the message
+        // carries no text in that case, so this must run before the empty-text short-circuit.
+        if (update.message().photo() != null && !update.message().photo().isEmpty()) {
+            String fileId = update.message().photo().get(update.message().photo().size() - 1).fileId();
+            jobWizardService.handlePhoto(token, chatId, fileId);
+            return Optional.empty();
+        }
+
         String text = update.message().text() == null ? "" : update.message().text().trim();
         if (text.isEmpty()) {
             return Optional.empty();
@@ -168,6 +179,13 @@ public class TelegramService {
         if (text.startsWith("/start ")) {
             String linkToken = text.substring("/start ".length()).trim();
             return userRepository.findByTelegramLinkToken(linkToken).map(user -> linkUser(user, chatId));
+        }
+
+        // A job draft in progress owns every message until it's finished or cancelled —
+        // takes priority over the fixed menu buttons below.
+        if (jobWizardService.isActive(chatId)) {
+            jobWizardService.handleText(token, chatId, text);
+            return Optional.empty();
         }
 
         if (text.equals("/start") || text.equals("/help") || text.equals("/menu")) {
@@ -183,15 +201,55 @@ public class TelegramService {
             telegramClient.sendMessage(token, chatId,
                     "Pastdagi \"📲 Telefon raqamni ulash\" tugmasini bosib, raqamingizni ulashing.");
         } else if (text.equals(BTN_FEEDBACK)) {
-            awaitingFeedback.add(chatId);
+            awaitingFeedbackRepository.save(new TelegramAwaitingFeedback(chatId));
             telegramClient.sendMessage(token, chatId,
                     "✍️ Fikr-mulohaza yoki duch kelgan muammoingizni yozib yuboring — administratorlarga yetkaziladi.");
-        } else if (awaitingFeedback.remove(chatId)) {
+        } else if (text.equals(BTN_JOB_MENU)) {
+            sendRoleMenu(token, chatId);
+        } else if (text.equals(BTN_ROLE_EMPLOYER)) {
+            startEmployerFlow(token, chatId);
+        } else if (text.equals(BTN_ROLE_WORKER)) {
+            sendWorkerSample(token, chatId);
+        } else if (text.equals(BTN_BACK)) {
+            sendMainMenu(token, chatId);
+        } else if (awaitingFeedbackRepository.existsById(chatId)) {
+            awaitingFeedbackRepository.deleteById(chatId);
             User user = userRepository.findByTelegramChatId(chatId).orElse(null);
             feedbackRepository.save(new TelegramFeedback(chatId, user, text));
             telegramClient.sendMessage(token, chatId, "✅ Rahmat! Xabaringiz qabul qilindi va tez orada ko'rib chiqiladi.");
         }
         return Optional.empty();
+    }
+
+    private void sendRoleMenu(String token, long chatId) {
+        telegramClient.sendMessageWithKeyboard(token, chatId, "Sizni nima qiziqtiradi?", List.of(
+                List.of(TelegramClient.KeyboardButton.of(BTN_ROLE_EMPLOYER)),
+                List.of(TelegramClient.KeyboardButton.of(BTN_ROLE_WORKER)),
+                List.of(TelegramClient.KeyboardButton.of(BTN_BACK))
+        ));
+    }
+
+    private void startEmployerFlow(String token, long chatId) {
+        User user = userRepository.findByTelegramChatId(chatId).orElse(null);
+        if (user == null) {
+            telegramClient.sendMessage(token, chatId,
+                    "Avval akkountingizni ulang — pastdagi \"📲 Telefon raqamni ulash\" tugmasini bosing, "
+                            + "so'ng \"" + BTN_JOB_MENU + "\" orqali qaytadan urinib ko'ring.");
+            sendMainMenu(token, chatId);
+            return;
+        }
+        jobWizardService.start(token, chatId, user);
+    }
+
+    private void sendWorkerSample(String token, long chatId) {
+        telegramClient.sendMessage(token, chatId,
+                "👷 Ishchi sifatida ilovada:\n\n"
+                        + "• Hududingiz va kasbingizga mos buyurtmalarni ko'rasiz\n"
+                        + "• Xarita orqali yaqin atrofdagi ishlarni topasiz\n"
+                        + "• Ish beruvchiga bir tugma bosib qo'ng'iroq qilasiz\n\n"
+                        + "📋 Namuna: \"Kafel yotqizish kerak — Toshkent shahri, Chilonzor — 1 500 000 so'm\"\n\n"
+                        + "Ilovani ochib qidiruvni boshlang:\n" + baseUrl + "/uploads/apk/ishchi.apk");
+        sendMainMenu(token, chatId);
     }
 
     private Optional<LinkedUser> handleContact(String token, long chatId, TelegramUpdate.Message.Contact contact) {
@@ -215,6 +273,13 @@ public class TelegramService {
 
     private LinkedUser linkUser(User user, long chatId) {
         OtpPurpose purpose = user.getTelegramLinkPurpose();
+        // A chat id must map to at most one account. Without this, re-linking the same
+        // Telegram account to a different phone number leaves it on both users, and any
+        // later findByTelegramChatId() lookup (feedback, direct messages) throws
+        // NonUniqueResultException — which is exactly what silently broke bot replies before.
+        userRepository.findByTelegramChatId(chatId)
+                .filter(existing -> !existing.getId().equals(user.getId()))
+                .ifPresent(existing -> existing.setTelegramChatId(null));
         user.setTelegramChatId(chatId);
         user.setTelegramLinkToken(null);
         user.setTelegramLinkPurpose(null);
@@ -230,11 +295,12 @@ public class TelegramService {
         return candidate.matches("^\\+998\\d{9}$") ? candidate : null;
     }
 
-    private void sendMainMenu(String token, long chatId) {
+    void sendMainMenu(String token, long chatId) {
         String welcome = "Assalomu alaykum! \"Ishchi\" botiga xush kelibsiz.\n\n"
                 + "Ish beruvchi va ishchini bog'laydigan platforma. Quyidagi tugmalardan birini tanlang:";
         telegramClient.sendMessageWithKeyboard(token, chatId, welcome, List.of(
                 List.of(TelegramClient.KeyboardButton.contactRequest(BTN_SHARE_PHONE)),
+                List.of(TelegramClient.KeyboardButton.of(BTN_JOB_MENU)),
                 List.of(TelegramClient.KeyboardButton.of(BTN_ABOUT)),
                 List.of(TelegramClient.KeyboardButton.of(BTN_CONTACT), TelegramClient.KeyboardButton.of(BTN_DOWNLOAD)),
                 List.of(TelegramClient.KeyboardButton.of(BTN_FEEDBACK))

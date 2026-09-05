@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -6,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../core/api_config.dart';
 import '../l10n/l10n_x.dart';
 import '../models/promo_banner.dart';
+import '../state/core_providers.dart';
 import 'promo_carousel.dart';
 
 class PromoBanners {
@@ -22,7 +24,7 @@ class PromoBanners {
   /// Converts admin-managed banners into carousel entries. Since the admin panel doesn't
   /// let admins pick a color/icon per banner, these rotate through the same palette used
   /// for the built-in fallback banners below.
-  static List<PromoBanner> fromApi(BuildContext context, List<ApiPromoBanner> banners) {
+  static List<PromoBanner> fromApi(BuildContext context, WidgetRef ref, List<ApiPromoBanner> banners) {
     final palettes = [_primaryGradient(context), _teal, _violet];
     return [
       for (final (i, b) in banners.indexed)
@@ -32,7 +34,12 @@ class PromoBanners {
           icon: PhosphorIcons.megaphone(PhosphorIconsStyle.fill),
           colors: palettes[i % palettes.length],
           imageUrl: b.imageUrl != null ? ApiConfig.resolveMediaUrl(b.imageUrl!) : null,
-          onTap: b.linkUrl == null || b.linkUrl!.isEmpty ? null : () => _openLink(context, b.linkUrl!),
+          onTap: b.linkUrl == null || b.linkUrl!.isEmpty
+              ? null
+              : () {
+                  ref.read(promoBannerRepositoryProvider).recordClick(b.id);
+                  _openLink(context, b.linkUrl!);
+                },
         ),
     ];
   }

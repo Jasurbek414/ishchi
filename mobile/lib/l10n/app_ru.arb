@@ -151,7 +151,7 @@
   "previewCityTashkent": "Ташкент",
 
   "adminNotAvailableTitle": "Панель администратора недоступна в мобильном приложении",
-  "adminNotAvailableMessage": "Функции администратора управляются через веб-панель: ishchi-api.ecos.uz/admin — откройте этот адрес в браузере (в том числе с телефона).",
+  "adminNotAvailableMessage": "Функции администратора управляются через веб-панель: api.uzbishchi.uz/admin — откройте этот адрес в браузере (в том числе с телефона).",
 
   "appTagline": "Платформа, соединяющая работодателей и работников",
   "appVersionLabel": "Версия {version} ({build})",
@@ -188,6 +188,7 @@
   "@callFailedError": {"placeholders": {"phone": {"type": "String"}}},
   "jobTypeLabel": "Тип работы",
   "durationLabel": "Продолжительность",
+  "workersNeededLabel": "Нужно работников",
   "startDateValue": "Дата начала: {date}",
   "@startDateValue": {"placeholders": {"date": {"type": "String"}}},
   "workersNeededValue": "Требуется работников: {count, plural, other{{count}}}",

@@ -1,6 +1,7 @@
 package uz.ishchi.app.settings.dto;
 
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
@@ -9,7 +10,7 @@ import java.math.BigDecimal;
  * {@code telegramBotToken}: {@code null} leaves it unchanged, {@code ""} clears/disables it,
  * any other value replaces it (and is validated + wired up to a webhook). The support/about
  * fields are plain optional overwrites — {@code null} leaves each unchanged. Same for the
- * paid-service toggles/fees: {@code null} leaves each unchanged.
+ * paid-service toggles/fees and the default-theme fields: {@code null} leaves each unchanged.
  */
 public record AppSettingsUpdateRequest(
         Boolean walletEnabled,
@@ -21,6 +22,10 @@ public record AppSettingsUpdateRequest(
         Boolean jobPostingFeeEnabled,
         @DecimalMin(value = "0", message = "Narx manfiy bo'lishi mumkin emas") BigDecimal jobPostingFee,
         Boolean jobViewFeeEnabled,
-        @DecimalMin(value = "0", message = "Narx manfiy bo'lishi mumkin emas") BigDecimal jobViewFee
+        @DecimalMin(value = "0", message = "Narx manfiy bo'lishi mumkin emas") BigDecimal jobViewFee,
+        @Pattern(regexp = "LIGHT|DARK|SYSTEM", message = "Mavzu rejimi LIGHT, DARK yoki SYSTEM bo'lishi kerak")
+        String defaultThemeMode,
+        @Pattern(regexp = "#[0-9A-Fa-f]{6}", message = "Rang #RRGGBB formatida bo'lishi kerak")
+        String defaultSeedColor
 ) {
 }

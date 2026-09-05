@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import { api, ApiError } from '../api/client.js';
 
 const STATUS_LABELS = {
@@ -19,7 +20,9 @@ function formatPayment(job) {
 }
 
 export default function JobsPage() {
-  const [status, setStatus] = useState('');
+  const location = useLocation();
+  // Dashboard stat cards link here with an optional pre-filter in router state.
+  const [status, setStatus] = useState(location.state?.status || '');
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
@@ -74,8 +77,7 @@ export default function JobsPage() {
       <div className="toolbar">
         <input
           type="text"
-          className="input"
-          style={{ minWidth: 220 }}
+          className="input min-w-[220px]"
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
           placeholder="Sarlavha, ish beruvchi yoki telefon bo'yicha qidirish..."
@@ -107,20 +109,20 @@ export default function JobsPage() {
               <tr key={j.id}>
                 <td>{j.id}</td>
                 <td>
-                  <div style={{ whiteSpace: 'normal' }}>{j.title}</div>
-                  <div style={{ color: 'var(--text-secondary)', fontSize: 12 }}>
+                  <div className="whitespace-normal">{j.title}</div>
+                  <div className="text-text-secondary text-[12px]">
                     {j.professionName} · {j.regionName}, {j.districtName}
                   </div>
                 </td>
                 <td>{formatPayment(j)}</td>
-                <td>{j.employerName}<br /><span style={{ color: 'var(--text-secondary)', fontSize: 12 }}>{j.employerPhone}</span></td>
+                <td>{j.employerName}<br /><span className="text-text-secondary text-[12px]">{j.employerPhone}</span></td>
                 <td>
-                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  <div className="flex gap-1.5 flex-wrap">
                     <span className="badge badge-neutral">{STATUS_LABELS[j.status] || j.status}</span>
                     {j.blocked && <span className="badge badge-danger">Bloklangan</span>}
                   </div>
                 </td>
-                <td style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <td className="flex gap-2 flex-wrap">
                   <button className="btn btn-outline" onClick={() => setDetailJob(j)}>Batafsil</button>
                   <button
                     className={j.blocked ? 'btn btn-primary' : 'btn btn-outline-danger'}
@@ -143,7 +145,7 @@ export default function JobsPage() {
       {data && data.totalPages > 1 && (
         <div className="pagination">
           <button className="btn btn-outline" disabled={page === 0} onClick={() => setPage((p) => p - 1)}>Oldingi</button>
-          <span style={{ alignSelf: 'center', fontSize: 13 }}>{page + 1} / {data.totalPages}</span>
+          <span className="self-center text-[13px]">{page + 1} / {data.totalPages}</span>
           <button className="btn btn-outline" disabled={data.last} onClick={() => setPage((p) => p + 1)}>Keyingi</button>
         </div>
       )}
@@ -158,9 +160,9 @@ export default function JobsPage() {
 function JobDetailModal({ job, onClose }) {
   return (
     <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 600, maxHeight: '85vh', overflowY: 'auto' }}>
+      <div className="modal max-w-[600px] max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <h3>{job.title}</h3>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, fontSize: 14 }}>
+        <div className="flex flex-col gap-3 text-[14px]">
           <DetailRow label="Tavsif" value={job.description} />
           <DetailRow label="Kasb" value={job.professionName} />
           <DetailRow label="Hudud" value={`${job.regionName}, ${job.districtName}`} />
@@ -182,10 +184,10 @@ function JobDetailModal({ job, onClose }) {
           )}
           {job.images?.length > 0 && (
             <div>
-              <span style={{ color: 'var(--text-secondary)', fontSize: 12 }}>Rasmlar</span>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 6 }}>
+              <span className="text-text-secondary text-[12px]">Rasmlar</span>
+              <div className="flex gap-2 flex-wrap mt-1.5">
                 {job.images.map((url) => (
-                  <img key={url} src={url} alt="" style={{ width: 90, height: 90, objectFit: 'cover', borderRadius: 8 }} />
+                  <img key={url} src={url} alt="" className="w-[90px] h-[90px] object-cover rounded-lg" />
                 ))}
               </div>
             </div>
@@ -202,7 +204,7 @@ function JobDetailModal({ job, onClose }) {
 function DetailRow({ label, value }) {
   return (
     <div>
-      <span style={{ color: 'var(--text-secondary)', fontSize: 12 }}>{label}</span>
+      <span className="text-text-secondary text-[12px]">{label}</span>
       <div>{value}</div>
     </div>
   );

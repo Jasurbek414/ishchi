@@ -2,6 +2,11 @@ package uz.ishchi.app.banner.dto;
 
 import uz.ishchi.app.banner.PromoBanner;
 import uz.ishchi.app.common.BannerAudience;
+import uz.ishchi.app.location.Region;
+
+import java.time.Instant;
+import java.util.Comparator;
+import java.util.List;
 
 public record PromoBannerResponse(
         Long id,
@@ -10,17 +15,26 @@ public record PromoBannerResponse(
         String imageUrl,
         String linkUrl,
         BannerAudience audience,
-        Long regionId,
-        String regionName,
+        List<Long> regionIds,
+        List<String> regionNames,
         Integer sortOrder,
-        boolean active
+        boolean active,
+        Instant startAt,
+        Instant endAt,
+        long viewCount,
+        long clickCount
 ) {
     public static PromoBannerResponse from(PromoBanner b) {
+        List<Region> regions = b.getRegions().stream()
+                .sorted(Comparator.comparing(Region::getName))
+                .toList();
         return new PromoBannerResponse(
                 b.getId(), b.getTitle(), b.getSubtitle(), b.getImageUrl(), b.getLinkUrl(),
-                b.getAudience(), b.getRegion() != null ? b.getRegion().getId() : null,
-                b.getRegion() != null ? b.getRegion().getName() : null,
-                b.getSortOrder(), b.isActive()
+                b.getAudience(),
+                regions.stream().map(Region::getId).toList(),
+                regions.stream().map(Region::getName).toList(),
+                b.getSortOrder(), b.isActive(), b.getStartAt(), b.getEndAt(),
+                b.getViewCount(), b.getClickCount()
         );
     }
 }

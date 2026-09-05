@@ -44,13 +44,13 @@ services:
     ports:
       - "127.0.0.1:8090:8080"
 
-  cloudflared:
+  cloudflared-landing:
     image: cloudflare/cloudflared:latest
-    container_name: ishchi-tunnel
+    container_name: ishchi-tunnel-landing
     restart: unless-stopped
     depends_on:
       - backend
-    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN:?CLOUDFLARE_TUNNEL_TOKEN is required}
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_LANDING_TUNNEL_TOKEN:?CLOUDFLARE_LANDING_TUNNEL_TOKEN is required}
 
 volumes:
   ishchi_db_data:

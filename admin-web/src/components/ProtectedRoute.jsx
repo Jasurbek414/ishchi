@@ -5,7 +5,7 @@ export default function ProtectedRoute({ children }) {
   const { status } = useAuth();
 
   if (status === 'unknown') {
-    return <div style={{ padding: 40, textAlign: 'center' }}>Yuklanmoqda...</div>;
+    return <div className="p-10 text-center">Yuklanmoqda...</div>;
   }
   if (status === 'unauthenticated') {
     return <Navigate to="/login" replace />;

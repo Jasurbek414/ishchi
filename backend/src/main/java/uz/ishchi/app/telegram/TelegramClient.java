@@ -13,6 +13,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Optional;
 
 /**
  * Thin wrapper around the Telegram Bot HTTP API. Every method takes the bot token explicitly
@@ -161,6 +162,44 @@ public class TelegramClient {
         } catch (Exception e) {
             log.error("Telegram sendMessage (keyboard) so'rovi muvaffaqiyatsiz", e);
             return false;
+        }
+    }
+
+    /** Downloads a photo the bot received, by its Telegram-issued file id — two hops: resolve
+     *  the file's storage path via getFile, then fetch the bytes from the file CDN. */
+    public Optional<byte[]> downloadPhoto(String token, String fileId) {
+        try {
+            HttpRequest getFileRequest = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.telegram.org/bot" + token + "/getFile?file_id="
+                            + URLEncoder.encode(fileId, StandardCharsets.UTF_8)))
+                    .timeout(Duration.ofSeconds(10))
+                    .GET()
+                    .build();
+            HttpResponse<String> fileResponse = http.send(getFileRequest, HttpResponse.BodyHandlers.ofString());
+            JsonNode body = mapper.readTree(fileResponse.body());
+            if (!body.path("ok").asBoolean(false)) {
+                log.error("Telegram getFile muvaffaqiyatsiz: {}", fileResponse.body());
+                return Optional.empty();
+            }
+            String filePath = body.path("result").path("file_path").asText(null);
+            if (filePath == null) {
+                return Optional.empty();
+            }
+
+            HttpRequest downloadRequest = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.telegram.org/file/bot" + token + "/" + filePath))
+                    .timeout(Duration.ofSeconds(15))
+                    .GET()
+                    .build();
+            HttpResponse<byte[]> downloadResponse = http.send(downloadRequest, HttpResponse.BodyHandlers.ofByteArray());
+            if (downloadResponse.statusCode() != 200) {
+                log.error("Telegram fayl yuklab olish muvaffaqiyatsiz: status={}", downloadResponse.statusCode());
+                return Optional.empty();
+            }
+            return Optional.of(downloadResponse.body());
+        } catch (Exception e) {
+            log.error("Telegram fayl yuklab olishda xatolik", e);
+            return Optional.empty();
         }
     }
 }

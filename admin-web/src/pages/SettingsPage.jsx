@@ -6,8 +6,120 @@ export default function SettingsPage() {
   return (
     <div>
       <h1>Sozlamalar</h1>
+      <AppThemeSettingsCard />
       <AppInfoSettingsCard />
       <BroadcastNotificationCard />
+    </div>
+  );
+}
+
+const THEME_PALETTES = [
+  { id: 'burntOrange', color: '#E8541F', label: 'Qizg\'ish-to\'q sariq' },
+  { id: 'blue', color: '#2563EB', label: "Ko'k" },
+  { id: 'green', color: '#16A34A', label: 'Yashil' },
+  { id: 'violet', color: '#7C3AED', label: 'Binafsha' },
+  { id: 'red', color: '#DC2626', label: 'Qizil' },
+  { id: 'amber', color: '#D97706', label: 'Amber' },
+  { id: 'cyan', color: '#0891B2', label: 'Moviy-yashil' },
+  { id: 'brown', color: '#92400E', label: "Jigarrang" },
+];
+
+const THEME_MODES = [
+  { value: 'LIGHT', label: "Yorug'" },
+  { value: 'DARK', label: "Qorong'i" },
+  { value: 'SYSTEM', label: "Qurilma bo'yicha (avtomatik)" },
+];
+
+function AppThemeSettingsCard() {
+  const { settings, refresh } = useAppSettings();
+  const [themeMode, setThemeMode] = useState('LIGHT');
+  const [seedColor, setSeedColor] = useState('#E8541F');
+  const [initialized, setInitialized] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
+  const [busy, setBusy] = useState(false);
+
+  if (settings && !initialized) {
+    setThemeMode(settings.defaultThemeMode ?? 'LIGHT');
+    setSeedColor(settings.defaultSeedColor ?? '#E8541F');
+    setInitialized(true);
+  }
+
+  async function save(e) {
+    e.preventDefault();
+    setBusy(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      await api.patch('/api/admin/settings', {
+        defaultThemeMode: themeMode,
+        defaultSeedColor: seedColor,
+      });
+      await refresh();
+      setSuccess('Saqlandi — yangi o\'rnatilgan ilovalarda darhol qo\'llanadi');
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : "Saqlab bo'lmadi");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="card mt-6">
+      <h3 className="mt-0 mx-0 mb-1">Mobil ilovaning standart dizayni</h3>
+      <p className="mt-0 mx-0 mb-4 text-text-secondary text-[13px]">
+        Foydalanuvchi ilovani birinchi marta ochganda ko'radigan mavzu — o'zi Profil → Mavzu orqali
+        keyinchalik o'zgartirmaguncha shu qo'llanadi. Yangi o'rnatilgan ilovalarga tegishli.
+      </p>
+      {!settings && <p className="text-[13px] text-text-secondary">Yuklanmoqda...</p>}
+      {settings && (
+        <form onSubmit={save}>
+          <div className="field">
+            <label>Yorug'lik rejimi</label>
+            <select value={themeMode} onChange={(e) => setThemeMode(e.target.value)} disabled={busy}>
+              {THEME_MODES.map((m) => (
+                <option key={m.value} value={m.value}>{m.label}</option>
+              ))}
+            </select>
+          </div>
+          <div className="field">
+            <label>Asosiy rang</label>
+            <div className="flex gap-2.5 flex-wrap mt-1">
+              {THEME_PALETTES.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  title={p.label}
+                  onClick={() => setSeedColor(p.color)}
+                  disabled={busy}
+                  className="w-9 h-9 rounded-full cursor-pointer p-0"
+                  style={{
+                    background: p.color,
+                    border: seedColor.toLowerCase() === p.color.toLowerCase()
+                      ? '3px solid var(--text-primary)'
+                      : '3px solid transparent',
+                    outline: seedColor.toLowerCase() === p.color.toLowerCase()
+                      ? '1px solid ' + p.color
+                      : 'none',
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+          <div className="field flex items-center gap-3">
+            <span className="inline-block w-11 h-11 rounded-xl border border-line" style={{ background: seedColor }} />
+            <div className="text-[13px] text-text-secondary">
+              Tanlangan rejim: <strong>{THEME_MODES.find((m) => m.value === themeMode)?.label}</strong>
+              <br />Rang kodi: <strong>{seedColor}</strong>
+            </div>
+          </div>
+          {error && <div className="error-text">{error}</div>}
+          {success && <div className="text-success text-[13px] mb-3.5">{success}</div>}
+          <button type="submit" className="btn btn-primary" disabled={busy}>
+            {busy ? 'Saqlanmoqda...' : 'Saqlash'}
+          </button>
+        </form>
+      )}
     </div>
   );
 }
@@ -53,12 +165,12 @@ function AppInfoSettingsCard() {
   }
 
   return (
-    <div className="card" style={{ marginTop: 24 }}>
-      <h3 style={{ margin: '0 0 4px' }}>Ilova haqida ma'lumotlar</h3>
-      <p style={{ margin: '0 0 16px', color: 'var(--text-secondary)', fontSize: 13 }}>
+    <div className="card mt-6">
+      <h3 className="mt-0 mx-0 mb-1">Ilova haqida ma'lumotlar</h3>
+      <p className="mt-0 mx-0 mb-4 text-text-secondary text-[13px]">
         Mobil ilovadagi "Ilova haqida" sahifasida ko'rsatiladi — o'zgartirish darhol kuchga kiradi, yangi versiya kerak emas.
       </p>
-      {!settings && <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Yuklanmoqda...</p>}
+      {!settings && <p className="text-[13px] text-text-secondary">Yuklanmoqda...</p>}
       {settings && (
         <form onSubmit={save}>
           <div className="field">
@@ -83,7 +195,7 @@ function AppInfoSettingsCard() {
             />
           </div>
           {error && <div className="error-text">{error}</div>}
-          {success && <div style={{ color: 'var(--success)', fontSize: 13, marginBottom: 14 }}>{success}</div>}
+          {success && <div className="text-success text-[13px] mb-3.5">{success}</div>}
           <button type="submit" className="btn btn-primary" disabled={busy}>
             {busy ? 'Saqlanmoqda...' : 'Saqlash'}
           </button>
@@ -136,9 +248,9 @@ function BroadcastNotificationCard() {
   }
 
   return (
-    <div className="card" style={{ marginTop: 24 }}>
-      <h3 style={{ margin: '0 0 4px' }}>Push-bildirishnoma yuborish</h3>
-      <p style={{ margin: '0 0 16px', color: 'var(--text-secondary)', fontSize: 13 }}>
+    <div className="card mt-6">
+      <h3 className="mt-0 mx-0 mb-1">Push-bildirishnoma yuborish</h3>
+      <p className="mt-0 mx-0 mb-4 text-text-secondary text-[13px]">
         Push-bildirishnoma qurilmasida ilovani o'rnatgan va ro'yxatdan o'tgan foydalanuvchilarga yuboriladi.
       </p>
       <form onSubmit={send}>
@@ -170,7 +282,7 @@ function BroadcastNotificationCard() {
           </div>
         )}
         {error && <div className="error-text">{error}</div>}
-        {success && <div style={{ color: 'var(--success)', fontSize: 13, marginBottom: 14 }}>{success}</div>}
+        {success && <div className="text-success text-[13px] mb-3.5">{success}</div>}
         <button type="submit" className="btn btn-primary" disabled={sending}>
           {sending ? 'Yuborilmoqda...' : 'Yuborish'}
         </button>

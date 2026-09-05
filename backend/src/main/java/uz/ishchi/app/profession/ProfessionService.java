@@ -4,13 +4,31 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uz.ishchi.app.common.exception.ApiException;
+import uz.ishchi.app.job.JobRepository;
+import uz.ishchi.app.profession.dto.AdminProfessionResponse;
 import uz.ishchi.app.profession.dto.ProfessionRequest;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class ProfessionService {
 
     private final ProfessionRepository professionRepository;
+    private final JobRepository jobRepository;
+
+    @Transactional(readOnly = true)
+    public List<AdminProfessionResponse> findAllForAdmin() {
+        Map<Long, Long> jobCounts = new HashMap<>();
+        for (Object[] row : jobRepository.countByProfessionGrouped()) {
+            jobCounts.put((Long) row[0], (Long) row[1]);
+        }
+        return professionRepository.findAllByOrderByCategoryAscNameAsc().stream()
+                .map(p -> AdminProfessionResponse.from(p, jobCounts.getOrDefault(p.getId(), 0L)))
+                .toList();
+    }
 
     @Transactional
     public Profession create(ProfessionRequest request) {

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'core_providers.dart';
+
 // ─── Mavzu holati ────────────────────────────────────────────────────────────
 
 class AppThemeState {
@@ -68,6 +70,22 @@ class ThemeNotifier extends Notifier<AppThemeState> {
     final colorValue = prefs.getInt(_kSeedColorKey);
     final modeStr = prefs.getString(_kThemeModeKey);
 
+    // No local choice saved yet — this is a fresh install (or first launch after an
+    // update). Use whatever default the admin has configured server-side, rather than
+    // the hardcoded fallback, so a new user's very first impression is intentional.
+    if (colorValue == null && modeStr == null) {
+      try {
+        final settings = await ref.read(appSettingsRepositoryProvider).get();
+        state = AppThemeState(
+          seedColor: _parseHexColor(settings.defaultSeedColor) ?? state.seedColor,
+          themeMode: _parseThemeMode(settings.defaultThemeMode),
+        );
+      } catch (_) {
+        // Offline on first launch — keep the built-in AppThemeState() default.
+      }
+      return;
+    }
+
     final color = colorValue != null ? Color(colorValue) : const Color(0xFFE8541F);
     final mode = switch (modeStr) {
       'light' => ThemeMode.light,
@@ -77,6 +95,18 @@ class ThemeNotifier extends Notifier<AppThemeState> {
 
     state = AppThemeState(seedColor: color, themeMode: mode);
   }
+
+  Color? _parseHexColor(String hex) {
+    final cleaned = hex.replaceFirst('#', '');
+    final value = int.tryParse(cleaned, radix: 16);
+    return value == null ? null : Color(0xFF000000 | value);
+  }
+
+  ThemeMode _parseThemeMode(String mode) => switch (mode) {
+        'DARK' => ThemeMode.dark,
+        'SYSTEM' => ThemeMode.system,
+        _ => ThemeMode.light,
+      };
 
   Future<void> setSeedColor(Color color) async {
     state = state.copyWith(seedColor: color);

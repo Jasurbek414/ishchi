@@ -53,4 +53,13 @@ public class AppSettings {
 
     @Column(name = "job_view_fee", nullable = false, precision = 12, scale = 2)
     private BigDecimal jobViewFee = BigDecimal.ZERO;
+
+    /** What a fresh mobile install shows before the user ever opens theme settings —
+     *  {@code LIGHT}, {@code DARK}, or {@code SYSTEM}. */
+    @Column(name = "default_theme_mode", nullable = false, length = 10)
+    private String defaultThemeMode = "LIGHT";
+
+    /** Hex color (e.g. {@code #E8541F}) seeding the app's default Material color scheme. */
+    @Column(name = "default_seed_color", nullable = false, length = 9)
+    private String defaultSeedColor = "#E8541F";
 }

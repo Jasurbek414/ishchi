@@ -151,7 +151,7 @@
   "previewCityTashkent": "Tashkent",
 
   "adminNotAvailableTitle": "The admin panel isn''t available in the mobile app",
-  "adminNotAvailableMessage": "Admin functions are managed through the web panel: ishchi-api.ecos.uz/admin — open this address in your browser (including from your phone).",
+  "adminNotAvailableMessage": "Admin functions are managed through the web panel: api.uzbishchi.uz/admin — open this address in your browser (including from your phone).",
 
   "appTagline": "A platform connecting employers and workers",
   "appVersionLabel": "Version {version} ({build})",
@@ -188,6 +188,7 @@
   "@callFailedError": {"placeholders": {"phone": {"type": "String"}}},
   "jobTypeLabel": "Job type",
   "durationLabel": "Duration",
+  "workersNeededLabel": "Workers needed",
   "startDateValue": "Start date: {date}",
   "@startDateValue": {"placeholders": {"date": {"type": "String"}}},
   "workersNeededValue": "Workers needed: {count, plural, other{{count}}}",

@@ -29,9 +29,11 @@ public class AdminController {
     @GetMapping("/users")
     public PageResponse<AdminUserResponse> listUsers(
             @RequestParam(required = false) Role role,
+            @RequestParam(required = false) Boolean active,
+            @RequestParam(required = false) Boolean verified,
             @RequestParam(required = false) String search,
             Pageable pageable) {
-        return PageResponse.of(adminService.listUsers(role, search, pageable));
+        return PageResponse.of(adminService.listUsers(role, active, verified, search, pageable));
     }
 
     @PatchMapping("/users/{id}/active")

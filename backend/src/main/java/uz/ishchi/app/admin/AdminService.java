@@ -45,8 +45,8 @@ public class AdminService {
     private static final ZoneId ZONE = ZoneId.of("Asia/Tashkent");
 
     @Transactional(readOnly = true)
-    public Page<AdminUserResponse> listUsers(Role role, String search, Pageable pageable) {
-        Page<User> page = userRepository.search(role, search, pageable);
+    public Page<AdminUserResponse> listUsers(Role role, Boolean active, Boolean verified, String search, Pageable pageable) {
+        Page<User> page = userRepository.search(role, active, verified, search, pageable);
         return page.map(this::toAdminUserResponse);
     }
 

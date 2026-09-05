@@ -9,6 +9,8 @@ class AppSettings {
     this.jobPostingFee = 0,
     this.jobViewFeeEnabled = false,
     this.jobViewFee = 0,
+    this.defaultThemeMode = 'LIGHT',
+    this.defaultSeedColor = '#E8541F',
   });
 
   final bool walletEnabled;
@@ -20,6 +22,8 @@ class AppSettings {
   final num jobPostingFee;
   final bool jobViewFeeEnabled;
   final num jobViewFee;
+  final String defaultThemeMode;
+  final String defaultSeedColor;
 
   factory AppSettings.fromJson(Map<String, dynamic> json) => AppSettings(
         walletEnabled: json['walletEnabled'] as bool? ?? false,
@@ -31,5 +35,7 @@ class AppSettings {
         jobPostingFee: json['jobPostingFee'] as num? ?? 0,
         jobViewFeeEnabled: json['jobViewFeeEnabled'] as bool? ?? false,
         jobViewFee: json['jobViewFee'] as num? ?? 0,
+        defaultThemeMode: json['defaultThemeMode'] as String? ?? 'LIGHT',
+        defaultSeedColor: json['defaultSeedColor'] as String? ?? '#E8541F',
       );
 }

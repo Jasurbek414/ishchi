@@ -5,6 +5,7 @@ import org.springframework.web.multipart.MultipartFile;
 import uz.ishchi.app.common.exception.ApiException;
 import uz.ishchi.app.config.UploadProperties;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -36,6 +37,14 @@ public class FileStorageService {
         return storeImage(file, "promo-banners");
     }
 
+    /** For photos downloaded from the Telegram bot API, which always serves them as JPEG. */
+    public String storeJobImageFromBytes(byte[] bytes) {
+        if (bytes == null || bytes.length == 0) {
+            throw ApiException.badRequest("Fayl bo'sh bo'lishi mumkin emas");
+        }
+        return writeToDisk(new ByteArrayInputStream(bytes), "image/jpeg", "job-images");
+    }
+
     private String storeImage(MultipartFile file, String subfolder) {
         if (file == null || file.isEmpty()) {
             throw ApiException.badRequest("Fayl bo'sh bo'lishi mumkin emas");
@@ -44,7 +53,14 @@ public class FileStorageService {
         if (contentType == null || !ALLOWED_CONTENT_TYPES.contains(contentType)) {
             throw ApiException.badRequest("Faqat JPEG, PNG yoki WEBP formatdagi rasm yuklash mumkin");
         }
+        try (InputStream in = file.getInputStream()) {
+            return writeToDisk(in, contentType, subfolder);
+        } catch (IOException e) {
+            throw new IllegalStateException("Faylni saqlab bo'lmadi", e);
+        }
+    }
 
+    private String writeToDisk(InputStream in, String contentType, String subfolder) {
         String extension = switch (contentType) {
             case "image/png" -> ".png";
             case "image/webp" -> ".webp";
@@ -57,9 +73,7 @@ public class FileStorageService {
 
         try {
             Files.createDirectories(dir);
-            try (InputStream in = file.getInputStream()) {
-                Files.copy(in, target, StandardCopyOption.REPLACE_EXISTING);
-            }
+            Files.copy(in, target, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             throw new IllegalStateException("Faylni saqlab bo'lmadi", e);
         }

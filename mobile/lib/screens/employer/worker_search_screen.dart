@@ -58,7 +58,7 @@ class _WorkerSearchScreenState extends ConsumerState<WorkerSearchScreen> {
         promoBannersProvider((audience: 'EMPLOYER', regionId: profileAsync.valueOrNull?.regionId)));
     final apiBanners = bannersAsync.valueOrNull ?? const [];
     final banners = apiBanners.isNotEmpty
-        ? PromoBanners.fromApi(context, apiBanners)
+        ? PromoBanners.fromApi(context, ref, apiBanners)
         : PromoBanners.employerFor(context);
 
     return Scaffold(

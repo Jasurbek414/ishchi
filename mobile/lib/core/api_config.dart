@@ -7,7 +7,7 @@ class ApiConfig {
   static String get baseUrl {
     const override = String.fromEnvironment('API_BASE_URL');
     if (override.isNotEmpty) return override;
-    return 'https://ishchi-api.ecos.uz/api';
+    return 'https://api.uzbishchi.uz/api';
   }
 
   /// Resolves a relative media path (e.g. "/uploads/job-images/x.png") returned by the

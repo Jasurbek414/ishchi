@@ -253,6 +253,19 @@ public class JobService {
                 .map(JobImageResponse::from).toList();
     }
 
+    /** Attaches images already stored on disk (e.g. downloaded from a Telegram message) to a
+     *  just-created job — no ownership check, since the caller (the Telegram job wizard) only
+     *  ever calls this immediately after creating the job in the same request. */
+    @Transactional
+    public List<JobImageResponse> attachImageUrls(Long jobId, List<String> urls) {
+        Job job = jobRepository.findById(jobId).orElseThrow(() -> ApiException.notFound("Buyurtma topilmadi"));
+        for (String url : urls) {
+            jobImageRepository.save(new JobImage(job, url));
+        }
+        return jobImageRepository.findByJobIdOrderByCreatedAtAsc(job.getId()).stream()
+                .map(JobImageResponse::from).toList();
+    }
+
     @Transactional
     public void removeImage(User employerUser, Long jobId, Long imageId) {
         Job job = getOwnedJob(employerUser, jobId);

@@ -2,10 +2,14 @@ package uz.ishchi.app.admin;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import uz.ishchi.app.common.TransactionType;
+import uz.ishchi.app.common.dto.PageResponse;
 import uz.ishchi.app.wallet.WalletService;
 import uz.ishchi.app.wallet.dto.AdminAdjustRequest;
+import uz.ishchi.app.wallet.dto.AdminTransactionResponse;
 import uz.ishchi.app.wallet.dto.WalletResponse;
 
 @RestController
@@ -15,6 +19,14 @@ import uz.ishchi.app.wallet.dto.WalletResponse;
 public class AdminWalletController {
 
     private final WalletService walletService;
+
+    @GetMapping("/transactions")
+    public PageResponse<AdminTransactionResponse> listTransactions(
+            @RequestParam(required = false) TransactionType type,
+            @RequestParam(required = false) String search,
+            Pageable pageable) {
+        return PageResponse.of(walletService.adminListTransactions(type, search, pageable));
+    }
 
     @GetMapping("/{userId}")
     public WalletResponse getWallet(@PathVariable Long userId) {

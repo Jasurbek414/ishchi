@@ -5,10 +5,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uz.ishchi.app.common.Role;
 import uz.ishchi.app.common.TransactionType;
 import uz.ishchi.app.common.exception.ApiException;
+import uz.ishchi.app.profile.EmployerProfileRepository;
+import uz.ishchi.app.profile.WorkerProfileRepository;
 import uz.ishchi.app.user.User;
 import uz.ishchi.app.user.UserRepository;
+import uz.ishchi.app.wallet.dto.AdminTransactionResponse;
 import uz.ishchi.app.wallet.dto.TransactionResponse;
 import uz.ishchi.app.wallet.dto.WalletResponse;
 
@@ -22,6 +26,8 @@ public class WalletService {
     private final WalletTransactionRepository walletTransactionRepository;
     private final UserRepository userRepository;
     private final PaymentGatewayService paymentGatewayService;
+    private final WorkerProfileRepository workerProfileRepository;
+    private final EmployerProfileRepository employerProfileRepository;
 
     @Transactional
     public WalletAccount createForUser(User user) {
@@ -91,6 +97,24 @@ public class WalletService {
             debit(wallet, amount.abs(), TransactionType.ADMIN_DEBIT, note);
         }
         return WalletResponse.from(wallet);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<AdminTransactionResponse> adminListTransactions(TransactionType type, String search, Pageable pageable) {
+        return walletTransactionRepository.searchForAdmin(type, search, pageable)
+                .map(tx -> AdminTransactionResponse.from(tx, resolveFullName(tx.getWallet().getUser())));
+    }
+
+    private String resolveFullName(User user) {
+        if (user.getRole() == Role.WORKER) {
+            return workerProfileRepository.findByUserId(user.getId())
+                    .map(p -> p.getFirstName() + " " + p.getLastName()).orElse(null);
+        }
+        if (user.getRole() == Role.EMPLOYER) {
+            return employerProfileRepository.findByUserId(user.getId())
+                    .map(p -> p.getFirstName() + " " + p.getLastName()).orElse(null);
+        }
+        return null;
     }
 
     private WalletAccount getOrCreate(Long userId) {

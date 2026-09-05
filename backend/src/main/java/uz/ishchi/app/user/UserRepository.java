@@ -52,6 +52,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
             left join WorkerProfile wp on wp.user = u
             left join EmployerProfile ep on ep.user = u
             where (:role is null or u.role = :role)
+            and (:active is null or u.active = :active)
+            and (:verified is null or u.verified = :verified)
             and (:search is null or :search = ''
                  or lower(u.phone) like lower(concat('%', :search, '%'))
                  or lower(concat(concat(coalesce(wp.firstName, ''), ' '), coalesce(wp.lastName, ''))) like lower(concat('%', :search, '%'))
@@ -62,10 +64,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
             left join WorkerProfile wp on wp.user = u
             left join EmployerProfile ep on ep.user = u
             where (:role is null or u.role = :role)
+            and (:active is null or u.active = :active)
+            and (:verified is null or u.verified = :verified)
             and (:search is null or :search = ''
                  or lower(u.phone) like lower(concat('%', :search, '%'))
                  or lower(concat(concat(coalesce(wp.firstName, ''), ' '), coalesce(wp.lastName, ''))) like lower(concat('%', :search, '%'))
                  or lower(concat(concat(coalesce(ep.firstName, ''), ' '), coalesce(ep.lastName, ''))) like lower(concat('%', :search, '%')))
             """)
-    Page<User> search(@Param("role") Role role, @Param("search") String search, Pageable pageable);
+    Page<User> search(@Param("role") Role role, @Param("active") Boolean active, @Param("verified") Boolean verified,
+                       @Param("search") String search, Pageable pageable);
 }

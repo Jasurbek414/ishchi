@@ -5,8 +5,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import uz.ishchi.app.admin.dto.ActiveRequest;
-import uz.ishchi.app.profession.ProfessionRepository;
 import uz.ishchi.app.profession.ProfessionService;
+import uz.ishchi.app.profession.dto.AdminProfessionResponse;
 import uz.ishchi.app.profession.dto.ProfessionRequest;
 import uz.ishchi.app.profession.dto.ProfessionResponse;
 
@@ -19,13 +19,10 @@ import java.util.List;
 public class AdminProfessionController {
 
     private final ProfessionService professionService;
-    private final ProfessionRepository professionRepository;
 
     @GetMapping
-    public List<ProfessionResponse> getAll() {
-        return professionRepository.findAllByOrderByCategoryAscNameAsc().stream()
-                .map(ProfessionResponse::from)
-                .toList();
+    public List<AdminProfessionResponse> getAll() {
+        return professionService.findAllForAdmin();
     }
 
     @PostMapping
