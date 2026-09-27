@@ -1,7 +1,6 @@
 package uz.ishchi.app.notification;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import uz.ishchi.app.common.Role;
@@ -44,8 +43,4 @@ public interface DeviceTokenRepository extends JpaRepository<DeviceToken, Long> 
     /** Batch variant for the nightly reminder, which used to query once per job it notified. */
     @Query("select dt.user.id, dt.token from DeviceToken dt where dt.user.id in :userIds")
     List<Object[]> findUserIdAndTokenByUserIdIn(@Param("userIds") Collection<Long> userIds);
-
-    @Modifying
-    @Query("delete from DeviceToken dt where dt.user.id = :userId")
-    void deleteAllByUserId(@Param("userId") Long userId);
 }
