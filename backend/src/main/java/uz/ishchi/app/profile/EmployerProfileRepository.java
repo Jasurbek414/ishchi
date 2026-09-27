@@ -1,16 +1,22 @@
 package uz.ishchi.app.profile;
 
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 public interface EmployerProfileRepository extends JpaRepository<EmployerProfile, Long> {
 
     Optional<EmployerProfile> findByUserId(Long userId);
+
+    /** Batch variant, so a list of users can be resolved in one query instead of per row. */
+    @EntityGraph(attributePaths = "user")
+    List<EmployerProfile> findByUserIdIn(Collection<Long> userIds);
 
     boolean existsByUserId(Long userId);
 

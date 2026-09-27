@@ -30,6 +30,10 @@ public class AppSettings {
     @Column(name = "telegram_bot_username")
     private String telegramBotUsername;
 
+    /** Random per-deployment value, unrelated to the bot token; travels in Telegram's header. */
+    @Column(name = "telegram_webhook_secret", length = 100)
+    private String telegramWebhookSecret;
+
     @Column(name = "support_phone", length = 20)
     private String supportPhone;
 

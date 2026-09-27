@@ -148,9 +148,9 @@ public class TelegramService {
      * self-contained menu interaction this method answers directly.
      */
     @Transactional
-    public Optional<LinkedUser> handleWebhookUpdate(String secret, TelegramUpdate update) {
+    public Optional<LinkedUser> handleWebhookUpdate(String presentedSecret, TelegramUpdate update) {
         String token = appSettingsService.getTelegramBotToken();
-        if (token == null || !AppSettingsService.webhookSecret(token).equals(secret)) {
+        if (token == null || !appSettingsService.matchesWebhookSecret(presentedSecret)) {
             return Optional.empty();
         }
         if (update.message() == null || update.message().chat() == null) {

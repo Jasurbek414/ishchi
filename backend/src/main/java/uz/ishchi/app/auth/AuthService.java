@@ -310,6 +310,9 @@ public class AuthService {
             profile.setLongitude(source.getLongitude());
             if (professionIds != null && !professionIds.isEmpty()) {
                 List<Profession> professions = professionRepository.findAllById(professionIds);
+                if (professions.size() != new HashSet<>(professionIds).size()) {
+                    throw ApiException.badRequest("Tanlangan kasblardan biri topilmadi");
+                }
                 profile.setProfessions(new HashSet<>(professions));
             }
             workerProfileRepository.save(profile);

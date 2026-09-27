@@ -3,6 +3,7 @@ package uz.ishchi.app.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -54,16 +55,18 @@ public class SecurityConfig {
                                 "/api/auth/**",
                                 "/api/regions/**",
                                 "/api/professions/**",
-                                "/api/promo-banners/**",
                                 "/api/app-settings/**",
                                 "/api/landing/**",
-                                "/api/telegram/webhook/**",
+                                "/api/telegram/webhook", "/api/telegram/webhook/**",
                                 "/uploads/**",
                                 "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html",
                                 "/actuator/health", "/actuator/info",
                                 "/admin", "/admin/**",
                                 "/", "/index.html", "/favicon.ico", "/assets/**", "/vite.svg"
                         ).permitAll()
+                        // Reading banners stays public; the view/click counters do not, because
+                        // anonymous POSTs let anyone inflate a banner's statistics at will.
+                        .requestMatchers(HttpMethod.GET, "/api/promo-banners", "/api/promo-banners/**").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )

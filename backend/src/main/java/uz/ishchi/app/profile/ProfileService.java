@@ -81,8 +81,7 @@ public class ProfileService {
             if (request.experienceYears() != null) p.setExperienceYears(request.experienceYears());
             if (request.available() != null) p.setAvailable(request.available());
             if (request.professionIds() != null) {
-                List<Profession> professions = professionRepository.findAllById(request.professionIds());
-                p.setProfessions(new HashSet<>(professions));
+                p.setProfessions(new HashSet<>(resolveProfessions(request.professionIds())));
             }
             if (request.latitude() != null) p.setLatitude(request.latitude());
             if (request.longitude() != null) p.setLongitude(request.longitude());
@@ -118,11 +117,13 @@ public class ProfileService {
         if (user.getRole() == Role.WORKER) {
             WorkerProfile p = workerProfileRepository.findByUserId(user.getId())
                     .orElseThrow(() -> ApiException.notFound("Profil topilmadi"));
+            fileStorageService.deleteAfterCommit(p.getAvatarUrl());
             p.setAvatarUrl(url);
             return toResponse(user, p);
         } else if (user.getRole() == Role.EMPLOYER) {
             EmployerProfile p = employerProfileRepository.findByUserId(user.getId())
                     .orElseThrow(() -> ApiException.notFound("Profil topilmadi"));
+            fileStorageService.deleteAfterCommit(p.getAvatarUrl());
             p.setAvatarUrl(url);
             return toResponse(user, p);
         }
@@ -167,6 +168,18 @@ public class ProfileService {
                 .orElseThrow(() -> ApiException.notFound("Ish tajribasi topilmadi"));
         workExperienceRepository.delete(e);
         return toResponse(user, p);
+    }
+
+    /**
+     * findAllById() drops ids that do not exist without a word, so a typo used to be saved as
+     * "no professions" instead of being rejected the way every other unknown id is.
+     */
+    private List<Profession> resolveProfessions(List<Long> professionIds) {
+        List<Profession> professions = professionRepository.findAllById(professionIds);
+        if (professions.size() != new HashSet<>(professionIds).size()) {
+            throw ApiException.badRequest("Tanlangan kasblardan biri topilmadi");
+        }
+        return professions;
     }
 
     private void validateExperienceDates(java.time.LocalDate start, java.time.LocalDate end) {

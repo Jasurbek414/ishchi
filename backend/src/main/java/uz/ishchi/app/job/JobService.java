@@ -238,7 +238,12 @@ public class JobService {
 
     @Transactional
     public void delete(User employerUser, Long jobId) {
-        Job job = getOwnedJob(employerUser, jobId);
+        // Deleting is allowed even when blocked: taking your own listing down is never a way
+        // around moderation.
+        Job job = getOwnedJobIgnoringBlock(employerUser, jobId);
+        // The rows cascade, but the files on disk do not — they used to be orphaned forever.
+        jobImageRepository.findByJobIdOrderByCreatedAtAsc(job.getId())
+                .forEach(image -> fileStorageService.deleteAfterCommit(image.getUrl()));
         jobRepository.delete(job);
     }
 
@@ -271,7 +276,17 @@ public class JobService {
         Job job = getOwnedJob(employerUser, jobId);
         JobImage image = jobImageRepository.findByIdAndJobId(imageId, job.getId())
                 .orElseThrow(() -> ApiException.notFound("Rasm topilmadi"));
+        fileStorageService.deleteAfterCommit(image.getUrl());
         jobImageRepository.delete(image);
+    }
+
+    private Job getOwnedJobIgnoringBlock(User employerUser, Long jobId) {
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> ApiException.notFound("Buyurtma topilmadi"));
+        if (!job.getEmployer().getUser().getId().equals(employerUser.getId())) {
+            throw ApiException.forbidden("Bu buyurtma sizga tegishli emas");
+        }
+        return job;
     }
 
     private Job getOwnedJob(User employerUser, Long jobId) {
@@ -279,6 +294,11 @@ public class JobService {
                 .orElseThrow(() -> ApiException.notFound("Buyurtma topilmadi"));
         if (!job.getEmployer().getUser().getId().equals(employerUser.getId())) {
             throw ApiException.forbidden("Bu buyurtma sizga tegishli emas");
+        }
+        // An admin block is a moderation decision, so the owner must not be able to edit, reopen
+        // or re-publish their way around it. Reads elsewhere already hide blocked jobs.
+        if (job.isBlocked()) {
+            throw ApiException.forbidden("Buyurtma administrator tomonidan bloklangan");
         }
         return job;
     }

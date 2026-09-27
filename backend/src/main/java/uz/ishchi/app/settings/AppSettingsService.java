@@ -1,9 +1,12 @@
 package uz.ishchi.app.settings;
 
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uz.ishchi.app.common.TelegramTokenCipher;
 import uz.ishchi.app.common.exception.ApiException;
 import uz.ishchi.app.settings.dto.AppSettingsResponse;
 import uz.ishchi.app.settings.dto.AppSettingsUpdateRequest;
@@ -11,15 +14,20 @@ import uz.ishchi.app.telegram.TelegramClient;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.HexFormat;
 
 @Service
 @RequiredArgsConstructor
 public class AppSettingsService {
 
+    private static final Logger log = LoggerFactory.getLogger(AppSettingsService.class);
+
     private final AppSettingsRepository appSettingsRepository;
     private final TelegramClient telegramClient;
+    private final TelegramTokenCipher telegramTokenCipher;
+
+    private static final SecureRandom RANDOM = new SecureRandom();
 
     @Value("${app.base-url}")
     private String baseUrl;
@@ -49,19 +57,21 @@ public class AppSettingsService {
         if (telegramBotToken != null) {
             if (telegramBotToken.isBlank()) {
                 if (settings.getTelegramBotToken() != null) {
-                    telegramClient.deleteWebhook(settings.getTelegramBotToken());
+                    telegramClient.deleteWebhook(telegramTokenCipher.decrypt(settings.getTelegramBotToken()));
                 }
                 settings.setTelegramBotToken(null);
                 settings.setTelegramBotUsername(null);
+                settings.setTelegramWebhookSecret(null);
             } else {
                 TelegramClient.BotIdentity identity = telegramClient.getMe(telegramBotToken);
                 if (!identity.ok()) {
                     throw ApiException.badRequest("Telegram bot tokeni noto'g'ri yoki botga ulanib bo'lmadi");
                 }
-                settings.setTelegramBotToken(telegramBotToken);
+                settings.setTelegramBotToken(telegramTokenCipher.encrypt(telegramBotToken));
                 settings.setTelegramBotUsername(identity.username());
-                String webhookUrl = baseUrl + "/api/telegram/webhook/" + webhookSecret(telegramBotToken);
-                boolean webhookOk = telegramClient.setWebhook(telegramBotToken, webhookUrl, webhookSecret(telegramBotToken));
+                String secret = generateWebhookSecret();
+                settings.setTelegramWebhookSecret(secret);
+                boolean webhookOk = telegramClient.setWebhook(telegramBotToken, webhookUrl(), secret);
                 if (!webhookOk) {
                     throw ApiException.badRequest("Bot tokeni to'g'ri, lekin webhook o'rnatilmadi. Qaytadan urinib ko'ring");
                 }
@@ -72,7 +82,7 @@ public class AppSettingsService {
 
     /** Raw token for internal use only (sending messages) — never exposed via the API response. */
     public String getTelegramBotToken() {
-        return load().getTelegramBotToken();
+        return telegramTokenCipher.decrypt(load().getTelegramBotToken());
     }
 
     public String getTelegramBotUsername() {
@@ -89,14 +99,49 @@ public class AppSettingsService {
         return load();
     }
 
-    public static String webhookSecret(String token) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hashed = digest.digest(token.getBytes(StandardCharsets.UTF_8));
-            return HexFormat.of().formatHex(hashed).substring(0, 32);
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException(e);
+    /** The one URL Telegram posts to; the secret no longer rides in the path. */
+    public String webhookUrl() {
+        return baseUrl + "/api/telegram/webhook";
+    }
+
+    /**
+     * Checks the secret Telegram echoes back in {@code X-Telegram-Bot-Api-Secret-Token}. Compared
+     * in constant time so a mismatch cannot be narrowed down by timing.
+     */
+    public boolean matchesWebhookSecret(String presented) {
+        String expected = load().getTelegramWebhookSecret();
+        if (expected == null || presented == null) {
+            return false;
         }
+        return MessageDigest.isEqual(expected.getBytes(StandardCharsets.UTF_8),
+                presented.getBytes(StandardCharsets.UTF_8));
+    }
+
+    /**
+     * Re-registers the webhook with the URL and secret this deployment expects. Called on startup
+     * so an instance that was configured before the secret moved out of the URL heals itself
+     * instead of silently receiving nothing.
+     */
+    @Transactional
+    public void ensureWebhookRegistered() {
+        AppSettings settings = load();
+        String token = telegramTokenCipher.decrypt(settings.getTelegramBotToken());
+        if (token == null || token.isBlank()) {
+            return;
+        }
+        if (settings.getTelegramWebhookSecret() == null) {
+            settings.setTelegramWebhookSecret(generateWebhookSecret());
+        }
+        if (!telegramClient.setWebhook(token, webhookUrl(), settings.getTelegramWebhookSecret())) {
+            log.warn("Telegram webhook'ni o'rnatib bo'lmadi ({}) — admin panelda bot tokenini qayta saqlang",
+                    webhookUrl());
+        }
+    }
+
+    private String generateWebhookSecret() {
+        byte[] bytes = new byte[24];
+        RANDOM.nextBytes(bytes);
+        return HexFormat.of().formatHex(bytes);
     }
 
     private AppSettings load() {
