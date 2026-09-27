@@ -51,6 +51,13 @@ public class EmployerProfile {
     private Double longitude;
 
     @UpdateTimestamp
+    /** Denormalised from the ratings table, same as on the worker side. */
+    @Column(name = "rating_average", precision = 3, scale = 2)
+    private Double ratingAverage;
+
+    @Column(name = "rating_count", nullable = false)
+    private int ratingCount = 0;
+
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 }

@@ -24,6 +24,7 @@ public record JobUpdateRequest(
         @Min(1) Integer durationValue,
         DurationUnit durationUnit,
         Double latitude,
-        Double longitude
+        Double longitude,
+        Boolean urgent
 ) {
 }

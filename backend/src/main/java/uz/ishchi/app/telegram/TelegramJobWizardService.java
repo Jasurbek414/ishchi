@@ -288,7 +288,7 @@ public class TelegramJobWizardService {
                 draft.getTitle(), draft.getDescription(), draft.getProfession().getId(),
                 draft.getRegion().getId(), draft.getDistrict().getId(), draft.getPayment(),
                 draft.getPaymentType(), draft.getJobType(), draft.getWorkersNeeded(),
-                null, null, null, null, null);
+                null, null, null, null, null, null);
         try {
             // Published in its own transaction, so a rejection (an insufficient balance, say) does
             // not poison this one and leave the draft unusable — the user can simply confirm again.

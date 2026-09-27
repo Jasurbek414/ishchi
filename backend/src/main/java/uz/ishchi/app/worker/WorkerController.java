@@ -29,9 +29,10 @@ public class WorkerController {
             @RequestParam(required = false) Integer minExperience,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) WorkPreference workPreference,
+            @RequestParam(required = false) Boolean availableToday,
             Pageable pageable
     ) {
-        return PageResponse.of(workerService.search(regionId, districtId, professionId, minExperience, search, workPreference, pageable));
+        return PageResponse.of(workerService.search(regionId, districtId, professionId, minExperience, search, workPreference, availableToday, pageable));
     }
 
     @GetMapping("/map")

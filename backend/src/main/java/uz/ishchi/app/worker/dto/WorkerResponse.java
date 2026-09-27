@@ -25,6 +25,13 @@ public record WorkerResponse(
         Double latitude,
         Double longitude,
         WorkPreference workPreference,
+        /** Denormalised on the profile, so a list does not aggregate ratings per row. */
+        /** Set when the worker said they can work today; null or past means they did not. */
+        java.time.Instant availableUntil,
+        Double ratingAverage,
+        Integer ratingCount,
+        /** Checked by an admin — the one trust signal the platform itself vouches for. */
+        boolean verified,
         boolean hasDriverLicense,
         String driverLicenseCategories,
         List<WorkExperienceResponse> experiences
@@ -75,6 +82,10 @@ public record WorkerResponse(
                 latitude,
                 longitude,
                 p.getWorkPreference(),
+                p.getAvailableUntil(),
+                p.getRatingAverage(),
+                p.getRatingCount(),
+                p.isVerified(),
                 p.isHasDriverLicense(),
                 p.getDriverLicenseCategories(),
                 experiences

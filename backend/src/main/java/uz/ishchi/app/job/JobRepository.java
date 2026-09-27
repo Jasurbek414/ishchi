@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import uz.ishchi.app.common.JobStatus;
 
 import java.time.Instant;
@@ -44,4 +45,31 @@ public interface JobRepository extends JpaRepository<Job, Long>, JpaSpecificatio
     List<Object[]> countByProfessionGrouped();
 
     long countByProfessionId(Long professionId);
+
+    long countByEmployerId(Long employerId);
+
+    long countByEmployerIdAndStatus(Long employerId, uz.ishchi.app.common.JobStatus status);
+
+    /**
+     * Payment percentiles for comparable postings. Uses percentile_cont rather than loading the rows
+     * so the whole answer is one indexed aggregate, and only counts postings of the same payment
+     * type — a daily rate and a fixed price for the whole job are not comparable numbers.
+     */
+    @Query(value = """
+            select count(*),
+                   min(payment),
+                   percentile_cont(0.25) within group (order by payment),
+                   percentile_cont(0.50) within group (order by payment),
+                   percentile_cont(0.75) within group (order by payment),
+                   max(payment)
+              from jobs
+             where profession_id = :professionId
+               and (:regionId is null or region_id = :regionId)
+               and payment_type = :paymentType
+               and blocked = false
+               and created_at > now() - interval '180 days'
+            """, nativeQuery = true)
+    Object[] paymentPercentiles(@Param("professionId") Long professionId,
+                                 @Param("regionId") Long regionId,
+                                 @Param("paymentType") String paymentType);
 }

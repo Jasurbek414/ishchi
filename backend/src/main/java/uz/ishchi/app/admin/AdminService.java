@@ -17,6 +17,7 @@ import uz.ishchi.app.common.FileStorageService;
 import uz.ishchi.app.job.JobImageRepository;
 import uz.ishchi.app.job.JobRepository;
 import uz.ishchi.app.profile.EmployerProfileRepository;
+import uz.ishchi.app.profile.WorkerProfile;
 import uz.ishchi.app.profile.WorkerProfileRepository;
 import uz.ishchi.app.profile.ProfileService;
 import uz.ishchi.app.profile.dto.ProfileResponse;
@@ -151,6 +152,21 @@ public class AdminService {
         jobImageRepository.findByJobIdOrderByCreatedAtAsc(job.getId())
                 .forEach(image -> fileStorageService.deleteAfterCommit(image.getUrl()));
         jobRepository.delete(job);
+    }
+
+    /**
+     * Marks a worker as checked by a human. In a market with no trust infrastructure this is the one
+     * signal the platform itself can vouch for, so it is deliberately not derivable from activity.
+     */
+    @Transactional
+    public AdminUserResponse setWorkerVerified(Long userId, boolean verified) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> ApiException.notFound("Foydalanuvchi topilmadi"));
+        WorkerProfile profile = workerProfileRepository.findByUserId(userId)
+                .orElseThrow(() -> ApiException.notFound("Ishchi profili topilmadi"));
+        profile.setVerified(verified);
+        profile.setVerifiedAt(verified ? Instant.now() : null);
+        return toAdminUserResponse(user);
     }
 
     @Transactional(readOnly = true)

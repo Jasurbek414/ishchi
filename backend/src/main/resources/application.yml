@@ -60,7 +60,15 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        # prometheus is included so request, error and connection-pool metrics can be scraped. It is
+        # not in the public allow-list in SecurityConfig, so it needs an admin token from outside.
+        include: health,info,prometheus
+  metrics:
+    tags:
+      application: ishchi
+  observations:
+    key-values:
+      application: ishchi
 
 logging:
   level:

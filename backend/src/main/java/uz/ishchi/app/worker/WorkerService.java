@@ -27,14 +27,15 @@ public class WorkerService {
     @Transactional(readOnly = true)
     public Page<WorkerResponse> search(Long regionId, Long districtId, Long professionId,
                                         Integer minExperience, String keyword, WorkPreference workPreference,
-                                        Pageable pageable) {
+                                        Boolean availableToday, Pageable pageable) {
         Specification<WorkerProfile> spec = Specification.where(WorkerSpecifications.activeUser())
                 .and(WorkerSpecifications.regionId(regionId))
                 .and(WorkerSpecifications.districtId(districtId))
                 .and(WorkerSpecifications.professionId(professionId))
                 .and(WorkerSpecifications.minExperience(minExperience))
                 .and(WorkerSpecifications.workPreference(workPreference))
-                .and(WorkerSpecifications.search(keyword));
+                .and(WorkerSpecifications.search(keyword))
+                .and(WorkerSpecifications.availableToday(availableToday));
 
         Pageable effective = pageable.getSort().isSorted() ? pageable
                 : org.springframework.data.domain.PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(),

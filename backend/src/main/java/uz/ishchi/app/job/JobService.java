@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import uz.ishchi.app.common.FileStorageService;
+import uz.ishchi.app.common.ApplicationStatus;
 import uz.ishchi.app.common.JobStatus;
 import uz.ishchi.app.common.JobType;
 import uz.ishchi.app.common.Role;
@@ -24,7 +25,9 @@ import uz.ishchi.app.profile.EmployerProfile;
 import uz.ishchi.app.profile.EmployerProfileRepository;
 import uz.ishchi.app.job.dto.JobCreateRequest;
 import uz.ishchi.app.job.dto.JobImageResponse;
+import uz.ishchi.app.common.PaymentType;
 import uz.ishchi.app.job.dto.JobResponse;
+import uz.ishchi.app.job.dto.PriceGuidanceResponse;
 import uz.ishchi.app.job.dto.JobUpdateRequest;
 import uz.ishchi.app.notification.DeviceTokenRepository;
 import uz.ishchi.app.notification.NotificationService;
@@ -56,12 +59,15 @@ public class JobService {
     private final NotificationService notificationService;
     private final AppSettingsService appSettingsService;
     private final WalletService walletService;
+    private final JobApplicationService applicationService;
+    private final JobApplicationRepository applicationRepository;
+    private final uz.ishchi.app.search.SavedSearchService savedSearchService;
 
     @Transactional(readOnly = true)
     public Page<JobResponse> search(User currentUser, Long regionId, Long districtId, Long professionId, JobType jobType,
                                      BigDecimal minPayment, BigDecimal maxPayment, JobStatus status,
                                      String keyword, String sort, Long nearRegionId, Long nearDistrictId,
-                                     Pageable pageable) {
+                                     Boolean urgent, Pageable pageable) {
         Specification<Job> spec = Specification.where(JobSpecifications.notBlocked())
                 .and(JobSpecifications.regionId(regionId))
                 .and(JobSpecifications.districtId(districtId))
@@ -70,7 +76,8 @@ public class JobService {
                 .and(JobSpecifications.minPayment(minPayment))
                 .and(JobSpecifications.maxPayment(maxPayment))
                 .and(JobSpecifications.status(status != null ? status : JobStatus.ACTIVE))
-                .and(JobSpecifications.search(keyword));
+                .and(JobSpecifications.search(keyword))
+                .and(JobSpecifications.urgent(urgent));
 
         Pageable effectivePageable = pageable;
         if ("nearest".equalsIgnoreCase(sort) && (nearRegionId != null || nearDistrictId != null)) {
@@ -79,7 +86,10 @@ public class JobService {
         } else if ("highest_pay".equalsIgnoreCase(sort)) {
             effectivePageable = withSort(pageable, Sort.by(Sort.Direction.DESC, "payment"));
         } else {
-            effectivePageable = withSort(pageable, Sort.by(Sort.Direction.DESC, "createdAt"));
+            // Urgent first, then newest: a same-day job losing its place to something posted an hour
+            // later is exactly the outcome the flag exists to prevent.
+            effectivePageable = withSort(pageable,
+                    Sort.by(Sort.Order.desc("urgent"), Sort.Order.desc("createdAt")));
         }
 
         Page<Job> page = jobRepository.findAll(spec, effectivePageable);
@@ -87,12 +97,16 @@ public class JobService {
     }
 
     @Transactional(readOnly = true)
-    public List<JobResponse> mapSearch(User currentUser, Long regionId, Long professionId) {
+    public List<JobResponse> mapSearch(User currentUser, Long regionId, Long professionId,
+                                        Double latitude, Double longitude, Double radiusDegrees) {
         Specification<Job> spec = Specification.where(JobSpecifications.notBlocked())
                 .and(JobSpecifications.status(JobStatus.ACTIVE))
                 .and(JobSpecifications.hasCoordinates())
                 .and(JobSpecifications.regionId(regionId))
-                .and(JobSpecifications.professionId(professionId));
+                .and(JobSpecifications.professionId(professionId))
+                // Without this the map answered with the newest 500 jobs whatever was on screen, so
+                // panning somewhere else showed the same pins.
+                .and(JobSpecifications.withinBox(latitude, longitude, radiusDegrees));
         Pageable limit = org.springframework.data.domain.PageRequest.of(0, 500,
                 Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Job> page = jobRepository.findAll(spec, limit);
@@ -106,14 +120,24 @@ public class JobService {
      * stays free) — checked in one batch query per page rather than per job.
      */
     private Page<JobResponse> mapWithUnlockState(Page<Job> page, User currentUser) {
-        if (!isJobViewFeeActive(currentUser)) {
-            return page.map(JobResponse::from);
-        }
         List<Long> jobIds = page.getContent().stream().map(Job::getId).toList();
+
+        // Two batch queries for the whole page: how many workers responded to each job, and — for a
+        // worker — whether they responded themselves, so the list can say "javob berilgan".
+        Map<Long, Long> applicationCounts = applicationService.countsFor(jobIds);
+        Map<Long, ApplicationStatus> myStatuses = currentUser.getRole() == Role.WORKER
+                ? applicationService.statusesFor(currentUser.getId(), jobIds)
+                : Map.of();
+
+        if (!isJobViewFeeActive(currentUser)) {
+            return page.map(job -> JobResponse.from(job)
+                    .withApplications(applicationCounts.get(job.getId()), myStatuses.get(job.getId())));
+        }
         Set<Long> unlockedIds = jobIds.isEmpty()
                 ? Set.of()
                 : jobUnlockRepository.findUnlockedJobIds(currentUser.getId(), jobIds);
-        return page.map(job -> JobResponse.from(job, unlockedIds.contains(job.getId())));
+        return page.map(job -> JobResponse.from(job, unlockedIds.contains(job.getId()))
+                .withApplications(applicationCounts.get(job.getId()), myStatuses.get(job.getId())));
     }
 
     private boolean isJobViewFeeActive(User currentUser) {
@@ -121,6 +145,27 @@ public class JobService {
         AppSettings settings = appSettingsService.getRaw();
         return settings.isWalletEnabled() && settings.isJobViewFeeEnabled()
                 && settings.getJobViewFee().compareTo(BigDecimal.ZERO) > 0;
+    }
+
+    /**
+     * What comparable postings pay. Returns an empty answer rather than a misleading one when there
+     * is not enough history to say anything — a median drawn from two postings is noise.
+     */
+    @Transactional(readOnly = true)
+    public PriceGuidanceResponse priceGuidance(Long professionId, Long regionId, PaymentType paymentType) {
+        Object[] raw = jobRepository.paymentPercentiles(professionId, regionId, paymentType.name());
+        Object[] row = raw.length == 1 && raw[0] instanceof Object[] inner ? inner : raw;
+        long sampleSize = row[0] == null ? 0 : ((Number) row[0]).longValue();
+        if (sampleSize < MIN_PRICE_GUIDANCE_SAMPLE) {
+            return PriceGuidanceResponse.empty(professionId, regionId);
+        }
+        return new PriceGuidanceResponse(professionId, regionId, sampleSize,
+                money(row[1]), money(row[2]), money(row[3]), money(row[4]), money(row[5]));
+    }
+
+    private static BigDecimal money(Object value) {
+        if (value == null) return null;
+        return BigDecimal.valueOf(((Number) value).doubleValue()).setScale(0, java.math.RoundingMode.HALF_UP);
     }
 
     @Transactional(readOnly = true)
@@ -142,7 +187,20 @@ public class JobService {
         }
         boolean unlocked = !isJobViewFeeActive(currentUser)
                 || jobUnlockRepository.existsByJobIdAndWorkerId(job.getId(), currentUser.getId());
-        return JobResponse.from(job, unlocked);
+
+        ApplicationStatus myStatus = currentUser.getRole() == Role.WORKER
+                ? applicationService.statusesFor(currentUser.getId(), List.of(job.getId())).get(job.getId())
+                : null;
+        EmployerProfile employer = job.getEmployer();
+        return JobResponse.from(job, unlocked)
+                .withApplications(applicationRepository.countByJobId(job.getId()), myStatus)
+                // Only on the single-job view: a worker deciding whether a posting is worth a call
+                // had nothing at all to go on before this.
+                .withEmployerStats(
+                        jobRepository.countByEmployerId(employer.getId()),
+                        jobRepository.countByEmployerIdAndStatus(employer.getId(), JobStatus.COMPLETED),
+                        employer.getRatingAverage(),
+                        employer.getRatingCount());
     }
 
     /**
@@ -186,6 +244,7 @@ public class JobService {
                 request.regionId(), request.districtId(), request.payment(), request.paymentType(),
                 request.jobType(), request.workersNeeded(), request.startDate(),
                 request.durationValue(), request.durationUnit(), request.latitude(), request.longitude());
+        job.setUrgent(Boolean.TRUE.equals(request.urgent()));
         job.setStatus(JobStatus.ACTIVE);
         recomputeExpiry(job);
         jobRepository.save(job);
@@ -199,6 +258,51 @@ public class JobService {
         notificationService.send(tokens, "Yangi mos buyurtma",
                 job.getTitle() + " — " + job.getRegion().getName(),
                 Map.of("type", "job", "jobId", String.valueOf(job.getId())));
+        // Separate from the profession/region sweep above: a saved search is what the worker asked
+        // for explicitly, so it is worth telling them about even where the broad match would not.
+        savedSearchService.notifyMatching(job);
+    }
+
+    /**
+     * Posts the same job again as a fresh ACTIVE listing. Charges the posting fee like any new job —
+     * it is a new job — and deliberately does not carry over images or responses, which belong to
+     * the round that already happened.
+     */
+    @Transactional
+    public JobResponse repost(User employerUser, Long jobId) {
+        Job source = getOwnedJobIgnoringBlock(employerUser, jobId);
+        EmployerProfile employer = source.getEmployer();
+
+        AppSettings settings = appSettingsService.getRaw();
+        if (settings.isWalletEnabled() && settings.isJobPostingFeeEnabled()
+                && settings.getJobPostingFee().compareTo(BigDecimal.ZERO) > 0) {
+            walletService.charge(employerUser, settings.getJobPostingFee(), TransactionType.JOB_POSTING_FEE,
+                    "Buyurtmani qayta joylashtirish: " + source.getTitle());
+        }
+
+        Job copy = new Job();
+        copy.setEmployer(employer);
+        copy.setTitle(source.getTitle());
+        copy.setDescription(source.getDescription());
+        copy.setProfession(source.getProfession());
+        copy.setRegion(source.getRegion());
+        copy.setDistrict(source.getDistrict());
+        copy.setPayment(source.getPayment());
+        copy.setPaymentType(source.getPaymentType());
+        copy.setJobType(source.getJobType());
+        copy.setWorkersNeeded(source.getWorkersNeeded());
+        copy.setDurationValue(source.getDurationValue());
+        copy.setDurationUnit(source.getDurationUnit());
+        copy.setLatitude(source.getLatitude());
+        copy.setLongitude(source.getLongitude());
+        copy.setUrgent(source.isUrgent());
+        // Starts today rather than repeating a date that has already passed.
+        copy.setStartDate(java.time.LocalDate.now(ASIA_TASHKENT));
+        copy.setStatus(JobStatus.ACTIVE);
+        recomputeExpiry(copy);
+        jobRepository.save(copy);
+        notifyMatchingWorkers(copy);
+        return JobResponse.from(copy);
     }
 
     @Transactional
@@ -219,6 +323,9 @@ public class JobService {
                 request.durationUnit() != null ? request.durationUnit() : job.getDurationUnit(),
                 request.latitude() != null ? request.latitude() : job.getLatitude(),
                 request.longitude() != null ? request.longitude() : job.getLongitude());
+        if (request.urgent() != null) {
+            job.setUrgent(request.urgent());
+        }
         recomputeExpiry(job);
         return JobResponse.from(job);
     }
@@ -333,6 +440,9 @@ public class JobService {
         job.setLatitude(latitude);
         job.setLongitude(longitude);
     }
+
+    /** Below this, a median says more about chance than about the market. */
+    private static final int MIN_PRICE_GUIDANCE_SAMPLE = 5;
 
     private static final java.time.ZoneId ASIA_TASHKENT = java.time.ZoneId.of("Asia/Tashkent");
 

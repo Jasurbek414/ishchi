@@ -41,6 +41,12 @@ public final class WorkerSpecifications {
         return (root, query, cb) -> workPreference == null ? null : cb.equal(root.get("workPreference"), workPreference);
     }
 
+    /** Workers who said they can work today, and whose "today" has not expired. */
+    public static Specification<WorkerProfile> availableToday(Boolean availableToday) {
+        return (root, query, cb) -> availableToday == null || !availableToday ? null
+                : cb.greaterThan(root.get("availableUntil"), cb.literal(java.time.Instant.now()));
+    }
+
     public static Specification<WorkerProfile> hasCoordinates() {
         return (root, query, cb) -> cb.and(
                 cb.isNotNull(root.get("latitude")),

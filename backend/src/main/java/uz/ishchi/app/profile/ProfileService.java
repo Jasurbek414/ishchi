@@ -88,6 +88,9 @@ public class ProfileService {
             if (request.workPreference() != null) p.setWorkPreference(request.workPreference());
             if (request.hasDriverLicense() != null) p.setHasDriverLicense(request.hasDriverLicense());
             if (request.driverLicenseCategories() != null) p.setDriverLicenseCategories(request.driverLicenseCategories());
+            if (request.availableToday() != null) {
+                p.setAvailableUntil(request.availableToday() ? endOfTodayInTashkent() : null);
+            }
             return toResponse(user, p);
         } else if (user.getRole() == Role.EMPLOYER) {
             EmployerProfile p = employerProfileRepository.findByUserId(user.getId())
@@ -171,6 +174,15 @@ public class ProfileService {
     }
 
     /**
+     * Expiry for "I can work today" — midnight in Tashkent, since that is the day the worker means,
+     * not 24 hours from whenever they happened to tap it.
+     */
+    private static java.time.Instant endOfTodayInTashkent() {
+        java.time.ZoneId zone = java.time.ZoneId.of("Asia/Tashkent");
+        return java.time.LocalDate.now(zone).plusDays(1).atStartOfDay(zone).toInstant();
+    }
+
+    /**
      * findAllById() drops ids that do not exist without a word, so a typo used to be saved as
      * "no professions" instead of being rejected the way every other unknown id is.
      */
@@ -209,7 +221,8 @@ public class ProfileService {
                 p.getAbout(), p.getExperienceYears(), p.isAvailable(),
                 professions.stream().map(ProfessionResponse::from).toList(),
                 p.getLatitude(), p.getLongitude(), p.getWorkPreference(),
-                p.isHasDriverLicense(), p.getDriverLicenseCategories(), experiences
+                p.isHasDriverLicense(), p.getDriverLicenseCategories(), experiences,
+                p.getAvailableUntil(), p.getRatingAverage(), p.getRatingCount(), p.isVerified()
         );
     }
 
@@ -221,7 +234,8 @@ public class ProfileService {
                 p.getDistrict().getId(), p.getDistrict().getName(),
                 p.getAbout(), null, null, null,
                 p.getLatitude(), p.getLongitude(), null,
-                null, null, null
+                null, null, null,
+                null, p.getRatingAverage(), p.getRatingCount(), false
         );
     }
 }

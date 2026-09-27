@@ -20,6 +20,11 @@ public record ProfileUpdateRequest(
         Double longitude,
         WorkPreference workPreference,
         Boolean hasDriverLicense,
-        @Size(max = 50) String driverLicenseCategories
+        @Size(max = 50) String driverLicenseCategories,
+        /**
+         * "Bugun bo'shman". True sets availability to expire at the end of today in Tashkent; false
+         * clears it. Absent leaves it alone, so an unrelated profile edit does not reset it.
+         */
+        Boolean availableToday
 ) {
 }

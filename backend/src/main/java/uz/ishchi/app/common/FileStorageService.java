@@ -9,7 +9,12 @@ import org.springframework.web.multipart.MultipartFile;
 import uz.ishchi.app.common.exception.ApiException;
 import uz.ishchi.app.config.UploadProperties;
 
+import javax.imageio.ImageIO;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -26,6 +31,12 @@ public class FileStorageService {
     private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of("image/jpeg", "image/png", "image/webp");
 
     private static final String URL_PREFIX = "/uploads/";
+
+    /** Below this there is nothing worth gaining, so the bytes are stored as they arrived. */
+    private static final int COMPRESS_THRESHOLD_BYTES = 500 * 1024;
+
+    /** Enough to fill any phone screen, including at 3x density. */
+    private static final int MAX_DIMENSION_PX = 1600;
 
     private final Path uploadRoot;
 
@@ -56,7 +67,8 @@ public class FileStorageService {
         if (actualType == null) {
             throw ApiException.badRequest("Yuborilgan fayl rasm emas");
         }
-        return writeToDisk(new ByteArrayInputStream(bytes), actualType, "job-images");
+        byte[] stored = "image/jpeg".equals(actualType) ? downscaleIfLarge(bytes, actualType) : bytes;
+        return writeToDisk(new ByteArrayInputStream(stored), actualType, "job-images");
     }
 
     private String storeImage(MultipartFile file, String subfolder) {
@@ -80,7 +92,10 @@ public class FileStorageService {
         if (actualType == null) {
             throw ApiException.badRequest("Fayl haqiqiy rasm emas (JPEG, PNG yoki WEBP kutilgan)");
         }
-        return writeToDisk(new ByteArrayInputStream(bytes), actualType, subfolder);
+        // Only photographs are re-encoded. A PNG or WEBP may be carrying transparency that turning it
+        // into a JPEG would flatten, and those are rarely the multi-megabyte case anyway.
+        byte[] stored = "image/jpeg".equals(actualType) ? downscaleIfLarge(bytes, actualType) : bytes;
+        return writeToDisk(new ByteArrayInputStream(stored), actualType, subfolder);
     }
 
     /** @return the canonical content type the bytes actually are, or {@code null} if unrecognised. */
@@ -142,6 +157,55 @@ public class FileStorageService {
                 deleteByUrl(url);
             }
         });
+    }
+
+    /**
+     * Shrinks an oversized photo before it is stored.
+     *
+     * <p>Uploads were kept exactly as the phone produced them — up to 5 MB each, several per job —
+     * and then served to people on mobile data over and over. A job photo never needs more than
+     * enough pixels to fill a phone screen, so anything larger is re-encoded. Returns the original
+     * bytes unchanged when they are already small enough, or when the image cannot be decoded (in
+     * which case the magic-byte check has already vouched for it being a real image).
+     */
+    private byte[] downscaleIfLarge(byte[] original, String contentType) {
+        if (original.length <= COMPRESS_THRESHOLD_BYTES) {
+            return original;
+        }
+        try {
+            BufferedImage source = ImageIO.read(new ByteArrayInputStream(original));
+            if (source == null) {
+                return original;
+            }
+            int longestSide = Math.max(source.getWidth(), source.getHeight());
+            if (longestSide <= MAX_DIMENSION_PX) {
+                return original;
+            }
+            double scale = (double) MAX_DIMENSION_PX / longestSide;
+            int width = Math.max(1, (int) Math.round(source.getWidth() * scale));
+            int height = Math.max(1, (int) Math.round(source.getHeight() * scale));
+
+            // TYPE_INT_RGB drops any alpha channel, which JPEG cannot carry anyway; PNG and WEBP
+            // inputs are re-encoded as JPEG by the caller's extension mapping only when they were
+            // already JPEG, so transparency is preserved by leaving those alone below.
+            BufferedImage scaled = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+            Graphics2D graphics = scaled.createGraphics();
+            graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            graphics.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+            graphics.drawImage(source, 0, 0, width, height, null);
+            graphics.dispose();
+
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            if (!ImageIO.write(scaled, "jpg", out) || out.size() == 0) {
+                return original;
+            }
+            log.debug("Rasm kichraytirildi: {} -> {} bayt", original.length, out.size());
+            return out.toByteArray();
+        } catch (IOException | RuntimeException e) {
+            // Never fail an upload over an optimisation.
+            log.warn("Rasmni kichraytirib bo'lmadi, asl holida saqlanadi", e);
+            return original;
+        }
     }
 
     private String writeToDisk(InputStream in, String contentType, String subfolder) {

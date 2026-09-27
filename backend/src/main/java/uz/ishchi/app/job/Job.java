@@ -104,6 +104,11 @@ public class Job {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
+    /** "Bugunga kerak" — surfaced separately, because a same-day job and one starting next month
+     *  competing in the same undifferentiated list serves neither. */
+    @Column(nullable = false)
+    private boolean urgent = false;
+
     @OneToMany(mappedBy = "job", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @OrderBy("createdAt ASC")
     @BatchSize(size = 20)
