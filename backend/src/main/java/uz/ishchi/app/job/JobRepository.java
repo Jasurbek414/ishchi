@@ -1,5 +1,9 @@
 package uz.ishchi.app.job;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -10,6 +14,15 @@ import java.time.Instant;
 import java.util.List;
 
 public interface JobRepository extends JpaRepository<Job, Long>, JpaSpecificationExecutor<Job> {
+
+    /**
+     * Job rows render employer, profession, region and district, each of which was lazy-loaded per
+     * row. The images collection is left out on purpose: fetching it with a Pageable would page in
+     * memory (see JobImage's batch size instead).
+     */
+    @Override
+    @EntityGraph(attributePaths = {"employer", "employer.user", "profession", "region", "district"})
+    Page<Job> findAll(Specification<Job> spec, Pageable pageable);
 
     @Modifying
     @Query("update Job j set j.status = uz.ishchi.app.common.JobStatus.EXPIRED " +

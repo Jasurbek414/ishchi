@@ -12,7 +12,14 @@ class ApiClient {
       receiveTimeout: const Duration(seconds: 15),
     ));
 
-    _refreshDio = Dio(BaseOptions(baseUrl: ApiConfig.baseUrl));
+    // Same timeouts as the main client on purpose: without them a stalled refresh hangs forever,
+    // and because every concurrent caller awaits the one in-flight refresh, the whole app hangs
+    // with it.
+    _refreshDio = Dio(BaseOptions(
+      baseUrl: ApiConfig.baseUrl,
+      connectTimeout: const Duration(seconds: 15),
+      receiveTimeout: const Duration(seconds: 15),
+    ));
 
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
@@ -24,7 +31,10 @@ class ApiClient {
       },
       onError: (error, handler) async {
         final isAuthCall = error.requestOptions.path.startsWith('/auth/');
-        if (error.response?.statusCode == 401 && !isAuthCall) {
+        // Multipart bodies handle their own retry (see _guardedMultipart) because a FormData
+        // stream cannot be replayed once it has been sent.
+        final handlesOwnRetry = error.requestOptions.extra[_skipInterceptorRetry] == true;
+        if (error.response?.statusCode == 401 && !isAuthCall && !handlesOwnRetry) {
           final retried = await _retryWithRefreshedToken(error.requestOptions);
           if (retried != null) {
             return handler.resolve(retried);
@@ -35,6 +45,8 @@ class ApiClient {
       },
     ));
   }
+
+  static const _skipInterceptorRetry = 'skipInterceptorRetry';
 
   late final Dio _dio;
   late final Dio _refreshDio;
@@ -113,14 +125,39 @@ class ApiClient {
     await _guarded(() => _dio.delete(path));
   }
 
-  Future<Map<String, dynamic>> postMultipart(String path, FormData formData) async {
-    final response = await _guarded(() => _dio.post(path, data: formData));
+  Future<Map<String, dynamic>> postMultipart(String path, Future<FormData> Function() buildFormData) async {
+    final response = await _guardedMultipart(path, buildFormData);
     return _asMap(response.data);
   }
 
-  Future<List<dynamic>> postMultipartList(String path, FormData formData) async {
-    final response = await _guarded(() => _dio.post(path, data: formData));
+  Future<List<dynamic>> postMultipartList(String path, Future<FormData> Function() buildFormData) async {
+    final response = await _guardedMultipart(path, buildFormData);
     return response.data is List ? response.data as List<dynamic> : <dynamic>[];
+  }
+
+  /// A FormData body is a one-shot stream, so the interceptor's generic retry could not replay it:
+  /// an avatar or job-image upload that happened to land on a just-expired access token failed
+  /// outright instead of retrying. Callers hand over a builder rather than a built body, so the
+  /// retry can construct a fresh one.
+  Future<Response<dynamic>> _guardedMultipart(String path, Future<FormData> Function() buildFormData) async {
+    final options = Options(extra: const {_skipInterceptorRetry: true});
+    try {
+      return await _dio.post(path, data: await buildFormData(), options: options);
+    } on DioException catch (error) {
+      if (error.response?.statusCode != 401 || path.startsWith('/auth/')) {
+        throw _mapError(error);
+      }
+      final refreshed = await _refreshAccessToken();
+      if (refreshed == null) {
+        onSessionExpired?.call();
+        throw _mapError(error);
+      }
+      try {
+        return await _dio.post(path, data: await buildFormData(), options: options);
+      } on DioException catch (retryError) {
+        throw _mapError(retryError);
+      }
+    }
   }
 
   Map<String, dynamic> _asMap(dynamic data) {

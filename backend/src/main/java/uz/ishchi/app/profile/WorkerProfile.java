@@ -1,6 +1,7 @@
 package uz.ishchi.app.profile;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.BatchSize;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -63,6 +64,9 @@ public class WorkerProfile {
     @Column(name = "work_preference", length = 20)
     private WorkPreference workPreference;
 
+    // Batched rather than join-fetched: a collection fetch combined with pagination makes
+    // Hibernate page in memory, so a worker list would load the whole table to return 20 rows.
+    @BatchSize(size = 50)
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "worker_professions",

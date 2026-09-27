@@ -213,6 +213,25 @@ public class AuthService {
     }
 
     /**
+     * Changes the password of the signed-in account after checking the current one, and revokes
+     * every refresh token so any other session is signed out.
+     */
+    @Transactional
+    public MessageResponse changePassword(User user, String currentPassword, String newPassword) {
+        User stored = userRepository.findById(user.getId())
+                .orElseThrow(() -> ApiException.notFound("Foydalanuvchi topilmadi"));
+        if (!passwordEncoder.matches(currentPassword, stored.getPasswordHash())) {
+            throw ApiException.badRequest("Joriy parol noto'g'ri", "INVALID_CURRENT_PASSWORD");
+        }
+        if (passwordEncoder.matches(newPassword, stored.getPasswordHash())) {
+            throw ApiException.badRequest("Yangi parol joriy paroldan farq qilishi kerak");
+        }
+        stored.setPasswordHash(passwordEncoder.encode(newPassword));
+        refreshTokenRepository.revokeAllForUser(stored.getId());
+        return new MessageResponse("Parol muvaffaqiyatli o'zgartirildi");
+    }
+
+    /**
      * The same-shaped answer for a phone number nobody is registered with. Answering 404 only in
      * that case told anyone who asked which numbers have accounts; when Telegram is configured
      * the decoy carries a bot link too, so the two cases look identical from outside. The token

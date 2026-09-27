@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import uz.ishchi.app.auth.AuthService;
 import uz.ishchi.app.auth.dto.AuthResponse;
+import uz.ishchi.app.auth.dto.ChangePasswordRequest;
+import uz.ishchi.app.auth.dto.MessageResponse;
 import uz.ishchi.app.auth.dto.SwitchRoleRequest;
 import uz.ishchi.app.profile.dto.ProfileResponse;
 import uz.ishchi.app.profile.dto.ProfileUpdateRequest;
@@ -36,6 +38,12 @@ public class ProfileController {
     public ProfileResponse uploadAvatar(@AuthenticationPrincipal UserPrincipal principal,
                                          @RequestParam("file") MultipartFile file) {
         return profileService.uploadAvatar(principal.getUser(), file);
+    }
+
+    @PostMapping("/change-password")
+    public MessageResponse changePassword(@AuthenticationPrincipal UserPrincipal principal,
+                                           @Valid @RequestBody ChangePasswordRequest request) {
+        return authService.changePassword(principal.getUser(), request.currentPassword(), request.newPassword());
     }
 
     @PostMapping("/switch-role")

@@ -152,10 +152,10 @@ class JobRepository {
   Future<void> delete(int id) => _client.delete('/jobs/$id');
 
   Future<List<JobImage>> uploadImages(int jobId, List<String> filePaths) async {
-    final formData = FormData.fromMap({
-      'files': [for (final path in filePaths) await MultipartFile.fromFile(path)],
-    });
-    final res = await _client.postMultipartList('/jobs/$jobId/images', formData);
+    // Built on demand so a retry after a token refresh gets fresh file streams.
+    final res = await _client.postMultipartList('/jobs/$jobId/images', () async => FormData.fromMap({
+          'files': [for (final path in filePaths) await MultipartFile.fromFile(path)],
+        }));
     return res.map((e) => JobImage.fromJson(e as Map<String, dynamic>)).toList();
   }
 

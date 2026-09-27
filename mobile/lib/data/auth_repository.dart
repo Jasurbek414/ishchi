@@ -76,4 +76,17 @@ class AuthRepository {
     });
     return res['message'] as String;
   }
+
+  /// Changes the password of the signed-in account by proving the current one, rather than going
+  /// through the public forgot-password flow. Every other session is signed out server-side.
+  Future<String> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final res = await _client.post('/profile/change-password', data: {
+      'currentPassword': currentPassword,
+      'newPassword': newPassword,
+    });
+    return res['message'] as String;
+  }
 }

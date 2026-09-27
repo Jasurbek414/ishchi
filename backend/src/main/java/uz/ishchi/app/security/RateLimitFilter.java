@@ -44,6 +44,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
             new Rule("/api/auth/resend-otp", 5, Duration.ofMinutes(15)),
             new Rule("/api/auth/forgot-password", 5, Duration.ofMinutes(15)),
             new Rule("/api/auth/telegram-link-status", 120, Duration.ofMinutes(5)),
+            new Rule("/api/profile/change-password", 10, Duration.ofMinutes(5)),
             new Rule("/api/promo-banners", 120, Duration.ofMinutes(1)),
             // Worker detail is the only endpoint that still serves a phone number, so cap how
             // fast one account can walk it. A paywall or consent step would close this properly,

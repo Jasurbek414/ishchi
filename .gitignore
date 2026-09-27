@@ -1,7 +1,8 @@
 # secrets
 .env
 *.env.local
-backend/secrets/
+backend/secrets/*
+!backend/secrets/.gitkeep
 mobile/android/app/google-services.json
 
 # backend (Maven/Java)

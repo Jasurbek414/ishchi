@@ -49,10 +49,11 @@ class ProfileRepository {
   }
 
   Future<Profile> uploadAvatar(String filePath) async {
-    final formData = FormData.fromMap({
-      'file': await MultipartFile.fromFile(filePath),
-    });
-    final res = await _client.postMultipart('/profile/avatar', formData);
+    // Built on demand rather than up front: a retry after a token refresh needs a fresh stream,
+    // because a FormData body cannot be sent twice.
+    final res = await _client.postMultipart('/profile/avatar', () async => FormData.fromMap({
+          'file': await MultipartFile.fromFile(filePath),
+        }));
     return Profile.fromJson(res);
   }
 

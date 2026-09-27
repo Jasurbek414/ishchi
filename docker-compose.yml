@@ -37,12 +37,26 @@ services:
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-*}
       ADMIN_PHONE: ${ADMIN_PHONE:-}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
-      FIREBASE_CREDENTIALS_PATH: ${FIREBASE_CREDENTIALS_PATH:-}
+      # Used to build the Telegram webhook and bot deep-link URLs, so it has to be the public
+      # address this backend is reachable at. Left unset it falls back to the built-in default,
+      # which silently points a different deployment's bot at the wrong host.
+      APP_BASE_URL: ${APP_BASE_URL:?APP_BASE_URL is required}
+      FIREBASE_CREDENTIALS_PATH: ${FIREBASE_CREDENTIALS_PATH:-/app/secrets/firebase-service-account.json}
     volumes:
       - ishchi_uploads:/app/uploads
-      - ./backend/secrets/firebase-service-account.json:/app/firebase-service-account.json:ro
+      # The whole directory, not the file: a file bind-mount makes Docker create a *directory* in
+      # its place when the file is missing, so a fresh clone (secrets/ is gitignored) failed to
+      # start. Mounting the directory means a missing credentials file just leaves push
+      # notifications switched off, which the backend already handles.
+      - ./backend/secrets:/app/secrets:ro
     ports:
       - "127.0.0.1:8090:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/actuator/health | grep -q UP"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
 
   cloudflared-landing:
     image: cloudflare/cloudflared:latest
