@@ -1,185 +1,149 @@
 # Ishchi — xavfsizlik va kod auditi
 
-Sana: 2026-09-27 · Branch: `claude/ishchi-loyihasini-toliq-fjmd87` · Commit: `b67dc6d`
+Audit: 2026-09-27 · Tuzatildi: 2026-09-27 · Branch: `claude/ishchi-loyihasini-toliq-fjmd87`
 
-> Bu hujjat faqat **aniqlangan muammolar ro'yxati**. Hech qanday kod o'zgartirilmagan.
-> Tartib: og'irlik darajasi bo'yicha.
+Jami **32 topilma** (31 audit + bittasi tuzatish jarayonida topildi). Holati: **32/32 tuzatildi.**
+
+Tekshiruv: backend `mvn verify` — 41 test o'tadi. Flutter bu muhitda o'rnatilmagan, shuning uchun
+Dart o'zgarishlari kompilyator bilan tekshirilmagan — ularni CI (`flutter analyze` + `flutter test`)
+tasdiqlaydi.
 
 ---
 
 ## 🔴 KRITIK
 
-### K-1. Telefon raqam egaligi hech qachon tekshirilmaydi → istalgan raqamga akkaunt ochish va akkaunt egallash
+### K-1. Telefon raqam egaligi tekshirilmaydi → istalgan raqamga akkaunt ochish va akkaunt egallash
 
-**Fayllar:** `telegram/TelegramService.java:181` (`/start <token>` tarmog'i), `:274` (`linkUser`),
-`auth/AuthService.java:191-207` (`dispatchOtp`)
+**Muammo.** `dispatchOtp` Telegram ulanmagan foydalanuvchi uchun `telegramLinkToken` yaratib, uni
+**autentifikatsiyasiz API javobida** chaqiruvchining o'ziga qaytaradi. Bot `/start <token>` qabul
+qilganda `linkUser` `telegramChatId`ni Telegram akkauntining haqiqiy raqamini `user.getPhone()`
+bilan solishtirmasdan bog'laydi.
 
-**Sabab.** `dispatchOtp` Telegram ulanmagan foydalanuvchi uchun `telegramLinkToken` yaratadi va
-uni **autentifikatsiyasiz API javobida** (`OtpDispatchResponse.linkUrl`) chaqiruvchining o'ziga
-qaytaradi. Bot `/start <token>` qabul qilganda `linkUser(user, chatId)` chaqiriladi va u
-`telegramChatId`ni **Telegram akkauntining haqiqiy raqamini `user.getPhone()` bilan
-solishtirmasdan** bog'laydi. Ya'ni token "bu raqamning egasiman" emas, balki "bu tokenni
-ushlab turaman" degan ma'noni bildiradi — tokenni esa hujumchining o'zi olgan.
+Natijada: (1) boshqa odamning raqami bilan ro'yxatdan o'tib, kodni o'z Telegramiga olish;
+(2) `forgot-password` orqali Telegramini hali ulamagan **istalgan mavjud foydalanuvchini to'liq
+egallash** — haqiqiy egasi tizimdan chiqib qoladi.
 
-**Hujum 1 — istalgan raqamga akkaunt ochish:**
-1. Boshqa odamning raqami bilan `POST /api/auth/register`
-2. Javobdagi `linkUrl`ni **o'z** Telegramida ochish
-3. Kod hujumchining Telegramiga keladi → `verify-otp` → akkaunt tasdiqlangan
+**Tuzatildi.** `/start <token>` endi hech narsani bog'lamaydi — raqam so'raydi. Bog'lash faqat
+Telegram tasdiqlagan kontakt orqali amalga oshadi (`handleContact`). Bu mantiq kodda allaqachon
+mavjud edi; `/start` yo'li uni chetlab o'tardi.
+`TelegramService.java`, `TelegramWebhookController.java`
 
-**Hujum 2 — mavjud foydalanuvchini to'liq egallash** (Telegramini hali ulamagan har bir
-foydalanuvchi zaif):
-1. `POST /api/auth/forgot-password` — jabrlanuvchining raqami bilan
-2. Javobdagi `linkUrl`ni o'z Telegramida ochish → `linkUser` hujumchining chat'ini
-   jabrlanuvchi akkauntiga bog'laydi
-3. RESET_PASSWORD kodi hujumchiga keladi → `POST /api/auth/reset-password`
-4. Akkaunt egallandi; haqiqiy egasi tizimga kira olmaydi
+### K-1b. Kontakt kartasini forward qilish orqali xuddi shu egallash *(tuzatish jarayonida topildi)*
 
-**Muhim:** to'g'ri yechim kodda allaqachon mavjud — `handleContact` (`:256`) Telegram
-tasdiqlagan raqamni `normalizePhone` + `findByPhone` bilan solishtiradi va uni aldash mumkin
-emas. Metod javadoc'idagi "spoof qilib bo'lmaydi" izohi **faqat contact yo'liga** taalluqli,
-ro'yxatdan o'tish esa `/start <token>` yo'lidan boradi.
+**Muammo.** `handleContact` `contact.user_id`ni tekshirmasdi. Telegram'da manzillar kitobidan
+**boshqa odamning kontakt kartasini** yuborish mumkin — u holda `contact.phone_number` jabrlanuvchining
+raqami bo'ladi va hujumchining chat'i o'sha akkauntga bog'lanadi. Ya'ni K-1ni tuzatish teshikni
+shunchaki ikkinchi yo'lga ko'chirardi.
 
-**Qo'shimcha:** `linkUser` eski egasining bog'lanishini uzib tashlaydi
-(`existing.setTelegramChatId(null)`) — ya'ni hujum jabrlanuvchini botdan ham uzadi.
-`telegramLinkToken` muddati ham cheklanmagan.
-
----
+**Tuzatildi.** `contact.user_id` yuboruvchining `from.id`siga teng bo'lishi talab qilinadi — bu
+`request_contact` tugmasi beradigan yagona holat. DTO'ga `from` maydoni qo'shildi.
+`TelegramService.java`, `dto/TelegramUpdate.java`
 
 ### K-2. Barcha ishchilarning telefon raqami va GPS koordinatalari ochiq
 
-**Fayllar:** `worker/WorkerController.java:18`, `worker/dto/WorkerResponse.java:45`
+**Muammo.** `GET /api/workers` rol cheklovisiz, sahifa o'lchami cheklanmagan holda har qator uchun
+telefon + aniq koordinata qaytarardi. Bitta bepul akkaunt butun ishchilar bazasini yuklab olishi mumkin.
 
-`GET /api/workers` hech qanday rol cheklovisiz (`@PreAuthorize` yo'q) **telefon raqam + aniq
-latitude/longitude** qaytaradi. `spring.data.web.pageable.max-page-size` sozlanmagan →
-`?size=2000` ishlaydi. Bitta bepul akkaunt bilan butun ishchilar bazasini (ism, telefon, GPS)
-yuklab olish mumkin. `GET /api/workers/map` bir so'rovda 500 yozuv beradi.
+**Tuzatildi.** Kontakt ma'lumotlari ommaviy javoblardan olib tashlandi (telefon **bo'sh satr** —
+`null` emas, chunki chiqarilgan ilova uni null-chidamsiz `String` deb o'qiydi va crash beradi);
+koordinatalar faqat xarita javobida qoldi; `@PreAuthorize("hasRole('EMPLOYER')")`; sahifa o'lchami
+50 ta bilan cheklandi; `/api/workers`ga rate-limit.
+`WorkerResponse.java`, `WorkerController.java`, `application.yml`, `RateLimitFilter.java`
 
 ### K-3. Pullik paywall butunlay chetlab o'tiladi
 
-**Fayllar:** `employer/EmployerMapController.java:25`, `employer/dto/EmployerMapResponse.java`
+**Muammo.** `job_view_fee` ish beruvchi telefonini yashiradi, lekin `GET /api/employers/map` xuddi
+shu telefonlarni 500 tagacha tekinga berardi.
 
-`job_view_fee` tizimi ish beruvchi telefonini yashiradi (`JobService.mapWithUnlockState`),
-**lekin** `GET /api/employers/map` xuddi shu telefonlarni 500 tagacha, tekinga, tekshiruvsiz
-beradi. Pulli funksiya amalda ishlamaydi.
+**Tuzatildi.** Telefon xarita javobidan olib tashlandi, endpoint faqat `WORKER` roliga.
+`EmployerMapResponse.java`, `EmployerMapController.java`
 
-### K-4. OTP kodini brute-force qilish mumkin
+### K-4. OTP kodini brute-force qilish
 
-**Fayl:** `auth/AuthService.java:240`
+**Muammo.** 4 xonali kod (9000 variant), urinishlar cheklanmagan, rate-limit yo'q.
 
-Kod 4 xonali (9000 variant), TTL 10 daqiqa, **urinishlar soni cheklanmagan**, rate-limit yo'q.
-`reset-password`ni takroran chaqirib istalgan foydalanuvchining parolini almashtirish mumkin.
-`login` ham brute-force'ga ochiq.
+**Tuzatildi.** 5 urinishdan keyin kod kuyadi. Hisoblagich **alohida tranzaksiyada** saqlanadi —
+aks holda rad etish exception'i rollback qilib, cheklov hech qachon ishlamas edi. Qo'shimcha:
+IP bo'yicha rate-limit.
+`OtpAttemptTracker.java`, `AuthService.java`, `V23__otp_attempts.sql`, `RateLimitFilter.java`
 
-### K-5. CORS sozlamasi butunlay e'tiborsiz
+### K-5. CORS sozlamasi e'tiborsiz qoldirilgan
 
-**Fayl:** `security/SecurityConfig.java:85`
+**Muammo.** `setAllowedOriginPatterns(List.of("*"))` qattiq yozilgan; `app.cors.allowed-origins`
+va `CORS_ALLOWED_ORIGINS` hech qayerda o'qilmasdi.
 
-`setAllowedOriginPatterns(List.of("*"))` qattiq yozilgan. `application.yml:39`dagi
-`app.cors.allowed-origins` va `.env`dagi `CORS_ALLOWED_ORIGINS` **hech qayerda o'qilmaydi** —
-o'lik konfiguratsiya, yolg'on xavfsizlik hissi.
+**Tuzatildi.** `CorsProperties` yaratildi va ulandi.
+`CorsProperties.java`, `SecurityConfig.java`
 
 ---
 
 ## 🟠 YUQORI
 
-**Y-1.** `banner/PromoBannerController.java:23,28` — `POST /{id}/view` va `/click` `permitAll`,
-autentifikatsiya va rate-limit yo'q. V21 banner statistikasi soxtalashtiriladi.
-
-**Y-2.** `wallet/WalletService.java:63` — `topUp()` avval tashqi gateway'ni chaqiradi, keyin
-bazani yangilaydi. DB rollback bo'lsa **pul yechiladi, balans to'lmaydi**. Idempotency kaliti
-yo'q. Hozir mock gateway, real gateway ulansa pul yo'qoladi.
-
-**Y-3.** `common/FileStorageService.java:53` — fayl turi faqat mijoz yuborgan `Content-Type`ga
-qarab tekshiriladi, magic-byte tekshiruvi yo'q. Istalgan baytni yuklab `/uploads/**`
-(`permitAll`) orqali o'z domenidan tarqatish mumkin. `storeJobImageFromBytes` tekshiruvni
-umuman o'tkazib yuboradi. Admin tokeni `localStorage`da (`admin-web/src/api/client.js:1-5`)
-bo'lgani bilan birga zanjir xavfli.
-
-**Y-4.** `job/JobSortSpecifications.java:32` — `query.orderBy()` Specification ichida,
-`if (query.getResultType() != Long.class)` himoyasi yo'q. Spring Data bu Specification'ni
-**count so'rovga ham** qo'llaydi → `ORDER BY` count'da → Hibernate xatosi yoki noto'g'ri SQL.
-`sort=nearest` bilan sahifalashni sinash shart.
-
-**Y-5.** Rate limiting umuman yo'q: `register`, `resend-otp`, `forgot-password` cheksiz
-chaqiriladi → Telegram flood, baza to'ldirish.
-
-**Y-6.** Foydalanuvchi enumeratsiyasi: `auth/AuthController.java:35`
-(`/telegram-link-status?phone=`, ochiq endpoint), `forgot-password`, `resend-otp` — mavjud
-raqamga 200, mavjud bo'lmaganiga 404.
-
----
+| # | Muammo | Tuzatish |
+|---|---|---|
+| Y-1 | Banner `view`/`click` autentifikatsiyasiz — statistika soxtalashtiriladi | Faqat `GET` ochiq qoldi; hisoblagichlar autentifikatsiya + rate-limit talab qiladi |
+| Y-2 | `topUp` avval gateway'ni chaqirardi → DB rollback bo'lsa pul yo'qoladi | Tekshiruvlar oldinga o'tdi, summa cheklovi, muvaffaqiyatli to'lov yozilmasa reference bilan `ERROR` log |
+| Y-3 | Fayl turi mijoz yuborgan `Content-Type`ga qarab aniqlanardi | Haqiqiy baytlar (JPEG/PNG/WEBP imzosi) tekshiriladi; Telegram rasmlari ham shu yo'ldan o'tadi |
+| Y-4 | `nearest` saralash `count` so'rovga `ORDER BY` qo'shardi | `getResultType()` himoyasi qo'shildi |
+| Y-5 | Rate limiting umuman yo'q | `RateLimitFilter` — login/OTP/parol/banner/ishchi endpointlari uchun |
+| Y-6 | Foydalanuvchi enumeratsiyasi (404 vs 200) | Javoblar birxillashtirildi; Telegram sozlangan bo'lsa saqlanmaydigan decoy havola qaytadi |
 
 ## 🟡 O'RTA
 
-**O-1.** `docker-compose.yml:44` — `./backend/secrets/firebase-service-account.json`
-bind-mount qilinadi, ammo bu papka `.gitignore`da. Toza klonda `docker compose up` ishlamaydi
-(Docker fayl o'rniga papka yaratadi).
-
-**O-2.** `APP_BASE_URL` va `UPLOAD_DIR` `docker-compose.yml`da ham, `.env.example`da ham yo'q →
-`application.yml:25`dagi qattiq yozilgan `https://api.uzbishchi.uz` ishlatiladi. Telegram
-webhook va link URL shu qiymatdan quriladi → boshqa domenda deploy qilinsa bot buziladi.
-
-**O-3.** `settings/AppSettingsService.java:92` — webhook siri `SHA-256(bot_token)[0:32]`
-sifatida **tokendan keltirib chiqariladi** va URL yo'lida uzatiladi → access-log'larga tushadi.
-Telegram'ning `X-Telegram-Bot-Api-Secret-Token` sarlavhasi tekshirilmaydi.
-
-**O-4.** `V11__telegram_otp.sql:6` — bot tokeni `app_settings.telegram_bot_token`da **ochiq
-matnda**. Baza zaxirasi sizsa bot to'liq egallanadi.
-
-**O-5.** Orfan fayllar: `profile/ProfileService.java:117` — avatar almashtirilganda eski fayl
-diskdan o'chirilmaydi. `JobService.removeImage`/`delete`da ham. Disk cheksiz o'sadi.
-
-**O-6.** `ProfileService` — `professionRepository.findAllById(...)` mavjud bo'lmagan ID'larni
-jimgina tashlab yuboradi (boshqa joyda 400 qaytariladi), `isActive` tekshirilmaydi, soni
-cheklanmagan.
-
-**O-7.** Bloklangan buyurtmani egasi baribir tahrirlay oladi — `JobService.getOwnedJob`
-`isBlocked()`ni tekshirmaydi, `update`/`changeStatus` ham.
-
-**O-8.** N+1 so'rovlar: `WorkerResponse.from()` har qator uchun `user`, `region`, `district`,
-`professions` lazy yuklaydi (20 qator ≈ 80 so'rov); `WalletService.resolveFullName` har
-tranzaksiya qatori uchun alohida so'rov; `JobExpiryScheduler.remindExpiringSoon` har buyurtma
-uchun alohida token so'rovi.
-
-**O-9.** `mobile/lib/core/api_client.dart:14` — `_refreshDio`da timeout yo'q. Refresh osilib
-qolsa `_refreshInFlight` ortidagi barcha so'rovlar cheksiz kutadi.
-
-**O-10.** `api_client.dart:50` — 401 dan keyin `_dio.fetch(options)` bilan qayta urinish:
-`FormData` oqimi allaqachon iste'mol qilingan → token muddati tugagan paytda rasm/avatar
-yuklash ishlamaydi.
-
-**O-11.** Joriy parolni so'ramasdan parol almashtirish — `change_password_screen.dart` ochiq
-`reset-password` oqimidan foydalanadi; backendda "eski parolni tasdiqlang" endpointi yo'q.
-
-**O-12.** Yetishmayotgan indekslar: `jobs(created_at)` (har qidiruvdagi default saralash),
-`jobs(expires_at)` (scheduler), `employer_profiles(region_id)` (`/employers/map`).
-`job_unlocks.unlocked_at` — `timestamp`, qolgan jadvallarda `timestamptz` (nomuvofiqlik).
-
-**O-13.** `@Scheduled` metodlarida distributed lock yo'q — backend 2 nusxaga ko'paytirilsa
-push-bildirishnomalar ikki marta yuboriladi.
-
----
+| # | Muammo | Tuzatish |
+|---|---|---|
+| O-1 | Firebase fayl bind-mount'i toza klonda `docker compose up`ni buzardi | Katalog mount qilinadi (`backend/secrets` → `/app/secrets`) + `.gitkeep` |
+| O-2 | `APP_BASE_URL` compose va `.env.example`da yo'q edi | Majburiy qilindi; healthcheck ham qo'shildi |
+| O-3 | Webhook siri tokendan keltirilgan va URL yo'lida (loglarga tushardi) | Tasodifiy sir, `X-Telegram-Bot-Api-Secret-Token` sarlavhasida, doimiy vaqtda solishtiriladi; startup'da qayta ro'yxatdan o'tadi |
+| O-4 | Bot tokeni bazada ochiq matnda | AES-GCM shifrlash (kalit `JWT_SECRET`dan); eski qiymat o'qilishda davom etadi |
+| O-5 | Avatar/rasm almashtirilganda eski fayl diskda qolardi | Commit'dan keyin o'chiriladi; upload katalogidan tashqariga chiqish rad etiladi |
+| O-6 | Mavjud bo'lmagan kasb ID'lari jimgina tashlanardi | 400 qaytaradi (profil va rol almashtirishda) |
+| O-7 | Bloklangan buyurtmani egasi tahrirlay olardi | `getOwnedJob` bloklanganini rad etadi (o'chirishga ruxsat qoldi) |
+| O-8 | N+1: ishchi/buyurtma ro'yxati, admin tranzaksiyalari, kechalik eslatma | `@EntityGraph` (to-one), `@BatchSize` (kolleksiya), paketli so'rovlar |
+| O-9 | `_refreshDio`da timeout yo'q — osilib qolsa butun ilova kutadi | Asosiy mijoz bilan bir xil timeout |
+| O-10 | 401'dan keyin `FormData` qayta yuborilmaydi — upload uzilardi | Chaqiruvchi builder beradi, qayta urinish yangi body quradi |
+| O-11 | Parolni almashtirish joriy parolni so'ramasdi | `POST /api/profile/change-password` + ekran 4 tilda qayta yozildi |
+| O-12 | Yetishmayotgan indekslar, `timestamp` nomuvofiqligi | `V24__performance_indexes.sql` |
+| O-13 | Scheduler'larda qulf yo'q — 2 nusxada ikki marta yuborardi | Postgres advisory lock (tranzaksiyaga bog'langan) |
 
 ## ⚪ TEXNIK QARZ
 
-**T-1.** **Test yo'q** — backendda 0 ta, mobil'da faqat default `widget_test.dart`.
-~21 000 satr kod qoplamasiz.
+| # | Muammo | Tuzatish |
+|---|---|---|
+| T-1 | Test yo'q (backendda 0 ta) | 41 test — asosan tuzatishlarni qo'riqlaydigan regressiya testlari |
+| T-2 | CI yo'q | GitHub Actions: backend test, migratsiyalar real Postgres'da, frontend build, `flutter analyze`/`test` |
+| T-3 | Eskirgan build artefaktlari JAR ichida | 2 orfan bundle o'chirildi |
+| T-4 | `branding/` ~22 MB, ~100 debug fayl | 71 fayl (~10 MB) o'chirildi, `.gitignore` qoidasi va `branding/README.md` |
+| T-5 | `app.otp.ttl-minutes` o'qilmasdi | `OtpProperties` |
+| T-6 | `otp_codes` / `refresh_tokens` cheksiz o'sardi | `DataRetentionScheduler` (kunlik tozalash) |
+| T-7 | `TZ.md` eskirgan | Kodning joriy holatiga moslashtirildi |
 
-**T-2.** **CI yo'q** — `.github/` papkasi mavjud emas.
+---
 
-**T-3.** Frontend build natijalari repoga commit qilingan va eskilari qolib ketgan:
-`static/assets/index-BTa8OkTM.js` va `index-DWMw8GlC.css` hech qayerdan chaqirilmaydi
-(`index.html` faqat `index-Dc7YSvhN.js` + `index-Dg8HBMJI.css`ga murojaat qiladi) — JAR ichida
-keraksiz yuk, manba va build osongina ajralib ketadi.
+## Deploy paytida e'tibor berish kerak
 
-**T-4.** `branding/` ~22 MB, ~100 ta `debug_*.png`. Ildizda `rasm.png`, `lagativ.jpg`,
-`logotive1.jpg` dublikatlari.
+1. **`APP_BASE_URL` endi majburiy** — `.env`ga qo'shilmasa `docker compose up` ishga tushmaydi.
+   Bu ataylab: avval u hech qayerda berilmagani uchun Telegram havolalari qattiq yozilgan
+   domendan qurilardi.
+2. **`backend/secrets/` katalogi** — Firebase fayli shu yerga qo'yiladi (ilgari fayl to'g'ridan-to'g'ri
+   mount qilinardi). Fayl bo'lmasa push shunchaki o'chadi.
+3. **Telegram webhook o'zi qayta ro'yxatdan o'tadi** — ilova ishga tushganda. Agar bot jim qolsa,
+   admin panelda bot tokenini qayta saqlash kifoya.
+4. **`JWT_SECRET`ni o'zgartirmang** — bot tokeni shifri shundan keltiriladi. O'zgartirilsa
+   admin panelda bot tokenini qayta kiritish kerak bo'ladi.
+5. **Landing logotiplari** `uploads` volume'ida bo'lishi kerak
+   (`branding/logo-icon.png`, `branding/logo-wordmark.png`) — repoda yo'q. Bu ilgari hech qayerda
+   yozilmagan edi, endi `branding/README.md`da.
 
-**T-5.** `auth/AuthService.java:54` — `OTP_TTL_MINUTES = 10` qattiq yozilgan,
-`application.yml:32`dagi `app.otp.ttl-minutes` o'qilmaydi (K-5 bilan bir xil muammo).
+## Ataylab hal qilinmagan, chunki mahsulot qarori kerak
 
-**T-6.** `otp_codes` va `refresh_tokens` jadvallarini tozalash mexanizmi yo'q — cheksiz o'sadi.
-
-**T-7.** `TZ.md` eskirgan: "hozircha YO'Q" deb yozilgan push-bildirishnoma va ko'p tillilik
-allaqachon bor; Telegram bot moduli (webhook, ish e'loni wizard'i, feedback) umuman
-hujjatlashtirilmagan; domen `ishchi-api.ecos.uz` deb ko'rsatilgan, kodda `api.uzbishchi.uz`.
+- **Ishchi kontaktini bittalab yig'ish.** `GET /api/workers/{id}` ish beruvchiga telefon beradi;
+  ish beruvchi akkaunt esa bepul. Endi bu faqat bittalab va rate-limit bilan, lekin to'liq yechim —
+  buyurtma kontaktidagidek to'lov yoki ishchining roziligi bosqichi. Bu ilovaga ham o'zgarish talab
+  qiladi.
+- **Haqiqiy to'lov shlyuzi.** Hozir mock. Uzilib qolgan to'lovni tiklash uchun "kutilayotgan to'lov"
+  yozuvi kerak — mock ustiga bunday tuzilma qurish ortiqcha bo'lardi, shuning uchun provider
+  ulaganda qilinadi. Hozirgi holatda gateway o'tib DB yozilmasa, reference bilan `ERROR` log qoladi.
+- **Bir nechta backend nusxasi.** Rate-limit xotirada — bu bitta konteyner uchun to'g'ri va
+  ortiqcha qismlarsiz. Nusxa ko'paytirilsa Redis'ga o'tkazish kerak (scheduler qulfi allaqachon
+  bazada, u ishlaydi).
