@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { api, ApiError } from '../api/client.js';
 import { useAppSettings } from '../settings/AppSettingsContext.jsx';
+import Modal from '../components/Modal';
 
 const ROLE_LABELS = { WORKER: 'Ishchi', EMPLOYER: 'Ish beruvchi', ADMIN: 'Administrator' };
 
@@ -196,28 +197,25 @@ function SendMessageModal({ user, onClose }) {
   }
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <h3>Telegram xabar — {user.fullName || user.phone}</h3>
-        <p className="mt-0 mx-0 mb-3.5 text-text-secondary text-[13px]">
-          Xabar to'g'ridan-to'g'ri shu foydalanuvchining Telegram botiga yuboriladi.
-        </p>
-        <form onSubmit={send}>
-          <div className="field">
-            <label>Xabar matni</label>
-            <textarea value={text} onChange={(e) => setText(e.target.value)} rows={5} placeholder="Xabar matnini kiriting..." />
-          </div>
-          {error && <div className="error-text">{error}</div>}
-          {success && <div className="text-success text-[13px] mb-3.5">{success}</div>}
-          <div className="modal-actions">
-            <button type="button" className="btn btn-outline" onClick={onClose}>Yopish</button>
-            <button type="submit" className="btn btn-primary" disabled={sending || !text.trim()}>
-              {sending ? 'Yuborilmoqda...' : 'Yuborish'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+    <Modal title={<>Telegram xabar — {user.fullName || user.phone}</>} onClose={onClose}>
+      <p className="mt-0 mx-0 mb-3.5 text-text-secondary text-[13px]">
+        Xabar to'g'ridan-to'g'ri shu foydalanuvchining Telegram botiga yuboriladi.
+      </p>
+      <form onSubmit={send}>
+        <div className="field">
+          <label>Xabar matni</label>
+          <textarea value={text} onChange={(e) => setText(e.target.value)} rows={5} placeholder="Xabar matnini kiriting..." />
+        </div>
+        {error && <div className="error-text">{error}</div>}
+        {success && <div className="text-success text-[13px] mb-3.5">{success}</div>}
+        <div className="modal-actions">
+          <button type="button" className="btn btn-outline" onClick={onClose}>Yopish</button>
+          <button type="submit" className="btn btn-primary" disabled={sending || !text.trim()}>
+            {sending ? 'Yuborilmoqda...' : 'Yuborish'}
+          </button>
+        </div>
+      </form>
+    </Modal>
   );
 }
 
@@ -232,60 +230,57 @@ function UserDetailModal({ user, onClose }) {
   }, [user.id]);
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal max-w-[560px] max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-        <h3>Foydalanuvchi profili</h3>
-        {error && <div className="error-text">{error}</div>}
-        {!profile && !error && <p className="text-[13px] text-text-secondary">Yuklanmoqda...</p>}
-        {profile && (
-          <div className="flex flex-col gap-3 text-[14px]">
-            {profile.avatarUrl && (
-              <img src={profile.avatarUrl} alt="" className="w-[72px] h-[72px] rounded-full object-cover" />
-            )}
-            <DetailRow label="Ism-familiya" value={`${profile.firstName} ${profile.lastName}`} />
-            <DetailRow label="Telefon" value={profile.phone} />
-            <DetailRow label="Rol" value={ROLE_LABELS[profile.role] || profile.role} />
-            <DetailRow label="Hudud" value={`${profile.regionName}, ${profile.districtName}`} />
-            <DetailRow label="Holat" value={user.active ? 'Faol' : 'Bloklangan'} />
-            <DetailRow label="Tasdiqlangan" value={user.verified ? 'Ha' : "Yo'q"} />
-            <DetailRow label="Telegram" value={user.telegramLinked ? 'Ulangan' : 'Ulanmagan'} />
-            <DetailRow label="Ro'yxatdan o'tgan" value={new Date(user.createdAt).toLocaleString('uz-UZ')} />
-            {profile.about && <DetailRow label="O'zi haqida" value={profile.about} />}
-            {profile.role === 'WORKER' && (
-              <>
-                <DetailRow label="Tajriba" value={profile.experienceYears != null ? `${profile.experienceYears} yil` : "Ko'rsatilmagan"} />
-                <DetailRow label="Mavjudligi" value={profile.available ? 'Ish qidirmoqda' : 'Band'} />
-                <DetailRow label="Ish turi" value={profile.workPreference || "Ko'rsatilmagan"} />
-                <DetailRow label="Kasblar" value={profile.professions?.length ? profile.professions.map((p) => p.name).join(', ') : '—'} />
-                <DetailRow
-                  label="Haydovchilik guvohnomasi"
-                  value={profile.hasDriverLicense ? (profile.driverLicenseCategories || 'Bor') : "Yo'q"}
-                />
-                {profile.experiences?.length > 0 && (
-                  <div>
-                    <span className="text-text-secondary text-[12px]">Ish tajribasi</span>
-                    <ul className="mt-1.5 mx-0 mb-0 pl-[18px]">
-                      {profile.experiences.map((e) => (
-                        <li key={e.id}>
-                          <strong>{e.positionTitle}</strong> — {e.companyName}
-                          <br />
-                          <span className="text-[12px] text-text-secondary">
-                            {e.startDate} — {e.endDate || 'hozirgacha'}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        )}
-        <div className="modal-actions">
-          <button type="button" className="btn btn-outline" onClick={onClose}>Yopish</button>
+    <Modal title={<>Foydalanuvchi profili</>} onClose={onClose} panelClassName="max-w-[560px] max-h-[85vh] overflow-y-auto">
+      {error && <div className="error-text">{error}</div>}
+      {!profile && !error && <p className="text-[13px] text-text-secondary">Yuklanmoqda...</p>}
+      {profile && (
+        <div className="flex flex-col gap-3 text-[14px]">
+          {profile.avatarUrl && (
+            <img src={profile.avatarUrl} alt="" className="w-[72px] h-[72px] rounded-full object-cover" />
+          )}
+          <DetailRow label="Ism-familiya" value={`${profile.firstName} ${profile.lastName}`} />
+          <DetailRow label="Telefon" value={profile.phone} />
+          <DetailRow label="Rol" value={ROLE_LABELS[profile.role] || profile.role} />
+          <DetailRow label="Hudud" value={`${profile.regionName}, ${profile.districtName}`} />
+          <DetailRow label="Holat" value={user.active ? 'Faol' : 'Bloklangan'} />
+          <DetailRow label="Tasdiqlangan" value={user.verified ? 'Ha' : "Yo'q"} />
+          <DetailRow label="Telegram" value={user.telegramLinked ? 'Ulangan' : 'Ulanmagan'} />
+          <DetailRow label="Ro'yxatdan o'tgan" value={new Date(user.createdAt).toLocaleString('uz-UZ')} />
+          {profile.about && <DetailRow label="O'zi haqida" value={profile.about} />}
+          {profile.role === 'WORKER' && (
+            <>
+              <DetailRow label="Tajriba" value={profile.experienceYears != null ? `${profile.experienceYears} yil` : "Ko'rsatilmagan"} />
+              <DetailRow label="Mavjudligi" value={profile.available ? 'Ish qidirmoqda' : 'Band'} />
+              <DetailRow label="Ish turi" value={profile.workPreference || "Ko'rsatilmagan"} />
+              <DetailRow label="Kasblar" value={profile.professions?.length ? profile.professions.map((p) => p.name).join(', ') : '—'} />
+              <DetailRow
+                label="Haydovchilik guvohnomasi"
+                value={profile.hasDriverLicense ? (profile.driverLicenseCategories || 'Bor') : "Yo'q"}
+              />
+              {profile.experiences?.length > 0 && (
+                <div>
+                  <span className="text-text-secondary text-[12px]">Ish tajribasi</span>
+                  <ul className="mt-1.5 mx-0 mb-0 pl-[18px]">
+                    {profile.experiences.map((e) => (
+                      <li key={e.id}>
+                        <strong>{e.positionTitle}</strong> — {e.companyName}
+                        <br />
+                        <span className="text-[12px] text-text-secondary">
+                          {e.startDate} — {e.endDate || 'hozirgacha'}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </>
+          )}
         </div>
+      )}
+      <div className="modal-actions">
+        <button type="button" className="btn btn-outline" onClick={onClose}>Yopish</button>
       </div>
-    </div>
+    </Modal>
   );
 }
 
@@ -335,30 +330,27 @@ function WalletModal({ user, onClose }) {
   }
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <h3>Hamyon — {user.phone}</h3>
-        {wallet && (
-          <p className="text-[22px] font-extrabold text-primary mt-0 mx-0 mb-4">
-            {Number(wallet.balance).toLocaleString('uz-UZ')} so'm
-          </p>
-        )}
-        <form onSubmit={submit}>
-          <div className="field">
-            <label>Summa (musbat — qo'shish, manfiy — ayirish)</label>
-            <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="masalan: 50000 yoki -20000" />
-          </div>
-          <div className="field">
-            <label>Izoh (ixtiyoriy)</label>
-            <input type="text" value={note} onChange={(e) => setNote(e.target.value)} placeholder="Sabab" />
-          </div>
-          {error && <div className="error-text">{error}</div>}
-          <div className="modal-actions">
-            <button type="button" className="btn btn-outline" onClick={onClose}>Yopish</button>
-            <button type="submit" className="btn btn-primary" disabled={busy}>Qo'llash</button>
-          </div>
-        </form>
-      </div>
-    </div>
+    <Modal title={<>Hamyon — {user.phone}</>} onClose={onClose}>
+      {wallet && (
+        <p className="text-[22px] font-extrabold text-primary mt-0 mx-0 mb-4">
+          {Number(wallet.balance).toLocaleString('uz-UZ')} so'm
+        </p>
+      )}
+      <form onSubmit={submit}>
+        <div className="field">
+          <label>Summa (musbat — qo'shish, manfiy — ayirish)</label>
+          <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="masalan: 50000 yoki -20000" />
+        </div>
+        <div className="field">
+          <label>Izoh (ixtiyoriy)</label>
+          <input type="text" value={note} onChange={(e) => setNote(e.target.value)} placeholder="Sabab" />
+        </div>
+        {error && <div className="error-text">{error}</div>}
+        <div className="modal-actions">
+          <button type="button" className="btn btn-outline" onClick={onClose}>Yopish</button>
+          <button type="submit" className="btn btn-primary" disabled={busy}>Qo'llash</button>
+        </div>
+      </form>
+    </Modal>
   );
 }

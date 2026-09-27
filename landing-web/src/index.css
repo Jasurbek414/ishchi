@@ -19,8 +19,12 @@
   --color-brand-100: #ffe4d4;
 }
 
-html {
-  scroll-behavior: smooth;
+/* The reveal animations already sit out for people who ask for reduced motion; smooth scrolling
+   was the one piece of motion that ignored the preference. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 body {

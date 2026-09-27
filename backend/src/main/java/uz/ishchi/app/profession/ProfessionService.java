@@ -46,6 +46,12 @@ public class ProfessionService {
     public Profession update(Long id, ProfessionRequest request) {
         Profession profession = professionRepository.findById(id)
                 .orElseThrow(() -> ApiException.notFound("Kasb topilmadi"));
+        // create() checked this but update() did not, so renaming onto an existing name hit the
+        // database's unique constraint and surfaced as a misleading "cannot be deleted" conflict.
+        if (!profession.getName().equalsIgnoreCase(request.name())
+                && professionRepository.existsByNameIgnoreCase(request.name())) {
+            throw ApiException.conflict("Bu nomdagi kasb allaqachon mavjud");
+        }
         profession.setName(request.name());
         profession.setCategory(request.category());
         return profession;
@@ -62,6 +68,13 @@ public class ProfessionService {
     public void delete(Long id) {
         if (!professionRepository.existsById(id)) {
             throw ApiException.notFound("Kasb topilmadi");
+        }
+        // jobs.profession_id has no cascade, so deleting a profession still in use raised a raw
+        // foreign-key violation. Say what is actually wrong and point at the alternative.
+        long jobsUsingIt = jobRepository.countByProfessionId(id);
+        if (jobsUsingIt > 0) {
+            throw ApiException.conflict("Bu kasb " + jobsUsingIt
+                    + " ta buyurtmada ishlatilgani uchun o'chirib bo'lmaydi. O'rniga nofaol qilib qo'ying");
         }
         professionRepository.deleteById(id);
     }

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { api, ApiError } from '../api/client.js';
+import Modal from '../components/Modal';
 
 const AUDIENCE_LABELS = { ALL: 'Hammaga', WORKER: 'Ishchilar (bosh sahifa)', EMPLOYER: 'Ish beruvchilar (qidiruv)' };
 const STATUS_FILTERS = [
@@ -387,91 +388,89 @@ function BannerModal({ banner, regions, onClose, onSaved }) {
   }
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal max-w-2xl! p-0! overflow-hidden" onClick={(e) => e.stopPropagation()}>
-        <BannerPreview banner={{ title, subtitle, imageUrl: banner.imageUrl }} imagePreviewUrl={imagePreviewUrl} />
-        <div className="p-6">
-          <h3>{isNew ? 'Yangi reklama' : 'Reklamani tahrirlash'}</h3>
-          <form onSubmit={submit}>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
-              <div className="field sm:col-span-2">
-                <label>Sarlavha</label>
-                <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="masalan: Har kuni yangi ishlar" />
-              </div>
-              <div className="field sm:col-span-2">
-                <label>Qo'shimcha matn (ixtiyoriy)</label>
-                <textarea value={subtitle} onChange={(e) => setSubtitle(e.target.value)} placeholder="Qisqa tavsif" />
-              </div>
-              <div className="field">
-                <label>Qayerda ko'rinsin</label>
-                <select value={audience} onChange={(e) => setAudience(e.target.value)}>
-                  <option value="ALL">Hammaga (ikkala karusel ham)</option>
-                  <option value="WORKER">Faqat ishchilar (bosh sahifa)</option>
-                  <option value="EMPLOYER">Faqat ish beruvchilar (qidiruv)</option>
-                </select>
-              </div>
-              <div className="field sm:col-span-2">
-                <label>Hududlar (ixtiyoriy — hech biri belgilanmasa, barcha hududlarga ko'rinadi)</label>
-                <div className="border border-line rounded-xl p-2.5 max-h-[160px] overflow-y-auto grid grid-cols-2 sm:grid-cols-3 gap-1.5">
-                  {regions.map((r) => {
-                    const idStr = String(r.id);
-                    const checked = regionIds.includes(idStr);
-                    return (
-                      <label key={r.id} className="flex items-center gap-1.5 text-[13px] cursor-pointer">
-                        <input
-                          type="checkbox"
-                          className="w-auto"
-                          checked={checked}
-                          onChange={(e) => {
-                            setRegionIds((prev) => e.target.checked ? [...prev, idStr] : prev.filter((x) => x !== idStr));
-                          }}
-                        />
-                        {r.name}
-                      </label>
-                    );
-                  })}
-                </div>
-              </div>
-              <div className="field sm:col-span-2">
-                <label>Bosilganda ochiladigan havola (ixtiyoriy)</label>
-                <input type="text" value={linkUrl} onChange={(e) => setLinkUrl(e.target.value)} placeholder="https://... yoki bo'sh qoldiring" />
-              </div>
-              <div className="field">
-                <label>Boshlanish vaqti (ixtiyoriy)</label>
-                <input type="datetime-local" value={startAt} onChange={(e) => setStartAt(e.target.value)} />
-              </div>
-              <div className="field">
-                <label>Tugash vaqti (ixtiyoriy)</label>
-                <input type="datetime-local" value={endAt} onChange={(e) => setEndAt(e.target.value)} />
-              </div>
-              <div className="field">
-                <label>Tartib raqami (kichigi birinchi ko'rinadi)</label>
-                <input type="number" value={sortOrder} onChange={(e) => setSortOrder(e.target.value)} />
-              </div>
-              <div className="field">
-                <label>Rasm {isNew ? '(ixtiyoriy)' : '(yangilash uchun tanlang)'}</label>
-                <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => setImage(e.target.files?.[0] || null)} />
-              </div>
-              <div className="field field-checkbox sm:col-span-2">
-                <input type="checkbox" id="banner-active" checked={active} onChange={(e) => setActive(e.target.checked)} />
-                <label htmlFor="banner-active" className="m-0">Faol (mobil ilovada ko'rinadi)</label>
+    <Modal onClose={onClose} ariaLabel="Bannerni tahrirlash" panelClassName="max-w-2xl! p-0! overflow-hidden">
+      <BannerPreview banner={{ title, subtitle, imageUrl: banner.imageUrl }} imagePreviewUrl={imagePreviewUrl} />
+      <div className="p-6">
+        <h3>{isNew ? 'Yangi reklama' : 'Reklamani tahrirlash'}</h3>
+        <form onSubmit={submit}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
+            <div className="field sm:col-span-2">
+              <label>Sarlavha</label>
+              <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="masalan: Har kuni yangi ishlar" />
+            </div>
+            <div className="field sm:col-span-2">
+              <label>Qo'shimcha matn (ixtiyoriy)</label>
+              <textarea value={subtitle} onChange={(e) => setSubtitle(e.target.value)} placeholder="Qisqa tavsif" />
+            </div>
+            <div className="field">
+              <label>Qayerda ko'rinsin</label>
+              <select value={audience} onChange={(e) => setAudience(e.target.value)}>
+                <option value="ALL">Hammaga (ikkala karusel ham)</option>
+                <option value="WORKER">Faqat ishchilar (bosh sahifa)</option>
+                <option value="EMPLOYER">Faqat ish beruvchilar (qidiruv)</option>
+              </select>
+            </div>
+            <div className="field sm:col-span-2">
+              <label>Hududlar (ixtiyoriy — hech biri belgilanmasa, barcha hududlarga ko'rinadi)</label>
+              <div className="border border-line rounded-xl p-2.5 max-h-[160px] overflow-y-auto grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                {regions.map((r) => {
+                  const idStr = String(r.id);
+                  const checked = regionIds.includes(idStr);
+                  return (
+                    <label key={r.id} className="flex items-center gap-1.5 text-[13px] cursor-pointer">
+                      <input
+                        type="checkbox"
+                        className="w-auto"
+                        checked={checked}
+                        onChange={(e) => {
+                          setRegionIds((prev) => e.target.checked ? [...prev, idStr] : prev.filter((x) => x !== idStr));
+                        }}
+                      />
+                      {r.name}
+                    </label>
+                  );
+                })}
               </div>
             </div>
-            {!isNew && (
-              <div className="flex items-center gap-4 text-[12.5px] text-text-secondary mb-3">
-                <span className="flex items-center gap-1"><EyeIcon className="w-4 h-4" /> {banner.viewCount || 0} ko'rish</span>
-                <span className="flex items-center gap-1"><CursorIcon className="w-4 h-4" /> {banner.clickCount || 0} bosish</span>
-              </div>
-            )}
-            {error && <div className="error-text">{error}</div>}
-            <div className="modal-actions">
-              <button type="button" className="btn btn-outline" onClick={onClose}>Bekor qilish</button>
-              <button type="submit" className="btn btn-primary" disabled={busy}>Saqlash</button>
+            <div className="field sm:col-span-2">
+              <label>Bosilganda ochiladigan havola (ixtiyoriy)</label>
+              <input type="text" value={linkUrl} onChange={(e) => setLinkUrl(e.target.value)} placeholder="https://... yoki bo'sh qoldiring" />
             </div>
-          </form>
-        </div>
+            <div className="field">
+              <label>Boshlanish vaqti (ixtiyoriy)</label>
+              <input type="datetime-local" value={startAt} onChange={(e) => setStartAt(e.target.value)} />
+            </div>
+            <div className="field">
+              <label>Tugash vaqti (ixtiyoriy)</label>
+              <input type="datetime-local" value={endAt} onChange={(e) => setEndAt(e.target.value)} />
+            </div>
+            <div className="field">
+              <label>Tartib raqami (kichigi birinchi ko'rinadi)</label>
+              <input type="number" value={sortOrder} onChange={(e) => setSortOrder(e.target.value)} />
+            </div>
+            <div className="field">
+              <label>Rasm {isNew ? '(ixtiyoriy)' : '(yangilash uchun tanlang)'}</label>
+              <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => setImage(e.target.files?.[0] || null)} />
+            </div>
+            <div className="field field-checkbox sm:col-span-2">
+              <input type="checkbox" id="banner-active" checked={active} onChange={(e) => setActive(e.target.checked)} />
+              <label htmlFor="banner-active" className="m-0">Faol (mobil ilovada ko'rinadi)</label>
+            </div>
+          </div>
+          {!isNew && (
+            <div className="flex items-center gap-4 text-[12.5px] text-text-secondary mb-3">
+              <span className="flex items-center gap-1"><EyeIcon className="w-4 h-4" /> {banner.viewCount || 0} ko'rish</span>
+              <span className="flex items-center gap-1"><CursorIcon className="w-4 h-4" /> {banner.clickCount || 0} bosish</span>
+            </div>
+          )}
+          {error && <div className="error-text">{error}</div>}
+          <div className="modal-actions">
+            <button type="button" className="btn btn-outline" onClick={onClose}>Bekor qilish</button>
+            <button type="submit" className="btn btn-primary" disabled={busy}>Saqlash</button>
+          </div>
+        </form>
       </div>
-    </div>
+    </Modal>
   );
 }
 

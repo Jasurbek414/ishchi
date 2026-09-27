@@ -106,7 +106,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                 decoration: const InputDecoration(counterText: '', hintText: '••••'),
               ),
               if (_error != null) Text(_error!, style: TextStyle(color: cs.error)),
-              if (_info != null) Text(_info!, style: TextStyle(color: AppColors.success)),
+              if (_info != null) Text(_info!, style: TextStyle(color: context.themeSuccess)),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: _loading ? null : _verify,

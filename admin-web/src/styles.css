@@ -150,6 +150,19 @@
     @apply border-0 rounded-[9px] px-[13px] py-[7px] font-semibold text-[12.5px] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
+  /* Inputs had a focus style; nothing else did, so a keyboard user could not tell where they were
+     on any button, nav item or link. :focus-visible keeps mouse clicks free of a stray ring. */
+  .btn:focus-visible,
+  .logout-btn:focus-visible,
+  .nav-link:focus-visible,
+  .select:focus-visible,
+  .input:focus-visible,
+  a:focus-visible,
+  button:focus-visible,
+  [tabindex]:focus-visible {
+    @apply outline-2 outline-offset-2 outline-primary;
+  }
+
   .btn-primary { @apply bg-primary text-white; }
   .btn-outline-danger { @apply bg-transparent border border-danger text-danger; }
   .btn-outline { @apply bg-transparent border border-line text-text; }

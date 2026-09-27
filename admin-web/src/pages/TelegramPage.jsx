@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api, ApiError } from '../api/client.js';
 import { useAppSettings } from '../settings/AppSettingsContext.jsx';
+import Modal from '../components/Modal';
 
 export default function TelegramPage() {
   return (
@@ -121,25 +122,22 @@ function ReplyModal({ feedback, onClose, onSent }) {
   }
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <h3>Javob yozish</h3>
-        <p className="mt-0 mx-0 mb-3.5 text-text-secondary text-[13px]">{feedback.message}</p>
-        <form onSubmit={send}>
-          <div className="field">
-            <label>Javob matni</label>
-            <textarea value={text} onChange={(e) => setText(e.target.value)} rows={5} placeholder="Javobingizni yozing..." />
-          </div>
-          {error && <div className="error-text">{error}</div>}
-          <div className="modal-actions">
-            <button type="button" className="btn btn-outline" onClick={onClose}>Bekor qilish</button>
-            <button type="submit" className="btn btn-primary" disabled={sending || !text.trim()}>
-              {sending ? 'Yuborilmoqda...' : 'Yuborish va hal qilingan deb belgilash'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+    <Modal title={<>Javob yozish</>} onClose={onClose}>
+      <p className="mt-0 mx-0 mb-3.5 text-text-secondary text-[13px]">{feedback.message}</p>
+      <form onSubmit={send}>
+        <div className="field">
+          <label>Javob matni</label>
+          <textarea value={text} onChange={(e) => setText(e.target.value)} rows={5} placeholder="Javobingizni yozing..." />
+        </div>
+        {error && <div className="error-text">{error}</div>}
+        <div className="modal-actions">
+          <button type="button" className="btn btn-outline" onClick={onClose}>Bekor qilish</button>
+          <button type="submit" className="btn btn-primary" disabled={sending || !text.trim()}>
+            {sending ? 'Yuborilmoqda...' : 'Yuborish va hal qilingan deb belgilash'}
+          </button>
+        </div>
+      </form>
+    </Modal>
   );
 }
 

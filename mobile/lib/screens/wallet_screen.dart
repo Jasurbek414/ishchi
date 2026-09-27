@@ -166,7 +166,7 @@ class _TransactionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final color = tx.isCredit ? AppColors.success : cs.error;
+    final color = tx.isCredit ? context.themeSuccess : cs.error;
     final icon = tx.isCredit ? PhosphorIcons.arrowDown() : PhosphorIcons.arrowUp();
     return Card(
       child: Padding(

@@ -9,7 +9,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
@@ -63,6 +67,36 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleDataIntegrity(DataIntegrityViolationException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(ErrorResponse.of(409, "Conflict", "Bu yozuv boshqa ma'lumotlar bilan bog'langani uchun o'chirib bo'lmaydi"));
+    }
+
+    /**
+     * A bad query parameter used to fall through to the catch-all and come back as a 500 logged as
+     * "Kutilmagan xatolik" — e.g. {@code ?jobType=INVALID} or {@code ?regionId=abc}. It is the
+     * caller's mistake, so it is a 400, and it stops filling the logs with false alarms.
+     */
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        return ResponseEntity.badRequest().body(ErrorResponse.of(400, "Bad Request",
+                "\"" + ex.getName() + "\" parametrining qiymati noto'g'ri"));
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ErrorResponse> handleMissingParam(MissingServletRequestParameterException ex) {
+        return ResponseEntity.badRequest().body(ErrorResponse.of(400, "Bad Request",
+                "\"" + ex.getParameterName() + "\" parametri ko'rsatilmagan"));
+    }
+
+    /** Malformed or truncated JSON — also a 400 rather than a 500. */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleUnreadableBody(HttpMessageNotReadableException ex) {
+        return ResponseEntity.badRequest()
+                .body(ErrorResponse.of(400, "Bad Request", "So'rov tanasi o'qib bo'lmadi"));
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ErrorResponse> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex) {
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
+                .body(ErrorResponse.of(405, "Method Not Allowed", "Bu manzil uchun " + ex.getMethod() + " usuli qo'llanmaydi"));
     }
 
     @ExceptionHandler(NoResourceFoundException.class)

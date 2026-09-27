@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { api, ApiError } from '../api/client.js';
+import Modal from '../components/Modal';
 
 export default function ProfessionsPage() {
   const [items, setItems] = useState(null);
@@ -205,25 +206,22 @@ function ProfessionModal({ profession, onClose, onSaved }) {
   }
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <h3>{isNew ? 'Yangi kasb' : 'Kasbni tahrirlash'}</h3>
-        <form onSubmit={submit}>
-          <div className="field">
-            <label>Kasb nomi</label>
-            <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="masalan: Elektrik" />
-          </div>
-          <div className="field">
-            <label>Kategoriya</label>
-            <input type="text" value={category} onChange={(e) => setCategory(e.target.value)} placeholder="masalan: Qurilish" />
-          </div>
-          {error && <div className="error-text">{error}</div>}
-          <div className="modal-actions">
-            <button type="button" className="btn btn-outline" onClick={onClose}>Bekor qilish</button>
-            <button type="submit" className="btn btn-primary" disabled={busy}>Saqlash</button>
-          </div>
-        </form>
-      </div>
-    </div>
+    <Modal title={isNew ? 'Yangi kasb' : 'Kasbni tahrirlash'} onClose={onClose}>
+      <form onSubmit={submit}>
+        <div className="field">
+          <label>Kasb nomi</label>
+          <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="masalan: Elektrik" />
+        </div>
+        <div className="field">
+          <label>Kategoriya</label>
+          <input type="text" value={category} onChange={(e) => setCategory(e.target.value)} placeholder="masalan: Qurilish" />
+        </div>
+        {error && <div className="error-text">{error}</div>}
+        <div className="modal-actions">
+          <button type="button" className="btn btn-outline" onClick={onClose}>Bekor qilish</button>
+          <button type="submit" className="btn btn-primary" disabled={busy}>Saqlash</button>
+        </div>
+      </form>
+    </Modal>
   );
 }

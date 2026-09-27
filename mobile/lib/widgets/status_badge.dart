@@ -12,7 +12,7 @@ class StatusBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final color = switch (status) {
-      JobStatus.active => AppColors.success,
+      JobStatus.active => context.themeSuccess,
       JobStatus.inProgress => cs.primary,
       JobStatus.completed => cs.onSurfaceVariant,
       JobStatus.cancelled => cs.error,

@@ -216,7 +216,7 @@ class WorkerDetailScreen extends ConsumerWidget {
                   onPressed: () => _call(context, workerAsync.value!.phone),
                   style: ElevatedButton.styleFrom(
                     minimumSize: const Size.fromHeight(52),
-                    backgroundColor: AppColors.success,
+                    backgroundColor: context.themeSuccess,
                     foregroundColor: Colors.white,
                   ),
                   icon: const Icon(Icons.call, color: Colors.white),

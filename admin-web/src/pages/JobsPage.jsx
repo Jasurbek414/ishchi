@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { api, ApiError } from '../api/client.js';
+import Modal from '../components/Modal';
 
 const STATUS_LABELS = {
   ACTIVE: 'Faol',
@@ -159,45 +160,42 @@ export default function JobsPage() {
 
 function JobDetailModal({ job, onClose }) {
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal max-w-[600px] max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-        <h3>{job.title}</h3>
-        <div className="flex flex-col gap-3 text-[14px]">
-          <DetailRow label="Tavsif" value={job.description} />
-          <DetailRow label="Kasb" value={job.professionName} />
-          <DetailRow label="Hudud" value={`${job.regionName}, ${job.districtName}`} />
-          <DetailRow label="To'lov" value={formatPayment(job)} />
-          <DetailRow label="Ish turi" value={JOB_TYPE_LABELS[job.jobType] || job.jobType} />
-          <DetailRow label="Kerakli ishchilar soni" value={job.workersNeeded} />
-          <DetailRow label="Boshlanish sanasi" value={job.startDate || "Ko'rsatilmagan"} />
-          <DetailRow
-            label="Davomiyligi"
-            value={job.durationValue ? `${job.durationValue} ${DURATION_UNIT_LABELS[job.durationUnit] || job.durationUnit}` : "Ko'rsatilmagan"}
-          />
-          <DetailRow label="Ish beruvchi" value={`${job.employerName} — ${job.employerPhone}`} />
-          <DetailRow label="Holat" value={STATUS_LABELS[job.status] || job.status} />
-          <DetailRow label="Bloklangan" value={job.blocked ? 'Ha' : "Yo'q"} />
-          <DetailRow label="Yaratilgan" value={new Date(job.createdAt).toLocaleString('uz-UZ')} />
-          {job.expiresAt && <DetailRow label="Muddati tugaydi" value={new Date(job.expiresAt).toLocaleString('uz-UZ')} />}
-          {job.latitude != null && job.longitude != null && (
-            <DetailRow label="Manzil (koordinata)" value={`${job.latitude}, ${job.longitude}`} />
-          )}
-          {job.images?.length > 0 && (
-            <div>
-              <span className="text-text-secondary text-[12px]">Rasmlar</span>
-              <div className="flex gap-2 flex-wrap mt-1.5">
-                {job.images.map((url) => (
-                  <img key={url} src={url} alt="" className="w-[90px] h-[90px] object-cover rounded-lg" />
-                ))}
-              </div>
+    <Modal title={job.title} onClose={onClose} panelClassName="max-w-[600px] max-h-[85vh] overflow-y-auto">
+      <div className="flex flex-col gap-3 text-[14px]">
+        <DetailRow label="Tavsif" value={job.description} />
+        <DetailRow label="Kasb" value={job.professionName} />
+        <DetailRow label="Hudud" value={`${job.regionName}, ${job.districtName}`} />
+        <DetailRow label="To'lov" value={formatPayment(job)} />
+        <DetailRow label="Ish turi" value={JOB_TYPE_LABELS[job.jobType] || job.jobType} />
+        <DetailRow label="Kerakli ishchilar soni" value={job.workersNeeded} />
+        <DetailRow label="Boshlanish sanasi" value={job.startDate || "Ko'rsatilmagan"} />
+        <DetailRow
+          label="Davomiyligi"
+          value={job.durationValue ? `${job.durationValue} ${DURATION_UNIT_LABELS[job.durationUnit] || job.durationUnit}` : "Ko'rsatilmagan"}
+        />
+        <DetailRow label="Ish beruvchi" value={`${job.employerName} — ${job.employerPhone}`} />
+        <DetailRow label="Holat" value={STATUS_LABELS[job.status] || job.status} />
+        <DetailRow label="Bloklangan" value={job.blocked ? 'Ha' : "Yo'q"} />
+        <DetailRow label="Yaratilgan" value={new Date(job.createdAt).toLocaleString('uz-UZ')} />
+        {job.expiresAt && <DetailRow label="Muddati tugaydi" value={new Date(job.expiresAt).toLocaleString('uz-UZ')} />}
+        {job.latitude != null && job.longitude != null && (
+          <DetailRow label="Manzil (koordinata)" value={`${job.latitude}, ${job.longitude}`} />
+        )}
+        {job.images?.length > 0 && (
+          <div>
+            <span className="text-text-secondary text-[12px]">Rasmlar</span>
+            <div className="flex gap-2 flex-wrap mt-1.5">
+              {job.images.map((url) => (
+                <img key={url} src={url} alt="" className="w-[90px] h-[90px] object-cover rounded-lg" />
+              ))}
             </div>
-          )}
-        </div>
-        <div className="modal-actions">
-          <button type="button" className="btn btn-outline" onClick={onClose}>Yopish</button>
-        </div>
+          </div>
+        )}
       </div>
-    </div>
+      <div className="modal-actions">
+        <button type="button" className="btn btn-outline" onClick={onClose}>Yopish</button>
+      </div>
+    </Modal>
   );
 }
 

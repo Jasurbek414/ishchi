@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { api, ApiError } from '../api/client.js';
+import Modal from '../components/Modal';
 
 export default function LandingPage() {
   const [data, setData] = useState(null);
@@ -236,27 +237,24 @@ function ItemFormModal({ type, item, onClose, onSaved }) {
   }
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <h3>{isNew ? 'Yangi element' : 'Elementni tahrirlash'}</h3>
-        <form onSubmit={submit}>
-          <div className="field">
-            <label>Sarlavha</label>
-            <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="masalan: Xarita asosida qidiruv" />
-          </div>
-          <div className="field">
-            <label>Tavsif</label>
-            <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={4} placeholder="Qisqa tavsif matni..." />
-          </div>
-          {error && <div className="error-text">{error}</div>}
-          <div className="modal-actions">
-            <button type="button" className="btn btn-outline" onClick={onClose}>Bekor qilish</button>
-            <button type="submit" className="btn btn-primary" disabled={busy || !title.trim() || !description.trim()}>
-              {busy ? 'Saqlanmoqda...' : 'Saqlash'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+    <Modal title={isNew ? 'Yangi element' : 'Elementni tahrirlash'} onClose={onClose}>
+      <form onSubmit={submit}>
+        <div className="field">
+          <label>Sarlavha</label>
+          <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="masalan: Xarita asosida qidiruv" />
+        </div>
+        <div className="field">
+          <label>Tavsif</label>
+          <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={4} placeholder="Qisqa tavsif matni..." />
+        </div>
+        {error && <div className="error-text">{error}</div>}
+        <div className="modal-actions">
+          <button type="button" className="btn btn-outline" onClick={onClose}>Bekor qilish</button>
+          <button type="submit" className="btn btn-primary" disabled={busy || !title.trim() || !description.trim()}>
+            {busy ? 'Saqlanmoqda...' : 'Saqlash'}
+          </button>
+        </div>
+      </form>
+    </Modal>
   );
 }
