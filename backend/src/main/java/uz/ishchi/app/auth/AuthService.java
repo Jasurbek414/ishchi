@@ -8,6 +8,7 @@ import uz.ishchi.app.auth.dto.*;
 import uz.ishchi.app.common.OtpPurpose;
 import uz.ishchi.app.common.Role;
 import uz.ishchi.app.common.exception.ApiException;
+import uz.ishchi.app.config.OtpProperties;
 import uz.ishchi.app.location.District;
 import uz.ishchi.app.location.DistrictRepository;
 import uz.ishchi.app.location.Region;
@@ -50,8 +51,9 @@ public class AuthService {
     private final ProfessionRepository professionRepository;
     private final WalletService walletService;
     private final TelegramService telegramService;
+    private final OtpProperties otpProperties;
+    private final OtpAttemptTracker otpAttemptTracker;
 
-    private static final long OTP_TTL_MINUTES = 10;
     private static final SecureRandom RANDOM = new SecureRandom();
 
     @Transactional
@@ -99,22 +101,22 @@ public class AuthService {
 
     @Transactional
     public OtpDispatchResponse resendOtp(PhoneRequest request) {
-        User user = userRepository.findByPhone(request.phone())
-                .orElseThrow(() -> ApiException.notFound("Bu telefon raqam bilan foydalanuvchi topilmadi"));
-        return dispatchOtp(user, OtpPurpose.REGISTER);
+        return userRepository.findByPhone(request.phone())
+                .map(user -> dispatchOtp(user, OtpPurpose.REGISTER))
+                .orElseGet(() -> decoyDispatch(OtpPurpose.REGISTER));
     }
 
     @Transactional(readOnly = true)
     public LinkStatusResponse telegramLinkStatus(String phone) {
-        User user = userRepository.findByPhone(phone)
-                .orElseThrow(() -> ApiException.notFound("Foydalanuvchi topilmadi"));
-        return new LinkStatusResponse(user.getTelegramChatId() != null);
+        return new LinkStatusResponse(userRepository.findByPhone(phone)
+                .map(user -> user.getTelegramChatId() != null)
+                .orElse(false));
     }
 
     @Transactional
     public MessageResponse verifyOtp(VerifyOtpRequest request) {
         User user = userRepository.findByPhone(request.phone())
-                .orElseThrow(() -> ApiException.notFound("Foydalanuvchi topilmadi"));
+                .orElseThrow(() -> ApiException.badRequest("Tasdiqlash kodi noto'g'ri"));
         if (user.isVerified()) {
             return new MessageResponse("Telefon raqam allaqachon tasdiqlangan");
         }
@@ -154,7 +156,10 @@ public class AuthService {
         stored.setRevoked(true);
         User user = stored.getUser();
         if (!user.isActive()) {
-            throw ApiException.forbidden("Akkauntingiz bloklangan");
+            throw ApiException.forbidden("Akkauntingiz bloklangan", "ACCOUNT_BLOCKED");
+        }
+        if (!user.isVerified()) {
+            throw ApiException.forbidden("Avval telefon raqamingizni tasdiqlang", "ACCOUNT_NOT_VERIFIED");
         }
         return issueTokens(user);
     }
@@ -169,15 +174,15 @@ public class AuthService {
 
     @Transactional
     public OtpDispatchResponse forgotPassword(PhoneRequest request) {
-        User user = userRepository.findByPhone(request.phone())
-                .orElseThrow(() -> ApiException.notFound("Bu telefon raqam bilan foydalanuvchi topilmadi"));
-        return dispatchOtp(user, OtpPurpose.RESET_PASSWORD);
+        return userRepository.findByPhone(request.phone())
+                .map(user -> dispatchOtp(user, OtpPurpose.RESET_PASSWORD))
+                .orElseGet(() -> decoyDispatch(OtpPurpose.RESET_PASSWORD));
     }
 
     @Transactional
     public MessageResponse resetPassword(ResetPasswordRequest request) {
         User user = userRepository.findByPhone(request.phone())
-                .orElseThrow(() -> ApiException.notFound("Foydalanuvchi topilmadi"));
+                .orElseThrow(() -> ApiException.badRequest("Tasdiqlash kodi noto'g'ri"));
         consumeOtp(request.phone(), request.code(), OtpPurpose.RESET_PASSWORD);
         user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
         refreshTokenRepository.revokeAllForUser(user.getId());
@@ -207,6 +212,20 @@ public class AuthService {
         return new OtpDispatchResponse(defaultMessage(purpose), null);
     }
 
+    /**
+     * The same-shaped answer for a phone number nobody is registered with. Answering 404 only in
+     * that case told anyone who asked which numbers have accounts; when Telegram is configured
+     * the decoy carries a bot link too, so the two cases look identical from outside. The token
+     * in it is never stored, so the link cannot link anything.
+     */
+    private OtpDispatchResponse decoyDispatch(OtpPurpose purpose) {
+        if (!telegramService.isConfigured()) {
+            return new OtpDispatchResponse(defaultMessage(purpose), null);
+        }
+        return new OtpDispatchResponse("Davom etish uchun Telegram botimizni oching",
+                telegramService.buildLinkUrl(telegramService.generateLinkToken()));
+    }
+
     /** Called by the Telegram webhook right after a user finishes linking their chat. */
     @Transactional
     public void sendPendingOtpAfterTelegramLink(User user, OtpPurpose purpose) {
@@ -227,7 +246,8 @@ public class AuthService {
     }
 
     private void saveOtpCode(String phone, String code, OtpPurpose purpose) {
-        OtpCode otp = new OtpCode(phone, code, purpose, Instant.now().plus(OTP_TTL_MINUTES, ChronoUnit.MINUTES));
+        OtpCode otp = new OtpCode(phone, code, purpose,
+                Instant.now().plus(otpProperties.ttlMinutesOrDefault(), ChronoUnit.MINUTES));
         otpCodeRepository.save(otp);
     }
 
@@ -238,6 +258,10 @@ public class AuthService {
             throw ApiException.badRequest("Tasdiqlash kodi muddati tugagan, qaytadan so'rang");
         }
         if (!otp.getCode().equals(code)) {
+            int attempts = otpAttemptTracker.recordFailure(otp.getId());
+            if (attempts >= OtpCode.MAX_ATTEMPTS) {
+                throw ApiException.badRequest("Kod bir necha marta xato kiritildi. Yangi kod so'rang");
+            }
             throw ApiException.badRequest("Tasdiqlash kodi noto'g'ri");
         }
         otp.setUsed(true);

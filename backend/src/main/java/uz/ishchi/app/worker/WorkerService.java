@@ -40,7 +40,7 @@ public class WorkerService {
                 : org.springframework.data.domain.PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(),
                         Sort.by(Sort.Direction.DESC, "updatedAt"));
 
-        return workerProfileRepository.findAll(spec, effective).map(WorkerResponse::from);
+        return workerProfileRepository.findAll(spec, effective).map(WorkerResponse::forList);
     }
 
     @Transactional(readOnly = true)
@@ -51,7 +51,7 @@ public class WorkerService {
                 .and(WorkerSpecifications.professionId(professionId));
         Pageable limit = org.springframework.data.domain.PageRequest.of(0, 500,
                 Sort.by(Sort.Direction.DESC, "updatedAt"));
-        return workerProfileRepository.findAll(spec, limit).map(WorkerResponse::from).getContent();
+        return workerProfileRepository.findAll(spec, limit).map(WorkerResponse::forMap).getContent();
     }
 
     @Transactional(readOnly = true)
@@ -60,6 +60,6 @@ public class WorkerService {
                 .orElseThrow(() -> ApiException.notFound("Ishchi topilmadi"));
         List<WorkExperienceResponse> experiences = workExperienceRepository.findByWorkerIdOrderByStartDateDesc(id)
                 .stream().map(WorkExperienceResponse::from).toList();
-        return WorkerResponse.from(profile, experiences);
+        return WorkerResponse.forDetail(profile, experiences);
     }
 }

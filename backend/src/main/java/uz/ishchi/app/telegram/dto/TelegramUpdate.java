@@ -9,10 +9,16 @@ import java.util.List;
 public record TelegramUpdate(Message message) {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record Message(Chat chat, String text, Contact contact, List<PhotoSize> photo) {
+    public record Message(Chat chat, From from, String text, Contact contact, List<PhotoSize> photo) {
 
         @JsonIgnoreProperties(ignoreUnknown = true)
         public record Chat(Long id) {
+        }
+
+        /** The Telegram account that sent the message — needed to prove a shared contact is
+         *  the sender's own number and not a contact card forwarded from their address book. */
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        public record From(Long id) {
         }
 
         @JsonIgnoreProperties(ignoreUnknown = true)

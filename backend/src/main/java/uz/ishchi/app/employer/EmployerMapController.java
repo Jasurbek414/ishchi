@@ -2,6 +2,7 @@ package uz.ishchi.app.employer;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/employers")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('WORKER')")
 public class EmployerMapController {
 
     private final EmployerProfileRepository employerProfileRepository;
