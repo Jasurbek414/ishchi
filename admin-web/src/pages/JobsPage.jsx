@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { api, ApiError } from '../api/client.js';
 import Modal from '../components/Modal';
+import { useToast } from '../components/Toast.jsx';
 
 const STATUS_LABELS = {
   ACTIVE: 'Faol',
@@ -21,6 +22,7 @@ function formatPayment(job) {
 }
 
 export default function JobsPage() {
+  const toast = useToast();
   const location = useLocation();
   // Dashboard stat cards link here with an optional pre-filter in router state.
   const [status, setStatus] = useState(location.state?.status || '');
@@ -52,7 +54,7 @@ export default function JobsPage() {
       await api.patch(`/api/admin/jobs/${job.id}/blocked`, { blocked: !job.blocked });
       load();
     } catch (e) {
-      alert(e instanceof ApiError ? e.message : "Amalni bajarib bo'lmadi");
+      toast.error(e instanceof ApiError ? e.message : "Amalni bajarib bo'lmadi");
     } finally {
       setBusyId(null);
     }
@@ -65,7 +67,7 @@ export default function JobsPage() {
       await api.del(`/api/admin/jobs/${job.id}`);
       load();
     } catch (e) {
-      alert(e instanceof ApiError ? e.message : "O'chirib bo'lmadi");
+      toast.error(e instanceof ApiError ? e.message : "O'chirib bo'lmadi");
     } finally {
       setBusyId(null);
     }

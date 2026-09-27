@@ -1,0 +1,60 @@
+{
+  "$comment": [
+    "The one place the brand's colours are defined. They used to live independently in three files —",
+    "mobile/lib/core/theme.dart, admin-web/src/styles.css and landing-web/src/index.css — and had",
+    "already begun to diverge, so changing the brand meant three edits and hoping none was missed.",
+    "Run `node tools/generate-design-tokens.mjs` after editing; the generated files are committed so",
+    "no build step is needed, and CI checks that regenerating produces no diff."
+  ],
+  "brand": {
+    "$comment": [
+      "500 is the brand colour and is not adjusted: it is for fills, where white sits on top of it.",
+      "As small text on a light surface it only reaches 3.4:1, so `text` below is the darkened",
+      "variant for that job — an active nav item, a link, a label."
+    ],
+    "text": "#c44214",
+    "500": "#e8541f",
+    "400": "#ff7a3d",
+    "300": "#ff9a4d",
+    "100": "#ffe4d4"
+  },
+  "neutral": {
+    "surface": "#ffffff",
+    "background": "#f5f5f7",
+    "line": "#e2e2e5",
+    "text": "#1c1c1e",
+    "textSecondary": "#6b6b70"
+  },
+  "status": {
+    "$comment": [
+      "Checked as text against the harder of the two light surfaces (#f5f5f7), because these are used",
+      "as small bold labels. danger was #d64545 at about 4.3:1; success and warning were also just",
+      "under 4.5:1, so all three were nudged darker. They always ship with an icon and words, never",
+      "colour alone, so they still read in greyscale and in forced-colors mode."
+    ],
+    "success": "#297d4e",
+    "danger": "#c62f2f",
+    "warning": "#ab5a00",
+    "$commentDark": "Lightened for a dark background: the light-mode values fall to roughly 3.4:1 there.",
+    "successDark": "#5cc98c",
+    "dangerDark": "#ff8a8a",
+    "warningDark": "#e0a33c"
+  },
+  "navy": {
+    "$comment": "Landing page only — the marketing surface sits on a dark navy rather than the app's greys.",
+    "950": "#070d1a",
+    "900": "#0e1930",
+    "800": "#142a4d",
+    "700": "#1c3763",
+    "600": "#24406f",
+    "100": "#eef1f8"
+  },
+  "darkNeutral": {
+    "$comment": "Admin panel dark mode. The mobile app derives its dark palette from Material 3 instead.",
+    "surface": "#1b1b1f",
+    "background": "#121216",
+    "line": "#33333a",
+    "text": "#e9e9ec",
+    "textSecondary": "#a3a3ac"
+  }
+}

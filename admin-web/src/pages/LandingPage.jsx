@@ -1,8 +1,10 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { api, ApiError } from '../api/client.js';
 import Modal from '../components/Modal';
+import { useToast } from '../components/Toast.jsx';
 
 export default function LandingPage() {
+  const toast = useToast();
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
 
@@ -132,7 +134,7 @@ function ItemsCard({ title, hint, type, items, onChanged }) {
       await api.del(`/api/admin/landing/items/${item.id}`);
       onChanged();
     } catch (e) {
-      alert(e instanceof ApiError ? e.message : "O'chirib bo'lmadi");
+      toast.error(e instanceof ApiError ? e.message : "O'chirib bo'lmadi");
     } finally {
       setBusyId(null);
     }
@@ -157,7 +159,7 @@ function ItemsCard({ title, hint, type, items, onChanged }) {
       await api.patch('/api/admin/landing/items/reorder', { ids: next.map((it) => it.id) });
       onChanged();
     } catch (e) {
-      alert(e instanceof ApiError ? e.message : "Tartibni saqlab bo'lmadi");
+      toast.error(e instanceof ApiError ? e.message : "Tartibni saqlab bo'lmadi");
       onChanged();
     } finally {
       setReordering(false);

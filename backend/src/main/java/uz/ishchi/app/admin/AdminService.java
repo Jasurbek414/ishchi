@@ -48,6 +48,7 @@ public class AdminService {
     private final TelegramFeedbackRepository telegramFeedbackRepository;
     private final WalletAccountRepository walletAccountRepository;
     private final JobImageRepository jobImageRepository;
+    private final uz.ishchi.app.report.ReportRepository reportRepository;
     private final FileStorageService fileStorageService;
 
     private static final ZoneId ZONE = ZoneId.of("Asia/Tashkent");
@@ -58,13 +59,12 @@ public class AdminService {
         Map<Long, RowSummary> summaries = summariesFor(page.getContent());
         return page.map(user -> {
             RowSummary summary = summaries.get(user.getId());
-            return AdminUserResponse.from(user,
-                    summary == null ? null : summary.fullName(),
-                    summary == null ? null : summary.regionName());
+            return toResponse(user, summary);
         });
     }
 
-    private record RowSummary(String fullName, String regionName) {
+    private record RowSummary(String fullName, String regionName, boolean workerVerified,
+                               Double ratingAverage, Integer ratingCount) {
     }
 
     /**
@@ -81,21 +81,28 @@ public class AdminService {
         List<Long> workerIds = idsByRole.getOrDefault(Role.WORKER, List.of());
         if (!workerIds.isEmpty()) {
             workerProfileRepository.findByUserIdIn(workerIds).forEach(p -> summaries.put(p.getUser().getId(),
-                    new RowSummary(p.getFirstName() + " " + p.getLastName(), p.getRegion().getName())));
+                    new RowSummary(p.getFirstName() + " " + p.getLastName(), p.getRegion().getName(),
+                            p.isVerified(), p.getRatingAverage(), p.getRatingCount())));
         }
         List<Long> employerIds = idsByRole.getOrDefault(Role.EMPLOYER, List.of());
         if (!employerIds.isEmpty()) {
             employerProfileRepository.findByUserIdIn(employerIds).forEach(p -> summaries.put(p.getUser().getId(),
-                    new RowSummary(p.getFirstName() + " " + p.getLastName(), p.getRegion().getName())));
+                    new RowSummary(p.getFirstName() + " " + p.getLastName(), p.getRegion().getName(),
+                            false, p.getRatingAverage(), p.getRatingCount())));
         }
         return summaries;
     }
 
     private AdminUserResponse toAdminUserResponse(User user) {
-        RowSummary summary = summariesFor(List.of(user)).get(user.getId());
-        return AdminUserResponse.from(user,
-                summary == null ? null : summary.fullName(),
-                summary == null ? null : summary.regionName());
+        return toResponse(user, summariesFor(List.of(user)).get(user.getId()));
+    }
+
+    private AdminUserResponse toResponse(User user, RowSummary summary) {
+        if (summary == null) {
+            return AdminUserResponse.from(user, null, null);
+        }
+        return AdminUserResponse.from(user, summary.fullName(), summary.regionName(),
+                summary.workerVerified(), summary.ratingAverage(), summary.ratingCount());
     }
 
     @Transactional(readOnly = true)
@@ -171,7 +178,9 @@ public class AdminService {
 
     @Transactional(readOnly = true)
     public StatsResponse stats() {
-        Instant startOfToday = LocalDate.now(ZONE).atStartOfDay(ZONE).toInstant();
+        LocalDate today = LocalDate.now(ZONE);
+        Instant startOfToday = today.atStartOfDay(ZONE).toInstant();
+        Instant startOfYesterday = today.minusDays(1).atStartOfDay(ZONE).toInstant();
         Map<String, Long> jobsByStatus = new LinkedHashMap<>();
         for (JobStatus status : JobStatus.values()) {
             jobsByStatus.put(status.name(), jobRepository.countByStatus(status));
@@ -183,9 +192,12 @@ public class AdminService {
                 jobRepository.countByStatusAndBlockedFalse(JobStatus.ACTIVE),
                 userRepository.countByCreatedAtAfter(startOfToday),
                 jobRepository.countByCreatedAtAfter(startOfToday),
+                userRepository.countByCreatedAtBetween(startOfYesterday, startOfToday),
+                jobRepository.countByCreatedAtBetween(startOfYesterday, startOfToday),
                 userRepository.countByActiveFalse(),
                 userRepository.countByTelegramChatIdIsNotNull(),
                 telegramFeedbackRepository.countByResolvedFalse(),
+                reportRepository.countByResolvedFalse(),
                 walletAccountRepository.sumAllBalances(),
                 jobsByStatus
         );

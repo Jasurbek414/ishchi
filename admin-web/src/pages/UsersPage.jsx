@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { api, ApiError } from '../api/client.js';
 import { useAppSettings } from '../settings/AppSettingsContext.jsx';
 import Modal from '../components/Modal';
+import { useToast } from '../components/Toast.jsx';
 
 const ROLE_LABELS = { WORKER: 'Ishchi', EMPLOYER: 'Ish beruvchi', ADMIN: 'Administrator' };
 
@@ -14,6 +15,7 @@ const STATUS_OPTIONS = [
 ];
 
 export default function UsersPage() {
+  const toast = useToast();
   const { walletEnabled } = useAppSettings();
   const location = useLocation();
   // Dashboard stat cards link here with an optional pre-filter in router state.
@@ -53,9 +55,24 @@ export default function UsersPage() {
     setBusyId(user.id);
     try {
       await api.patch(`/api/admin/users/${user.id}/active`, { active: !user.active });
+      toast.success(user.active ? 'Foydalanuvchi bloklandi' : 'Foydalanuvchi faollashtirildi');
       load();
     } catch (e) {
-      alert(e instanceof ApiError ? e.message : "Amalni bajarib bo'lmadi");
+      toast.error(e instanceof ApiError ? e.message : "Amalni bajarib bo'lmadi");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  /** The documents-checked badge — deliberately separate from phone verification. */
+  async function toggleWorkerVerified(user) {
+    setBusyId(user.id);
+    try {
+      await api.patch(`/api/admin/users/${user.id}/verified?verified=${!user.workerVerified}`);
+      toast.success(user.workerVerified ? 'Tasdiq olib tashlandi' : 'Ishchi tasdiqlandi');
+      load();
+    } catch (e) {
+      toast.error(e instanceof ApiError ? e.message : "Amalni bajarib bo'lmadi");
     } finally {
       setBusyId(null);
     }
@@ -91,7 +108,7 @@ export default function UsersPage() {
 
       {error && <div className="error-text">{error}</div>}
 
-      <div className="table-wrap">
+      <div className="table-wrap cards">
         <table>
           <thead>
             <tr>
@@ -106,25 +123,31 @@ export default function UsersPage() {
           <tbody>
             {data?.content.map((u) => (
               <tr key={u.id}>
-                <td>{u.id}</td>
-                <td>
+                <td data-label="ID">{u.id}</td>
+                <td data-label="Foydalanuvchi">
                   <div className="whitespace-normal">{u.fullName || '—'}</div>
                   <div className="text-text-secondary text-[12px]">{u.phone}</div>
                   {u.regionName && <div className="text-text-secondary text-[12px]">{u.regionName}</div>}
                 </td>
-                <td>{ROLE_LABELS[u.role] || u.role}</td>
-                <td>
+                <td data-label="Rol">{ROLE_LABELS[u.role] || u.role}</td>
+                <td data-label="Holat">
                   <div className="flex gap-1.5 flex-wrap">
                     <span className={`badge ${u.active ? 'badge-success' : 'badge-danger'}`}>
                       {u.active ? 'Faol' : 'Bloklangan'}
                     </span>
-                    {!u.verified && <span className="badge badge-neutral">Tasdiqlanmagan</span>}
+                    {!u.verified && <span className="badge badge-neutral">Telefon tasdiqlanmagan</span>}
+                    {u.workerVerified && <span className="badge badge-success">✓ Tasdiqlangan</span>}
+                    {u.ratingCount > 0 && (
+                      <span className="badge badge-neutral">
+                        ★ {u.ratingAverage?.toFixed(1)} ({u.ratingCount})
+                      </span>
+                    )}
                     <span className={`badge ${u.telegramLinked ? 'badge-success' : 'badge-neutral'}`}>
                       {u.telegramLinked ? 'Telegram' : 'Telegram yoʻq'}
                     </span>
                   </div>
                 </td>
-                <td>{new Date(u.createdAt).toLocaleDateString('uz-UZ')}</td>
+                <td data-label="Sana">{new Date(u.createdAt).toLocaleDateString('uz-UZ')}</td>
                 <td className="flex gap-2 flex-wrap">
                   {u.role !== 'ADMIN' && (
                     <button className="btn btn-outline" onClick={() => setDetailUser(u)}>Batafsil</button>
@@ -136,6 +159,16 @@ export default function UsersPage() {
                       onClick={() => toggleActive(u)}
                     >
                       {u.active ? 'Bloklash' : 'Faollashtirish'}
+                    </button>
+                  )}
+                  {u.role === 'WORKER' && (
+                    <button
+                      className="btn btn-outline"
+                      disabled={busyId === u.id}
+                      onClick={() => toggleWorkerVerified(u)}
+                      title="Hujjatlari tekshirilganini bildiradi"
+                    >
+                      {u.workerVerified ? 'Tasdiqni olib tashlash' : 'Tasdiqlash'}
                     </button>
                   )}
                   {walletEnabled && u.role !== 'ADMIN' && (

@@ -1,8 +1,10 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { api, ApiError } from '../api/client.js';
 import Modal from '../components/Modal';
+import { useToast } from '../components/Toast.jsx';
 
 export default function ProfessionsPage() {
+  const toast = useToast();
   const [items, setItems] = useState(null);
   const [error, setError] = useState(null);
   const [busyId, setBusyId] = useState(null);
@@ -50,7 +52,7 @@ export default function ProfessionsPage() {
       await api.patch(`/api/admin/professions/${p.id}/active`, { active: !p.active });
       load();
     } catch (e) {
-      alert(e instanceof ApiError ? e.message : "Amalni bajarib bo'lmadi");
+      toast.error(e instanceof ApiError ? e.message : "Amalni bajarib bo'lmadi");
     } finally {
       setBusyId(null);
     }
@@ -66,7 +68,7 @@ export default function ProfessionsPage() {
       await api.del(`/api/admin/professions/${p.id}`);
       load();
     } catch (e) {
-      alert(e instanceof ApiError ? e.message : "O'chirib bo'lmadi (foydalanilayotgan bo'lishi mumkin)");
+      toast.error(e instanceof ApiError ? e.message : "O'chirib bo'lmadi (foydalanilayotgan bo'lishi mumkin)");
     } finally {
       setBusyId(null);
     }

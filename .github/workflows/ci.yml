@@ -85,6 +85,18 @@ jobs:
           echo "Ilova ishga tushmadi"
           exit 1
 
+  design-tokens:
+    name: Design tokens are in sync
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      # The palette lives in design-tokens.json and is generated into all three surfaces. Editing a
+      # generated file, or the source without regenerating, is exactly the drift this replaces.
+      - run: node tools/generate-design-tokens.mjs --check
+
   frontends:
     name: Frontends build
     runs-on: ubuntu-latest

@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext.jsx';
+import ThemeToggle from './ThemeToggle.jsx';
 
 const NAV_ITEMS = [
   { to: '/', label: 'Statistika', end: true },
@@ -7,6 +8,7 @@ const NAV_ITEMS = [
   { to: '/jobs', label: 'Buyurtmalar' },
   { to: '/professions', label: 'Kasblar' },
   { to: '/promo-banners', label: 'Reklama' },
+  { to: '/reports', label: 'Shikoyatlar' },
   { to: '/telegram', label: 'Telegram bot' },
   { to: '/wallet', label: 'Hamyon' },
   { to: '/landing', label: 'Landing sahifa' },
@@ -23,7 +25,10 @@ export default function Layout() {
           <span className="topbar-badge">I</span>
           Ishchi — Admin
         </div>
-        <button className="logout-btn" onClick={logout}>Chiqish</button>
+        <div className="topbar-actions">
+          <ThemeToggle />
+          <button className="logout-btn" onClick={logout}>Chiqish</button>
+        </div>
       </header>
       <div className="layout-body">
         <nav className="sidebar">

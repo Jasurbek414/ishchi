@@ -1,15 +1,21 @@
 import 'package:flutter/material.dart';
 
+import 'design_tokens.dart';
+
+/// The brand palette, kept as thin aliases over [DesignTokens] so existing call sites keep working.
+///
+/// The values themselves come from design-tokens.json, shared with the admin panel and the landing
+/// page — the three used to define the same colours independently and had already begun to diverge.
 class AppColors {
-  static const primary = Color(0xFFE8541F);
-  static const primaryLight = Color(0xFFFF9A4D);
-  static const surface = Color(0xFFFFFFFF);
-  static const background = Color(0xFFF5F5F7);
-  static const textPrimary = Color(0xFF1C1C1E);
-  static const textSecondary = Color(0xFF6B6B70);
-  static const border = Color(0xFFE2E2E5);
-  static const success = Color(0xFF2E8B57);
-  static const danger = Color(0xFFD64545);
+  static const primary = DesignTokens.primary;
+  static const primaryLight = DesignTokens.primaryLight;
+  static const surface = DesignTokens.surface;
+  static const background = DesignTokens.background;
+  static const textPrimary = DesignTokens.text;
+  static const textSecondary = DesignTokens.textSecondary;
+  static const border = DesignTokens.line;
+  static const success = DesignTokens.success;
+  static const danger = DesignTokens.danger;
 }
 
 extension AppColorHelpers on BuildContext {
@@ -24,14 +30,12 @@ extension AppColorHelpers on BuildContext {
   Color get themeTextSecondary => cs.onSurfaceVariant;
   Color get themeDanger => cs.error;
 
-  /// AppColors.success is tuned for a white background; on a dark surface it drops to roughly
-  /// 3.4:1, which is under the 4.5:1 that small text needs. Lightened for dark mode so "available",
-  /// "credited" and similar states stay readable in both themes.
-  Color get themeSuccess {
-    if (Theme.of(this).brightness == Brightness.light) return AppColors.success;
-    final hsl = HSLColor.fromColor(AppColors.success);
-    return hsl.withLightness((hsl.lightness + 0.22).clamp(0.0, 1.0)).withSaturation(0.55).toColor();
-  }
+  /// The light-mode green is tuned for a white background and falls to roughly 3.4:1 on a dark
+  /// surface, under the 4.5:1 small text needs. Both variants come from the shared token file, so
+  /// the admin panel's dark mode uses the same pair.
+  Color get themeSuccess => Theme.of(this).brightness == Brightness.light
+      ? DesignTokens.success
+      : DesignTokens.successDark;
   Color get themeOnSurface => cs.onSurface;
   Color get themeOnSurfaceVariant => cs.onSurfaceVariant;
 }

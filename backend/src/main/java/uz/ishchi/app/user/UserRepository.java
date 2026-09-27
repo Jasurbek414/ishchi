@@ -25,6 +25,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     long countByCreatedAtAfter(Instant instant);
 
+    long countByCreatedAtBetween(Instant from, Instant to);
+
     @Query("select u.telegramChatId from User u where u.telegramChatId is not null and u.active = true")
     List<Long> findAllActiveTelegramChatIds();
 

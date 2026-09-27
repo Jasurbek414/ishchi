@@ -10,15 +10,27 @@ public record AdminUserResponse(
         String phone,
         Role role,
         boolean active,
+        /** Phone confirmed by OTP — distinct from {@link #workerVerified}. */
         boolean verified,
         boolean telegramLinked,
         String fullName,
         String regionName,
-        Instant createdAt
+        Instant createdAt,
+        /** Documents checked by an admin. Only meaningful for a worker; false where there is no
+         *  worker profile. Deliberately a separate flag from the OTP one above. */
+        boolean workerVerified,
+        Double ratingAverage,
+        Integer ratingCount
 ) {
     public static AdminUserResponse from(User user, String fullName, String regionName) {
+        return from(user, fullName, regionName, false, null, null);
+    }
+
+    public static AdminUserResponse from(User user, String fullName, String regionName,
+                                          boolean workerVerified, Double ratingAverage, Integer ratingCount) {
         return new AdminUserResponse(user.getId(), user.getPhone(), user.getRole(),
                 user.isActive(), user.isVerified(), user.getTelegramChatId() != null,
-                fullName, regionName, user.getCreatedAt());
+                fullName, regionName, user.getCreatedAt(),
+                workerVerified, ratingAverage, ratingCount);
     }
 }

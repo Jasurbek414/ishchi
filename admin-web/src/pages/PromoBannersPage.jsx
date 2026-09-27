@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { api, ApiError } from '../api/client.js';
 import Modal from '../components/Modal';
+import { useToast } from '../components/Toast.jsx';
 
 const AUDIENCE_LABELS = { ALL: 'Hammaga', WORKER: 'Ishchilar (bosh sahifa)', EMPLOYER: 'Ish beruvchilar (qidiruv)' };
 const STATUS_FILTERS = [
@@ -36,6 +37,7 @@ function toLocalInputValue(iso) {
 }
 
 export default function PromoBannersPage() {
+  const toast = useToast();
   const [items, setItems] = useState(null);
   const [regions, setRegions] = useState([]);
   const [error, setError] = useState(null);
@@ -92,7 +94,7 @@ export default function PromoBannersPage() {
       await api.patch(`/api/admin/promo-banners/${b.id}/active`, { active: !b.active });
       load();
     } catch (e) {
-      alert(e instanceof ApiError ? e.message : "Amalni bajarib bo'lmadi");
+      toast.error(e instanceof ApiError ? e.message : "Amalni bajarib bo'lmadi");
     } finally {
       setBusyId(null);
     }
@@ -105,7 +107,7 @@ export default function PromoBannersPage() {
       await api.del(`/api/admin/promo-banners/${b.id}`);
       load();
     } catch (e) {
-      alert(e instanceof ApiError ? e.message : "O'chirib bo'lmadi");
+      toast.error(e instanceof ApiError ? e.message : "O'chirib bo'lmadi");
     } finally {
       setBusyId(null);
     }
@@ -139,7 +141,7 @@ export default function PromoBannersPage() {
       await api.patch('/api/admin/promo-banners/reorder', { ids: next.map((b) => b.id) });
       load();
     } catch (e) {
-      alert(e instanceof ApiError ? e.message : "Tartibni saqlab bo'lmadi");
+      toast.error(e instanceof ApiError ? e.message : "Tartibni saqlab bo'lmadi");
       load();
     } finally {
       setReordering(false);

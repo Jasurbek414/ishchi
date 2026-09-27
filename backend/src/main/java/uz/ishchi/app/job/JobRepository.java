@@ -41,6 +41,8 @@ public interface JobRepository extends JpaRepository<Job, Long>, JpaSpecificatio
 
     long countByCreatedAtAfter(Instant instant);
 
+    long countByCreatedAtBetween(Instant from, Instant to);
+
     @Query("select j.profession.id, count(j) from Job j group by j.profession.id")
     List<Object[]> countByProfessionGrouped();
 

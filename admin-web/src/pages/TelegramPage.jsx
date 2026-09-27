@@ -2,8 +2,10 @@ import { useCallback, useEffect, useState } from 'react';
 import { api, ApiError } from '../api/client.js';
 import { useAppSettings } from '../settings/AppSettingsContext.jsx';
 import Modal from '../components/Modal';
+import { useToast } from '../components/Toast.jsx';
 
 export default function TelegramPage() {
+  const toast = useToast();
   return (
     <div>
       <h1>Telegram bot</h1>
@@ -35,7 +37,7 @@ function FeedbackCard() {
       await api.patch(`/api/admin/telegram/feedback/${item.id}/resolved`, { resolved: !item.resolved });
       load();
     } catch (e) {
-      alert(e instanceof ApiError ? e.message : "Amalni bajarib bo'lmadi");
+      toast.error(e instanceof ApiError ? e.message : "Amalni bajarib bo'lmadi");
     }
   }
 
