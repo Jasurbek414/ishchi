@@ -47,6 +47,16 @@ releases/
 admin-web/node_modules/
 admin-web/dist/
 
+# branding: ikonka ustida ishlash paytidagi oraliq/tekshiruv rasmlari (branding/README.md'ga qarang)
+branding/debug_*
+branding/zoom_*
+branding/ff_*
+branding/diag_*
+branding/overlay_*
+branding/v5_*
+branding/rasm_v_*
+branding/verify_*
+
 # os
 .DS_Store
 Thumbs.db

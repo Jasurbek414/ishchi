@@ -1,0 +1,137 @@
+name: CI
+
+# Nothing verified the build before this: no workflow existed, so a commit that did not
+# compile or a test that broke could be pushed and only surface at deploy time.
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (Maven)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: temurin
+          cache: maven
+
+      # Compiles, runs the test suite and produces the jar the Dockerfile builds.
+      - name: Build and test
+        working-directory: backend
+        run: mvn -B verify
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-reports
+          path: backend/target/surefire-reports/
+          if-no-files-found: ignore
+
+  migrations:
+    name: Flyway migrations apply cleanly
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: ishchi
+          POSTGRES_USER: ishchi
+          POSTGRES_PASSWORD: ishchi
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U ishchi -d ishchi"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: temurin
+          cache: maven
+
+      # Starts the application against a real Postgres so every migration runs and Hibernate's
+      # ddl-auto=validate confirms the entities still match the schema the migrations produce.
+      - name: Start against a real database
+        working-directory: backend
+        env:
+          DB_HOST: localhost
+          DB_PORT: '5432'
+          DB_NAME: ishchi
+          DB_USER: ishchi
+          DB_PASSWORD: ishchi
+          JWT_SECRET: ci-only-secret-at-least-32-characters-long
+          APP_BASE_URL: http://localhost:8080
+        run: |
+          mvn -B -q -DskipTests package
+          java -jar target/app.jar &
+          for i in $(seq 1 60); do
+            if curl -sf http://localhost:8080/actuator/health | grep -q UP; then
+              echo "Ishga tushdi — migratsiyalar qo'llandi va sxema validatsiyadan o'tdi"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Ilova ishga tushmadi"
+          exit 1
+
+  frontends:
+    name: Frontends build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app: [admin-web, landing-web]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: ${{ matrix.app }}/package-lock.json
+
+      - name: Install
+        working-directory: ${{ matrix.app }}
+        run: npm ci
+
+      - name: Build
+        working-directory: ${{ matrix.app }}
+        run: npm run build
+
+  mobile:
+    name: Mobile (Flutter)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.29.3
+          cache: true
+
+      - name: Install dependencies
+        working-directory: mobile
+        run: flutter pub get
+
+      # Generates the localization classes the app imports, so analyze sees them.
+      - name: Generate localizations
+        working-directory: mobile
+        run: flutter gen-l10n
+
+      - name: Analyze
+        working-directory: mobile
+        run: flutter analyze
+
+      - name: Test
+        working-directory: mobile
+        run: flutter test
