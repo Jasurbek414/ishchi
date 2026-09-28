@@ -4,6 +4,7 @@ import '../core/api_client.dart';
 import '../models/enums.dart';
 import '../models/job.dart';
 import '../models/page_response.dart';
+import '../models/price_guidance.dart';
 
 class JobRepository {
   JobRepository(this._client);
@@ -22,6 +23,7 @@ class JobRepository {
     String sort = 'newest',
     int? nearRegionId,
     int? nearDistrictId,
+    bool? urgent,
     int page = 0,
     int size = 20,
   }) async {
@@ -37,16 +39,28 @@ class JobRepository {
       'sortBy': sort,
       if (nearRegionId != null) 'nearRegionId': nearRegionId,
       if (nearDistrictId != null) 'nearDistrictId': nearDistrictId,
+      if (urgent == true) 'urgent': true,
       'page': page,
       'size': size,
     });
     return PageResponse.fromJson(res, Job.fromJson);
   }
 
-  Future<List<Job>> mapSearch({int? regionId, int? professionId}) async {
+  /// [latitude]/[longitude]/[radiusDegrees] restrict the pins to what is on screen. Without them
+  /// the server answers with the newest jobs regardless of where the map is looking.
+  Future<List<Job>> mapSearch({
+    int? regionId,
+    int? professionId,
+    double? latitude,
+    double? longitude,
+    double? radiusDegrees,
+  }) async {
     final res = await _client.getList('/jobs/map', query: {
       if (regionId != null) 'regionId': regionId,
       if (professionId != null) 'professionId': professionId,
+      if (latitude != null) 'latitude': latitude,
+      if (longitude != null) 'longitude': longitude,
+      if (radiusDegrees != null) 'radiusDegrees': radiusDegrees,
     });
     return res.map((e) => Job.fromJson(e as Map<String, dynamic>)).toList();
   }
@@ -88,6 +102,7 @@ class JobRepository {
     DurationUnit? durationUnit,
     double? latitude,
     double? longitude,
+    bool urgent = false,
   }) async {
     final res = await _client.post('/jobs', data: {
       'title': title,
@@ -104,6 +119,7 @@ class JobRepository {
       if (durationUnit != null) 'durationUnit': durationUnit.apiValue,
       if (latitude != null) 'latitude': latitude,
       if (longitude != null) 'longitude': longitude,
+      'urgent': urgent,
     });
     return Job.fromJson(res);
   }
@@ -124,6 +140,7 @@ class JobRepository {
     DurationUnit? durationUnit,
     double? latitude,
     double? longitude,
+    bool? urgent,
   }) async {
     final res = await _client.patch('/jobs/$id', data: {
       if (title != null) 'title': title,
@@ -140,6 +157,7 @@ class JobRepository {
       if (durationUnit != null) 'durationUnit': durationUnit.apiValue,
       if (latitude != null) 'latitude': latitude,
       if (longitude != null) 'longitude': longitude,
+      if (urgent != null) 'urgent': urgent,
     });
     return Job.fromJson(res);
   }
@@ -150,6 +168,27 @@ class JobRepository {
   }
 
   Future<void> delete(int id) => _client.delete('/jobs/$id');
+
+  /// What comparable postings pay. Returns an empty answer when there is too little history to say
+  /// anything, which the form treats as "no guidance" rather than "no data at all".
+  Future<PriceGuidance> priceGuidance({
+    required int professionId,
+    int? regionId,
+    required PaymentType paymentType,
+  }) async {
+    final res = await _client.get('/jobs/price-guidance', query: {
+      'professionId': professionId,
+      if (regionId != null) 'regionId': regionId,
+      'paymentType': paymentType.apiValue,
+    });
+    return PriceGuidance.fromJson(res);
+  }
+
+  /// Posts the same job again as a fresh listing, starting today.
+  Future<Job> repost(int id) async {
+    final res = await _client.post('/jobs/$id/repost');
+    return Job.fromJson(res);
+  }
 
   Future<List<JobImage>> uploadImages(int jobId, List<String> filePaths) async {
     // Built on demand so a retry after a token refresh gets fresh file streams.

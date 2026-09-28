@@ -28,6 +28,9 @@ class ProfileRepository {
     WorkPreference? workPreference,
     bool? hasDriverLicense,
     String? driverLicenseCategories,
+    /// True marks the worker free for today (the server expires it at midnight in Tashkent);
+    /// false clears it. Left null so an unrelated profile edit does not reset it.
+    bool? availableToday,
   }) async {
     final body = <String, dynamic>{
       if (firstName != null) 'firstName': firstName,
@@ -43,6 +46,7 @@ class ProfileRepository {
       if (workPreference != null) 'workPreference': workPreference.apiValue,
       if (hasDriverLicense != null) 'hasDriverLicense': hasDriverLicense,
       if (driverLicenseCategories != null) 'driverLicenseCategories': driverLicenseCategories,
+      if (availableToday != null) 'availableToday': availableToday,
     };
     final res = await _client.patch('/profile', data: body);
     return Profile.fromJson(res);

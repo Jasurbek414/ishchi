@@ -12,16 +12,19 @@ import '../screens/change_password_screen.dart';
 import '../screens/edit_profile_screen.dart';
 import '../screens/employer/employer_shell.dart';
 import '../screens/employer/job_form_screen.dart';
+import '../screens/employer/job_applications_screen.dart';
 import '../screens/employer/job_manage_screen.dart';
 import '../screens/employer/worker_detail_screen.dart';
 import '../screens/employer/workers_map_screen.dart';
 import '../screens/language_settings_screen.dart';
+import '../screens/saved_searches_screen.dart';
 import '../screens/splash_screen.dart';
 import '../screens/theme_settings_screen.dart';
 import '../screens/wallet_screen.dart';
 import '../screens/worker/employers_map_screen.dart';
 import '../screens/worker/job_detail_screen.dart';
 import '../screens/worker/jobs_map_screen.dart';
+import '../screens/worker/my_applications_screen.dart';
 import '../screens/worker/worker_shell.dart';
 import '../state/auth_provider.dart';
 import 'router_refresh.dart';
@@ -79,6 +82,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/profile/about', builder: (context, state) => const AboutScreen()),
       GoRoute(path: '/profile/theme', builder: (context, state) => const ThemeSettingsScreen()),
       GoRoute(path: '/profile/language', builder: (context, state) => const LanguageSettingsScreen()),
+      GoRoute(path: '/profile/saved-searches', builder: (context, state) => const SavedSearchesScreen()),
       GoRoute(path: '/admin', builder: (context, state) => const AdminNoticeScreen()),
       GoRoute(
         path: '/worker',
@@ -95,6 +99,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: 'employers-map',
             builder: (context, state) => const EmployersMapScreen(),
+          ),
+          GoRoute(
+            path: 'my-applications',
+            builder: (context, state) => const MyApplicationsScreen(),
           ),
         ],
       ),
@@ -121,6 +129,11 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: 'jobs/:id/manage',
             builder: (context, state) => JobManageScreen(jobId: int.parse(state.pathParameters['id']!)),
+          ),
+          GoRoute(
+            path: 'jobs/:id/applications',
+            builder: (context, state) =>
+                JobApplicationsScreen(jobId: int.parse(state.pathParameters['id']!)),
           ),
         ],
       ),

@@ -3,10 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
+import '../core/api_exception.dart';
 import '../core/formatters.dart';
+import '../core/theme.dart';
 import '../l10n/l10n_x.dart';
 import '../models/enums.dart';
+import '../models/profile.dart';
 import '../state/app_settings_provider.dart';
+import '../state/core_providers.dart';
 import '../state/auth_provider.dart';
 import '../state/locale_provider.dart';
 import '../state/profile_provider.dart';
@@ -146,6 +150,10 @@ class ProfileScreen extends ConsumerWidget {
                   ],
                 ),
               ],
+              if (profile.role == UserRole.worker) ...[
+                const SizedBox(height: 20),
+                _AvailableTodayCard(profile: profile),
+              ],
               const SizedBox(height: 20),
               _SectionCard(
                 children: [
@@ -166,6 +174,20 @@ class ProfileScreen extends ConsumerWidget {
                         isScrollControlled: true,
                         builder: (_) => RoleSwitchSheet(currentRole: profile.role),
                       ),
+                    ),
+                  ],
+                  if (profile.role == UserRole.worker) ...[
+                    const Divider(height: 1),
+                    _MenuTile(
+                      icon: PhosphorIcons.checkCircle(),
+                      label: context.l10n.myResponsesMenu,
+                      onTap: () => context.push('/worker/my-applications'),
+                    ),
+                    const Divider(height: 1),
+                    _MenuTile(
+                      icon: PhosphorIcons.bellRinging(),
+                      label: context.l10n.savedSearchesMenu,
+                      onTap: () => context.push('/profile/saved-searches'),
                     ),
                   ],
                   const Divider(height: 1),
@@ -307,6 +329,61 @@ class _InfoTile extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// "Bugun bo'shman" — the same-day availability signal, with its own expiry.
+///
+/// The standing `available` flag is a preference a worker sets once and forgets; day labour is
+/// decided the same morning, so this is the one that tells an employer somebody can be called today.
+/// The server expires it at midnight in Tashkent, so nobody has to remember to turn it off.
+class _AvailableTodayCard extends ConsumerStatefulWidget {
+  const _AvailableTodayCard({required this.profile});
+
+  final Profile profile;
+
+  @override
+  ConsumerState<_AvailableTodayCard> createState() => _AvailableTodayCardState();
+}
+
+class _AvailableTodayCardState extends ConsumerState<_AvailableTodayCard> {
+  bool _busy = false;
+
+  bool get _isOn {
+    final until = widget.profile.availableUntil;
+    return until != null && until.isAfter(DateTime.now());
+  }
+
+  Future<void> _toggle(bool value) async {
+    setState(() => _busy = true);
+    try {
+      await ref.read(profileRepositoryProvider).updateProfile(availableToday: value);
+      ref.invalidate(profileProvider);
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return _SectionCard(
+      children: [
+        SwitchListTile(
+          value: _isOn,
+          onChanged: _busy ? null : _toggle,
+          title: Text(context.l10n.availableTodayToggle,
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14.5)),
+          subtitle: Text(context.l10n.availableTodayHint,
+              style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12.5)),
+          secondary: Icon(PhosphorIcons.calendarCheck(),
+              color: _isOn ? context.themeSuccess : cs.onSurfaceVariant),
+        ),
+      ],
     );
   }
 }

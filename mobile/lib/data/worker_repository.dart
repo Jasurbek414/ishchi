@@ -15,6 +15,7 @@ class WorkerRepository {
     int? minExperience,
     String? search,
     WorkPreference? workPreference,
+    bool? availableToday,
     int page = 0,
     int size = 20,
   }) async {
@@ -25,6 +26,7 @@ class WorkerRepository {
       if (minExperience != null) 'minExperience': minExperience,
       if (search != null && search.isNotEmpty) 'search': search,
       if (workPreference != null) 'workPreference': workPreference.apiValue,
+      if (availableToday == true) 'availableToday': true,
       'page': page,
       'size': size,
     });
