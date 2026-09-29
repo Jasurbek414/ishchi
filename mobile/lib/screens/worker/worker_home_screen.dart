@@ -87,6 +87,7 @@ class _WorkerHomeScreenState extends ConsumerState<WorkerHomeScreen> {
             sort: 'nearest',
             nearRegionId: profile.regionId,
             nearDistrictId: profile.districtId,
+            urgent: null,
           );
           final jobsAsync = ref.watch(jobsSearchProvider(filter));
           final bannersAsync = ref.watch(promoBannersProvider((audience: 'WORKER', regionId: profile.regionId)));

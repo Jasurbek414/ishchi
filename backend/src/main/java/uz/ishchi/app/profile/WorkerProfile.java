@@ -75,7 +75,7 @@ public class WorkerProfile {
     private java.time.Instant availableUntil;
 
     /** Denormalised from the ratings table so a list never aggregates per row. */
-    @Column(name = "rating_average", precision = 3, scale = 2)
+    @Column(name = "rating_average", columnDefinition = "numeric(3, 2)")
     private Double ratingAverage;
 
     @Column(name = "rating_count", nullable = false)

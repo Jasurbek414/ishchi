@@ -54,6 +54,7 @@ class _WorkerJobsScreenState extends ConsumerState<WorkerJobsScreen> {
       sort: _filter.sort,
       nearRegionId: _filter.nearRegionId,
       nearDistrictId: _filter.nearDistrictId,
+      urgent: _filter.urgent,
     );
     final result = await showModalBottomSheet<JobFilter>(
       context: context,
@@ -74,6 +75,7 @@ class _WorkerJobsScreenState extends ConsumerState<WorkerJobsScreen> {
         sort: result.sort,
         nearRegionId: result.nearRegionId,
         nearDistrictId: result.nearDistrictId,
+        urgent: result.urgent,
       );
     });
   }
@@ -91,6 +93,7 @@ class _WorkerJobsScreenState extends ConsumerState<WorkerJobsScreen> {
         sort: _filter.sort,
         nearRegionId: _filter.nearRegionId,
         nearDistrictId: _filter.nearDistrictId,
+        urgent: _filter.urgent,
       );
     });
   }
@@ -187,6 +190,7 @@ class _WorkerJobsScreenState extends ConsumerState<WorkerJobsScreen> {
       sort: _filter.sort,
       nearRegionId: _filter.nearRegionId,
       nearDistrictId: _filter.nearDistrictId,
+      urgent: _filter.urgent,
     );
     final jobsAsync = ref.watch(jobsSearchProvider(filter));
     final myProfessions = ref.watch(profileProvider).valueOrNull?.professions ?? const [];

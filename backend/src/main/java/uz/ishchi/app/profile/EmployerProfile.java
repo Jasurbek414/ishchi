@@ -52,7 +52,7 @@ public class EmployerProfile {
 
     @UpdateTimestamp
     /** Denormalised from the ratings table, same as on the worker side. */
-    @Column(name = "rating_average", precision = 3, scale = 2)
+    @Column(name = "rating_average", columnDefinition = "numeric(3, 2)")
     private Double ratingAverage;
 
     @Column(name = "rating_count", nullable = false)
