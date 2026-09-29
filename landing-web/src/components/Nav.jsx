@@ -29,9 +29,9 @@ export default function Nav() {
       <div className="mx-auto flex h-18 max-w-7xl items-center justify-between px-5 sm:px-8">
         <a href="#top" className="flex items-center gap-2.5 group">
           <img
-            src="/uploads/branding/logo-wordmark.png"
+            src="/assets/brand/logo.png"
             alt="Ishchi"
-            className="h-9 w-9 rounded-xl object-cover transition-transform duration-300 group-hover:-rotate-6"
+            className="h-10 w-10 object-contain transition-transform duration-300 group-hover:-rotate-6"
           />
           <span className="font-display text-lg font-extrabold tracking-tight text-navy-900">ISHCHI</span>
         </a>

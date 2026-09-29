@@ -60,7 +60,8 @@
   }
 
   .topbar-badge {
-    @apply w-[30px] h-[30px] rounded-[9px] bg-gradient-to-br from-primary-light to-primary flex items-center justify-center text-white font-extrabold text-[14px];
+    /* White tile: the logo's navy parts would vanish on the dark theme's top bar. */
+    @apply w-[30px] h-[30px] rounded-[9px] bg-white object-contain p-[2px];
   }
 
   .topbar-actions {
@@ -200,7 +201,7 @@
   }
 
   .login-logo {
-    @apply w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-light to-primary flex items-center justify-center text-white font-extrabold text-[22px] mx-auto mt-0 mb-4;
+    @apply block w-16 h-16 rounded-2xl bg-white object-contain p-1 mx-auto mt-0 mb-4;
   }
 
   .field {

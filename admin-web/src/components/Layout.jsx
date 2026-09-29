@@ -22,7 +22,7 @@ export default function Layout() {
     <div className="app-shell">
       <header className="topbar">
         <div className="topbar-title">
-          <span className="topbar-badge">I</span>
+          <img className="topbar-badge" src={`${import.meta.env.BASE_URL}logo.png`} alt="" />
           Ishchi — Admin
         </div>
         <div className="topbar-actions">

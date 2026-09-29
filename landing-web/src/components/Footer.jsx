@@ -5,7 +5,7 @@ export default function Footer({ settings, botUrl }) {
         <div className="grid grid-cols-1 gap-10 border-b border-white/10 pb-10 sm:grid-cols-[1.3fr_1fr_1fr]">
           <div>
             <div className="mb-3 flex items-center gap-2.5">
-              <img src="/uploads/branding/logo-wordmark.png" alt="Ishchi" className="h-8 w-8 rounded-lg" />
+              <img src="/assets/brand/logo.png" alt="Ishchi" className="h-9 w-9 rounded-lg bg-white object-contain p-0.5" />
               <span className="font-display text-lg font-extrabold text-white">ISHCHI</span>
             </div>
             <p className="max-w-xs text-sm">

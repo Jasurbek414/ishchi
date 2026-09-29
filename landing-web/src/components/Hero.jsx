@@ -104,7 +104,7 @@ export default function Hero({ data, botUrl }) {
             </div>
 
             <div className="mx-auto mt-7 grid h-32 w-32 place-items-center rounded-full border-4 border-brand-500 bg-white shadow-lg shadow-brand-500/30">
-              <img src="/uploads/branding/logo-icon.png" alt="" className="h-[88%] w-[88%] object-contain" />
+              <img src="/assets/brand/logo.png" alt="" className="h-[80%] w-[80%] object-contain" />
             </div>
             <div className="mt-5 text-center font-display text-2xl font-extrabold tracking-wide">ISHCHI</div>
             <div className="text-center text-xs font-medium tracking-wide text-navy-100/50">
