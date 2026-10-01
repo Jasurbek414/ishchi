@@ -143,16 +143,16 @@ export default function PhoneMockup() {
 
       <div className="relative z-10 mx-auto w-[272px]">
         {/* Side buttons: volume on the left, power on the right. */}
-        <span aria-hidden className="absolute -left-[3px] top-[110px] h-9 w-[3px] rounded-l bg-navy-800" />
-        <span aria-hidden className="absolute -left-[3px] top-[156px] h-9 w-[3px] rounded-l bg-navy-800" />
-        <span aria-hidden className="absolute -right-[3px] top-[130px] h-14 w-[3px] rounded-r bg-navy-800" />
+        <span aria-hidden className="absolute -left-[2px] top-[110px] h-9 w-[2px] rounded-l bg-navy-800" />
+        <span aria-hidden className="absolute -left-[2px] top-[156px] h-9 w-[2px] rounded-l bg-navy-800" />
+        <span aria-hidden className="absolute -right-[2px] top-[130px] h-14 w-[2px] rounded-r bg-navy-800" />
 
         <div
           role="img"
           aria-label="Ishchi ilovasining bosh ekrani: yaqin atrofdagi buyurtmalar"
-          className="rounded-[2.9rem] bg-gradient-to-br from-[#3a4356] via-[#141a26] to-[#2a3242] p-[3px] shadow-[0_30px_60px_-12px_rgba(14,25,48,0.45),0_18px_36px_-18px_rgba(14,25,48,0.5)]"
+          className="rounded-[2.6rem] bg-gradient-to-br from-[#3a4356] via-[#141a26] to-[#2a3242] p-[2px] shadow-[0_30px_60px_-12px_rgba(14,25,48,0.45),0_18px_36px_-18px_rgba(14,25,48,0.5)]"
         >
-          <div className="rounded-[2.75rem] bg-black p-[7px]">
+          <div className="rounded-[2.5rem] bg-black p-[3px]">
             <div className="relative h-[540px] overflow-hidden rounded-[2.3rem] bg-[#f6f8fb] font-sans">
               <StatusBar />
 
