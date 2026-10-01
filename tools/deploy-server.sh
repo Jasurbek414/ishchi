@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # Server-side half of .github/workflows/deploy.yml. Two commands:
 #
-#   deploy-server.sh deploy [bundle]   update the code (from a git bundle, else origin/main),
-#                                      back up the database and rebuild the backend, which
-#                                      applies any new migrations
+#   deploy-server.sh deploy [SOURCE]   update the code, back up the database and rebuild the
+#                                      backend, which applies any new migrations. SOURCE is a
+#                                      git bundle file, or a branch to fetch from origin
+#                                      (default: main)
 #   deploy-server.sh publish-apk FILE  serve FILE as the app download (/uploads/apk/ishchi.apk)
 #
 # The workflow uploads this file together with a git bundle of the commit, so the server needs
@@ -38,7 +39,7 @@ publish_apk() {
 
 # --------------------------------------------------------------------------------------------
 deploy() {
-  local bundle=${1:-}
+  local source=${1:-main}
 
   # The project directory is wherever the running backend was started from, unless overridden.
   local dir=${DEPLOY_DIR:-$(docker inspect ishchi-backend \
@@ -74,10 +75,10 @@ deploy() {
   # --- Code ------------------------------------------------------------------------------------
   local prev; prev=$(git rev-parse --short HEAD)
   log "Kod yangilanmoqda (hozirgi: $prev)"
-  if [ -n "$bundle" ]; then
-    git fetch --quiet "$bundle" HEAD
+  if [ -f "$source" ]; then
+    git fetch --quiet "$source" HEAD
   else
-    git fetch --quiet origin main
+    git fetch --quiet origin "$source" || die "origin dan '$source' olinmadi (repo'ga kirish yoki branch nomini tekshiring)."
   fi
   # A local branch rather than a detached HEAD, so the server's own checkout stays easy to read.
   git checkout --quiet -B deployed FETCH_HEAD
