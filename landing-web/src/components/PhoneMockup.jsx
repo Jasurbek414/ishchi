@@ -1,4 +1,4 @@
-import { BadgeCheck, BatteryFull, Clock, House, ListChecks, Map, MapPin, Phone, Signal, Star, User, Wallet, Wifi, Zap } from 'lucide-react';
+import { BadgeCheck, Clock, House, ListChecks, Map, MapPin, Phone, Star, User, Wallet, Zap } from 'lucide-react';
 
 // A drawing of the app's real worker home screen (greeting, availability switch, profession chips,
 // nearby jobs, floating tab bar), in markup so it stays sharp and follows the brand colours. The
@@ -25,15 +25,59 @@ const JOBS = [
 
 const CHIPS = ['Hammasi', 'Santexnik', 'Kafelchi', 'Elektrik'];
 
+// Status-bar glyphs drawn as filled shapes, the way phones draw them, rather than line icons.
+function SignalBars() {
+  return (
+    <svg aria-hidden viewBox="0 0 17 11" className="h-[10px] w-[15px]" fill="currentColor">
+      <rect x="0" y="7.5" width="3" height="3.5" rx="0.8" />
+      <rect x="4.6" y="5" width="3" height="6" rx="0.8" />
+      <rect x="9.2" y="2.5" width="3" height="8.5" rx="0.8" />
+      <rect x="13.8" y="0" width="3" height="11" rx="0.8" opacity="0.3" />
+    </svg>
+  );
+}
+
+function WifiGlyph() {
+  return (
+    <svg aria-hidden viewBox="0 0 16 12" className="h-[10px] w-[14px]" fill="currentColor">
+      <path d="M8 11.6 0.3 3.9a10.9 10.9 0 0 1 15.4 0L8 11.6Z" />
+    </svg>
+  );
+}
+
+function Battery({ level = 0.82 }) {
+  return (
+    <span aria-hidden className="flex items-center gap-[3px]">
+      <span className="text-[10px] font-semibold tabular-nums">{Math.round(level * 100)}</span>
+      <svg viewBox="0 0 25 12" className="h-[11px] w-[23px]">
+        <rect x="0.6" y="0.6" width="21.4" height="10.8" rx="3.2" fill="none" stroke="currentColor" strokeOpacity="0.4" strokeWidth="1.1" />
+        <rect x="2.2" y="2.2" width={18.2 * level} height="7.6" rx="1.9" fill="currentColor" />
+        <path d="M23.3 4.1v3.8c.8-.3 1.3-1.1 1.3-1.9s-.5-1.6-1.3-1.9Z" fill="currentColor" fillOpacity="0.45" />
+      </svg>
+    </span>
+  );
+}
+
+/** The selfie camera: a small punch-hole with a lens inside, as on current Android phones. */
+function FrontCamera() {
+  return (
+    <span aria-hidden className="absolute left-1/2 top-[9px] z-20 grid h-[13px] w-[13px] -translate-x-1/2 place-items-center rounded-full bg-[#06080c] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05)]">
+      <span className="grid h-[7px] w-[7px] place-items-center rounded-full bg-[radial-gradient(circle_at_35%_35%,#2b3a5c_0%,#0d1424_55%,#05070b_100%)]">
+        <span className="ml-[-2px] mt-[-2px] h-[2px] w-[2px] rounded-full bg-sky-200/60" />
+      </span>
+    </span>
+  );
+}
+
 function StatusBar() {
   return (
-    <div className="relative flex h-9 items-center justify-between px-6 pt-1 text-[11px] font-semibold text-navy-900">
-      <span>9:41</span>
-      <span aria-hidden className="absolute left-1/2 top-2 h-[22px] w-[78px] -translate-x-1/2 rounded-full bg-black" />
-      <span className="flex items-center gap-1">
-        <Signal size={12} strokeWidth={2.6} />
-        <Wifi size={12} strokeWidth={2.6} />
-        <BatteryFull size={15} strokeWidth={2.2} />
+    <div className="relative flex h-8 items-center justify-between px-5 pt-1.5 text-[11px] font-semibold text-navy-900">
+      <span className="tabular-nums">9:41</span>
+      <FrontCamera />
+      <span className="flex items-center gap-[5px]">
+        <SignalBars />
+        <WifiGlyph />
+        <Battery />
       </span>
     </div>
   );
