@@ -61,7 +61,7 @@ export default function PhoneMockup() {
         className="left-0 top-[24%]"
         icon={BadgeCheck}
         iconClass="bg-brand-100 text-brand-500"
-        title="Tasdiqlangan usta"
+        title="Ishonchli usta"
         sub="Profili tekshirilgan"
       />
       <Floating
@@ -75,8 +75,8 @@ export default function PhoneMockup() {
         className="left-0 bottom-[12%]"
         icon={Phone}
         iconClass="bg-emerald-100 text-emerald-600"
-        title="To'g'ridan-to'g'ri"
-        sub="Vositachisiz aloqa"
+        title="Bevosita aloqa"
+        sub="Vositachi va foizsiz"
       />
 
       <div
