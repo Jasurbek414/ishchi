@@ -8,15 +8,15 @@
   ],
   "brand": {
     "$comment": [
-      "500 is the brand colour and is not adjusted: it is for fills, where white sits on top of it.",
-      "As small text on a light surface it only reaches 3.4:1, so `text` below is the darkened",
-      "variant for that job — an active nav item, a link, a label."
+      "Sky blue. 500 is the brand colour and is not adjusted: it is for fills, where white sits on",
+      "top of it (about 4.1:1). `text` is the darker variant for small text on a light surface — an",
+      "active nav item, a link, a label — where 500 alone would fall short of 4.5:1."
     ],
-    "text": "#c44214",
-    "500": "#e8541f",
-    "400": "#ff7a3d",
-    "300": "#ff9a4d",
-    "100": "#ffe4d4"
+    "text": "#0369a1",
+    "500": "#0284c7",
+    "400": "#0ea5e9",
+    "300": "#38bdf8",
+    "100": "#e0f2fe"
   },
   "neutral": {
     "surface": "#ffffff",

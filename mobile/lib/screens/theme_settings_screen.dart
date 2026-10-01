@@ -171,6 +171,7 @@ class _ModeCard extends StatelessWidget {
 // ─── Rang katak ───────────────────────────────────────────────────────────────
 
 String _paletteName(BuildContext context, AppColorPalette palette) => switch (palette.id) {
+      'sky' => context.l10n.colorSky,
       'burntOrange' => context.l10n.colorBurntOrange,
       'blue' => context.l10n.colorBlue,
       'green' => context.l10n.colorGreen,

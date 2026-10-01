@@ -63,7 +63,7 @@ public class AppSettings {
     @Column(name = "default_theme_mode", nullable = false, length = 10)
     private String defaultThemeMode = "LIGHT";
 
-    /** Hex color (e.g. {@code #E8541F}) seeding the app's default Material color scheme. */
+    /** Hex color (e.g. {@code #0284C7}) seeding the app's default Material color scheme. */
     @Column(name = "default_seed_color", nullable = false, length = 9)
-    private String defaultSeedColor = "#E8541F";
+    private String defaultSeedColor = "#0284C7";
 }

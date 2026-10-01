@@ -14,6 +14,7 @@ export default function SettingsPage() {
 }
 
 const THEME_PALETTES = [
+  { id: 'sky', color: '#0284C7', label: 'Osmon ko\'k' },
   { id: 'burntOrange', color: '#E8541F', label: 'Qizg\'ish-to\'q sariq' },
   { id: 'blue', color: '#2563EB', label: "Ko'k" },
   { id: 'green', color: '#16A34A', label: 'Yashil' },
@@ -33,7 +34,7 @@ const THEME_MODES = [
 function AppThemeSettingsCard() {
   const { settings, refresh } = useAppSettings();
   const [themeMode, setThemeMode] = useState('LIGHT');
-  const [seedColor, setSeedColor] = useState('#E8541F');
+  const [seedColor, setSeedColor] = useState('#0284C7');
   const [initialized, setInitialized] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
@@ -41,7 +42,7 @@ function AppThemeSettingsCard() {
 
   if (settings && !initialized) {
     setThemeMode(settings.defaultThemeMode ?? 'LIGHT');
-    setSeedColor(settings.defaultSeedColor ?? '#E8541F');
+    setSeedColor(settings.defaultSeedColor ?? '#0284C7');
     setInitialized(true);
   }
 

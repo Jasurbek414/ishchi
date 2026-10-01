@@ -10,7 +10,7 @@ class AppSettings {
     this.jobViewFeeEnabled = false,
     this.jobViewFee = 0,
     this.defaultThemeMode = 'LIGHT',
-    this.defaultSeedColor = '#E8541F',
+    this.defaultSeedColor = '#0284C7',
   });
 
   final bool walletEnabled;
@@ -36,6 +36,6 @@ class AppSettings {
         jobViewFeeEnabled: json['jobViewFeeEnabled'] as bool? ?? false,
         jobViewFee: json['jobViewFee'] as num? ?? 0,
         defaultThemeMode: json['defaultThemeMode'] as String? ?? 'LIGHT',
-        defaultSeedColor: json['defaultSeedColor'] as String? ?? '#E8541F',
+        defaultSeedColor: json['defaultSeedColor'] as String? ?? '#0284C7',
       );
 }

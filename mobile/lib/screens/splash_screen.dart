@@ -14,7 +14,7 @@ class SplashScreen extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // White disc: the logo's orange figure would disappear straight onto the orange background.
+            // White disc: the logo's navy figure would sink into the blue background.
             DecoratedBox(
               decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle),
               child: Padding(

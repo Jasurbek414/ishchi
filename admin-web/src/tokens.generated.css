@@ -1,10 +1,10 @@
 /* GENERATED FROM design-tokens.json — do not edit by hand.
    Run: node tools/generate-design-tokens.mjs */
 @theme {
-  --color-primary: #e8541f;
-  --color-primary-light: #ff9a4d;
+  --color-primary: #0284c7;
+  --color-primary-light: #38bdf8;
   /* For brand-coloured small text, where the fill colour itself is only 3.4:1. */
-  --color-primary-text: #c44214;
+  --color-primary-text: #0369a1;
   --color-surface: #ffffff;
   --color-bg: #f5f5f7;
   --color-line: #e2e2e5;
@@ -30,5 +30,5 @@
   --color-danger: #ff8a8a;
   --color-warning: #e0a33c;
   /* On a dark surface the brand colour clears 4.5:1 on its own. */
-  --color-primary-text: #e8541f;
+  --color-primary-text: #0284c7;
 }
