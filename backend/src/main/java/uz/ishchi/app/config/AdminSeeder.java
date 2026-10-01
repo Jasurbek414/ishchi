@@ -13,8 +13,13 @@ import uz.ishchi.app.user.User;
 import uz.ishchi.app.user.UserRepository;
 
 /**
- * Creates the first ADMIN account from ADMIN_PHONE/ADMIN_PASSWORD env vars (see .env),
- * since admins are never created through the public /auth/register endpoint.
+ * Keeps an ADMIN account matching ADMIN_PHONE/ADMIN_PASSWORD (see .env), since admins are never
+ * created through the public /auth/register endpoint.
+ *
+ * <p>The env vars are the source of truth: a new phone creates the account, and a changed
+ * password replaces the stored one on the next start, so the server owner can always get back
+ * into the panel by editing .env. A phone that already belongs to a worker or employer is left
+ * alone rather than silently promoted.
  */
 @Component
 @RequiredArgsConstructor
@@ -35,7 +40,19 @@ public class AdminSeeder implements CommandLineRunner {
         if (phone == null || phone.isBlank() || password == null || password.isBlank()) {
             return;
         }
-        if (userRepository.existsByPhone(phone)) {
+        var existing = userRepository.findByPhone(phone);
+        if (existing.isPresent()) {
+            User user = existing.get();
+            if (user.getRole() != Role.ADMIN) {
+                log.warn("ADMIN_PHONE {} oddiy foydalanuvchiga tegishli — administrator qilinmadi", phone);
+                return;
+            }
+            if (!passwordEncoder.matches(password, user.getPasswordHash()) || !user.isActive()) {
+                user.setPasswordHash(passwordEncoder.encode(password));
+                user.setActive(true);
+                userRepository.save(user);
+                log.info("Administrator paroli .env bo'yicha yangilandi: {}", phone);
+            }
             return;
         }
         User admin = new User(phone, passwordEncoder.encode(password), Role.ADMIN);
