@@ -16,7 +16,7 @@ public interface WorkerProfileRepository extends JpaRepository<WorkerProfile, Lo
     Optional<WorkerProfile> findByUserId(Long userId);
 
     /** Batch variant, so a list of users can be resolved in one query instead of per row. */
-    @EntityGraph(attributePaths = "user")
+    @EntityGraph(attributePaths = {"user", "region", "district"})
     List<WorkerProfile> findByUserIdIn(Collection<Long> userIds);
 
     boolean existsByUserId(Long userId);

@@ -20,17 +20,20 @@ public record AdminUserResponse(
          *  worker profile. Deliberately a separate flag from the OTP one above. */
         boolean workerVerified,
         Double ratingAverage,
-        Integer ratingCount
+        Integer ratingCount,
+        String districtName,
+        String avatarUrl
 ) {
     public static AdminUserResponse from(User user, String fullName, String regionName) {
-        return from(user, fullName, regionName, false, null, null);
+        return from(user, fullName, regionName, null, null, false, null, null);
     }
 
-    public static AdminUserResponse from(User user, String fullName, String regionName,
-                                          boolean workerVerified, Double ratingAverage, Integer ratingCount) {
+    public static AdminUserResponse from(User user, String fullName, String regionName, String districtName,
+                                          String avatarUrl, boolean workerVerified, Double ratingAverage,
+                                          Integer ratingCount) {
         return new AdminUserResponse(user.getId(), user.getPhone(), user.getRole(),
                 user.isActive(), user.isVerified(), user.getTelegramChatId() != null,
                 fullName, regionName, user.getCreatedAt(),
-                workerVerified, ratingAverage, ratingCount);
+                workerVerified, ratingAverage, ratingCount, districtName, avatarUrl);
     }
 }

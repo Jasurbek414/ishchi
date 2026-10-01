@@ -30,7 +30,7 @@
   }
 
   body {
-    @apply m-0 bg-bg text-text antialiased;
+    @apply m-0 bg-bg text-text font-sans antialiased;
   }
 
   a {
@@ -98,11 +98,11 @@
   }
 
   .bottom-nav {
-    @apply hidden max-[760px]:flex max-[760px]:fixed max-[760px]:bottom-0 max-[760px]:left-0 max-[760px]:right-0 max-[760px]:bg-surface max-[760px]:border-t max-[760px]:border-line max-[760px]:pt-2 max-[760px]:px-[6px] max-[760px]:pb-[calc(8px+env(safe-area-inset-bottom))] max-[760px]:justify-around max-[760px]:z-10;
+    @apply hidden max-[760px]:flex max-[760px]:fixed max-[760px]:bottom-0 max-[760px]:left-0 max-[760px]:right-0 max-[760px]:bg-surface max-[760px]:border-t max-[760px]:border-line max-[760px]:pt-2 max-[760px]:px-[6px] max-[760px]:pb-[calc(8px+env(safe-area-inset-bottom))] max-[760px]:justify-start max-[760px]:gap-1 max-[760px]:overflow-x-auto max-[760px]:z-10;
   }
 
   .bottom-nav .nav-link {
-    @apply flex-[1_1_0%] min-w-0 flex-col gap-[3px] text-[10.5px] px-1 py-1.5 mb-0 text-center whitespace-nowrap overflow-hidden text-ellipsis;
+    @apply flex-none min-w-[74px] flex-col items-center gap-[3px] text-[10.5px] px-2 py-1.5 mb-0 text-center whitespace-nowrap;
   }
 
   .card {

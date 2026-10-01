@@ -63,8 +63,8 @@ public class AdminService {
         });
     }
 
-    private record RowSummary(String fullName, String regionName, boolean workerVerified,
-                               Double ratingAverage, Integer ratingCount) {
+    private record RowSummary(String fullName, String regionName, String districtName, String avatarUrl,
+                               boolean workerVerified, Double ratingAverage, Integer ratingCount) {
     }
 
     /**
@@ -82,12 +82,14 @@ public class AdminService {
         if (!workerIds.isEmpty()) {
             workerProfileRepository.findByUserIdIn(workerIds).forEach(p -> summaries.put(p.getUser().getId(),
                     new RowSummary(p.getFirstName() + " " + p.getLastName(), p.getRegion().getName(),
+                            p.getDistrict().getName(), p.getAvatarUrl(),
                             p.isVerified(), p.getRatingAverage(), p.getRatingCount())));
         }
         List<Long> employerIds = idsByRole.getOrDefault(Role.EMPLOYER, List.of());
         if (!employerIds.isEmpty()) {
             employerProfileRepository.findByUserIdIn(employerIds).forEach(p -> summaries.put(p.getUser().getId(),
                     new RowSummary(p.getFirstName() + " " + p.getLastName(), p.getRegion().getName(),
+                            p.getDistrict().getName(), p.getAvatarUrl(),
                             false, p.getRatingAverage(), p.getRatingCount())));
         }
         return summaries;
@@ -101,8 +103,8 @@ public class AdminService {
         if (summary == null) {
             return AdminUserResponse.from(user, null, null);
         }
-        return AdminUserResponse.from(user, summary.fullName(), summary.regionName(),
-                summary.workerVerified(), summary.ratingAverage(), summary.ratingCount());
+        return AdminUserResponse.from(user, summary.fullName(), summary.regionName(), summary.districtName(),
+                summary.avatarUrl(), summary.workerVerified(), summary.ratingAverage(), summary.ratingCount());
     }
 
     @Transactional(readOnly = true)
