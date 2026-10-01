@@ -1,3 +1,9 @@
+name: ishchi
+
+# Serverda ishlaydigan variant. Maktab loyihasi bilan aralashmasligi uchun:
+#  - alohida compose loyihasi ("ishchi") -> alohida tarmoq va volume nomlari
+#  - portlar faqat 127.0.0.1 da (tashqaridan ochiq emas, maktab portlari 8085/5434 bilan to'qnashmaydi)
+#  - har bir servisga xotira chegarasi: biri "qochib" ketsa ham maktab loyihasiga ta'sir qilmaydi
 services:
   db:
     image: postgres:16-alpine
@@ -7,10 +13,12 @@ services:
       POSTGRES_DB: ${DB_NAME:-ishchi}
       POSTGRES_USER: ${DB_USER:-ishchi}
       POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+      TZ: Asia/Tashkent
     volumes:
       - ishchi_db_data:/var/lib/postgresql/data
     ports:
       - "127.0.0.1:5439:5432"
+    mem_limit: 512m
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-ishchi} -d ${DB_NAME:-ishchi}"]
       interval: 5s
@@ -38,11 +46,13 @@ services:
       ADMIN_PHONE: ${ADMIN_PHONE:-}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
       FIREBASE_CREDENTIALS_PATH: ${FIREBASE_CREDENTIALS_PATH:-}
+      TZ: Asia/Tashkent
     volumes:
       - ishchi_uploads:/app/uploads
       - ./backend/secrets/firebase-service-account.json:/app/firebase-service-account.json:ro
     ports:
       - "127.0.0.1:8090:8080"
+    mem_limit: 1500m
 
   cloudflared-landing:
     image: cloudflare/cloudflared:latest
@@ -51,6 +61,7 @@ services:
     depends_on:
       - backend
     command: tunnel --no-autoupdate run --token ${CLOUDFLARE_LANDING_TUNNEL_TOKEN:?CLOUDFLARE_LANDING_TUNNEL_TOKEN is required}
+    mem_limit: 256m
 
 volumes:
   ishchi_db_data:

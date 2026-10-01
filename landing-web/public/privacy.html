@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Maxfiylik siyosati — Ishchi</title>
+<style>
+  :root { color-scheme: light; }
+  body {
+    margin: 0;
+    background: #f7f8fa;
+    color: #1a2233;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    line-height: 1.65;
+  }
+  .wrap { max-width: 780px; margin: 0 auto; padding: 40px 20px 80px; }
+  h1 { font-size: 1.6rem; margin-bottom: 4px; }
+  .updated { color: #6b7280; font-size: 0.9rem; margin-bottom: 32px; }
+  h2 { font-size: 1.15rem; margin-top: 36px; margin-bottom: 10px; color: #111827; }
+  p, li { color: #374151; font-size: 0.98rem; }
+  ul { padding-left: 20px; }
+  li { margin-bottom: 6px; }
+  a { color: #2563eb; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .contact { background: #eef2ff; border-radius: 12px; padding: 18px 20px; margin-top: 16px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Ishchi — maxfiylik siyosati</h1>
+  <div class="updated">Oxirgi yangilanish: 2026-yil 12-sentabr</div>
+
+  <p>
+    Ushbu maxfiylik siyosati "Ishchi" mobil ilovasi va veb-saytida (uzbishchi.uz) foydalanuvchilarning
+    shaxsiy ma'lumotlari qanday yig'ilishi, ishlatilishi va himoya qilinishini tushuntiradi.
+    Ilovadan foydalanish orqali siz ushbu shartlarga rozilik bildirasiz.
+  </p>
+
+  <h2>1. Biz yig'adigan ma'lumotlar</h2>
+  <ul>
+    <li><b>Ro'yxatdan o'tish ma'lumotlari:</b> telefon raqami va parol (parol shifrlangan holda saqlanadi, hech qachon ochiq matnda emas).</li>
+    <li><b>Profil ma'lumotlari:</b> ism, familiya, profil rasmi, viloyat/tuman, kasb, ish tajribasi, haydovchilik guvohnomasi ma'lumotlari (agar kiritilgan bo'lsa).</li>
+    <li><b>Joylashuv:</b> ishga yaqin ijrochi/ish beruvchini topish uchun taxminiy yoki aniq GPS koordinatalari (faqat foydalanuvchi ruxsat bergan holatda).</li>
+    <li><b>E'lon ma'lumotlari:</b> ish e'loni matni, narxi va unga biriktirilgan rasmlar.</li>
+    <li><b>To'lov/hamyon tarixi:</b> ilova ichidagi hamyon orqali amalga oshirilgan tranzaksiyalar (bank karta ma'lumotlari saqlanmaydi).</li>
+    <li><b>Push-bildirishnoma tokeni:</b> yangi e'lon/xabar haqida bildirishnoma yuborish uchun (Firebase Cloud Messaging orqali).</li>
+    <li><b>Telegram bog'lanishi:</b> agar foydalanuvchi o'zi Telegram botni ulasa, Telegram chat identifikatori saqlanadi.</li>
+  </ul>
+
+  <h2>2. Ma'lumotlardan foydalanish maqsadi</h2>
+  <ul>
+    <li>Ro'yxatdan o'tish, kirish va hisobni xavfsiz saqlash uchun;</li>
+    <li>Ish beruvchi va ishchini hudud/kasb bo'yicha bir-biri bilan bog'lash uchun;</li>
+    <li>Push-bildirishnoma va Telegram orqali muhim xabarlarni yetkazish uchun;</li>
+    <li>Hamyon balansi va to'lovlarni hisobga olish uchun;</li>
+    <li>Ilova xavfsizligini ta'minlash va suiiste'molni oldini olish uchun.</li>
+  </ul>
+
+  <h2>3. Ma'lumotlarni uchinchi tomonlar bilan almashish</h2>
+  <p>
+    Biz foydalanuvchi ma'lumotlarini sotmaymiz. Ma'lumotlar faqat quyidagi holatlarda uchinchi
+    tomon xizmatlariga uzatiladi:
+  </p>
+  <ul>
+    <li><b>Google Firebase</b> — push-bildirishnomalarni yetkazish uchun (faqat qurilma tokeni);</li>
+    <li><b>Telegram</b> — foydalanuvchi o'zi botni ulaganda, xabar yuborish uchun;</li>
+    <li>Qonun talab qilgan hollarda vakolatli davlat organlariga.</li>
+  </ul>
+
+  <h2>4. Ma'lumotlarni saqlash va o'chirish</h2>
+  <p>
+    Ma'lumotlar hisobingiz faol bo'lgan davomida saqlanadi. Hisobni va unga bog'liq barcha
+    shaxsiy ma'lumotlarni o'chirishni so'rash uchun quyidagi aloqa vositalaridan birortasi orqali
+    murojaat qiling — so'rov qabul qilingandan so'ng ma'lumotlar bazadan butunlay o'chiriladi.
+  </p>
+
+  <h2>5. Xavfsizlik</h2>
+  <p>
+    Parollar bir tomonlama shifrlash (hashing) bilan saqlanadi, ilova ichidagi tokenlar qurilmada
+    shifrlangan xotirada (Android Keystore/iOS Keychain) saqlanadi, barcha tarmoq trafigi HTTPS
+    orqali uzatiladi.
+  </p>
+
+  <h2>6. Bolalar maxfiyligi</h2>
+  <p>
+    Ishchi — mehnatga layoqatli yoshdagi foydalanuvchilar uchun mo'ljallangan platforma va
+    18 yoshdan kichik shaxslar tomonidan foydalanishga mo'ljallanmagan.
+  </p>
+
+  <h2>7. Ushbu siyosatdagi o'zgarishlar</h2>
+  <p>
+    Maxfiylik siyosati vaqti-vaqti bilan yangilanishi mumkin. Muhim o'zgarishlar haqida ilova
+    ichida yoki ushbu sahifada e'lon qilinadi.
+  </p>
+
+  <h2>8. Biz bilan bog'lanish</h2>
+  <div class="contact">
+    <p style="margin:0 0 8px">Maxfiylik bo'yicha savol yoki ma'lumotlaringizni o'chirish so'rovi uchun:</p>
+    <p style="margin:2px 0">Telefon: <a href="tel:+998970504202">+998 97 050 42 02</a></p>
+    <p style="margin:2px 0">Email: <a href="mailto:muminovjasurbek12@gmail.com">muminovjasurbek12@gmail.com</a></p>
+    <p style="margin:2px 0">Telegram: <a href="https://t.me/khorowiy_malchik">@khorowiy_malchik</a></p>
+  </div>
+</div>
+</body>
+</html>
