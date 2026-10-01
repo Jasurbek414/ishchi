@@ -140,7 +140,9 @@ jobs:
         working-directory: mobile
         run: |
           flutter pub get
-          flutter build apk --release
+          # Obfuscated so class and function names cannot be read back out of the APK; the
+          # symbol map stays on the runner and is discarded with it.
+          flutter build apk --release --obfuscate --split-debug-info=build/symbols
 
       - name: Publish the APK
         if: steps.signing.outputs.available == 'true'

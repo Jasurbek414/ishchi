@@ -1,5 +1,6 @@
 package uz.ishchi.app.common.exception;
 
+import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +22,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -47,8 +49,14 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ErrorResponse> handleConstraintViolation(ConstraintViolationException ex) {
+        // ex.getMessage() prefixes each violation with its Java method and parameter path
+        // ("list.size: ..."), which describes the code to the caller; only the messages go out.
+        String message = ex.getConstraintViolations().stream()
+                .map(ConstraintViolation::getMessage)
+                .distinct()
+                .collect(Collectors.joining("; "));
         return ResponseEntity.badRequest()
-                .body(ErrorResponse.of(400, "Bad Request", ex.getMessage()));
+                .body(ErrorResponse.of(400, "Bad Request", message.isEmpty() ? "Validatsiya xatosi" : message));
     }
 
     @ExceptionHandler(AccessDeniedException.class)

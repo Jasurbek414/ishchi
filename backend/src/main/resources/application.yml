@@ -50,10 +50,14 @@ app:
   firebase:
     credentials-path: ${FIREBASE_CREDENTIALS_PATH:}
 
+# The API description lists every endpoint and field, so it is off unless a developer turns it on
+# (API_DOCS_ENABLED=true) on their own machine.
 springdoc:
   swagger-ui:
+    enabled: ${API_DOCS_ENABLED:false}
     path: /swagger-ui.html
   api-docs:
+    enabled: ${API_DOCS_ENABLED:false}
     path: /v3/api-docs
 
 management:
