@@ -122,3 +122,51 @@ enum DurationUnit {
         DurationUnit.month => context.l10n.durationUnitMonth,
       };
 }
+
+/// Where a worker's response to a job stands.
+enum ApplicationStatus {
+  interested,
+  hired,
+  declined;
+
+  String get apiValue => name.toUpperCase();
+
+  static ApplicationStatus? fromApi(String? value) => value == null
+      ? null
+      : ApplicationStatus.values.firstWhere((e) => e.apiValue == value,
+          orElse: () => ApplicationStatus.interested);
+
+  String label(BuildContext context) => switch (this) {
+        ApplicationStatus.interested => context.l10n.applicationStatusInterested,
+        ApplicationStatus.hired => context.l10n.applicationStatusHired,
+        ApplicationStatus.declined => context.l10n.applicationStatusDeclined,
+      };
+}
+
+/// Why something was reported. Kept short and concrete so the choice is quick to make.
+enum ReportReason {
+  fakeJob,
+  scam,
+  notPaid,
+  abuse,
+  wrongContact,
+  other;
+
+  String get apiValue => switch (this) {
+        ReportReason.fakeJob => 'FAKE_JOB',
+        ReportReason.scam => 'SCAM',
+        ReportReason.notPaid => 'NOT_PAID',
+        ReportReason.abuse => 'ABUSE',
+        ReportReason.wrongContact => 'WRONG_CONTACT',
+        ReportReason.other => 'OTHER',
+      };
+
+  String label(BuildContext context) => switch (this) {
+        ReportReason.fakeJob => context.l10n.reportReasonFakeJob,
+        ReportReason.scam => context.l10n.reportReasonScam,
+        ReportReason.notPaid => context.l10n.reportReasonNotPaid,
+        ReportReason.abuse => context.l10n.reportReasonAbuse,
+        ReportReason.wrongContact => context.l10n.reportReasonWrongContact,
+        ReportReason.other => context.l10n.reportReasonOther,
+      };
+}

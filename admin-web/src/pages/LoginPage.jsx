@@ -31,7 +31,7 @@ export default function LoginPage() {
   return (
     <div className="login-screen">
       <form className="login-card" onSubmit={handleSubmit}>
-        <div className="login-logo">I</div>
+        <img className="login-logo" src={`${import.meta.env.BASE_URL}logo.png`} alt="Ishchi" />
         <h1 className="text-center mb-1">Admin panel</h1>
         <p className="text-center text-text-secondary mt-0 mb-6 text-[13.5px]">
           Administrator hisobingiz bilan kiring

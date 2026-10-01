@@ -1,0 +1,17 @@
+/* GENERATED FROM design-tokens.json — do not edit by hand.
+   Run: node tools/generate-design-tokens.mjs */
+@theme {
+  --color-brand-100: #e0f2fe;
+  --color-brand-300: #38bdf8;
+  --color-brand-400: #0ea5e9;
+  --color-brand-500: #0284c7;
+  --color-brand-text: #0369a1;
+  --color-navy-100: #eef1f8;
+  --color-navy-600: #24406f;
+  --color-navy-700: #1c3763;
+  --color-navy-800: #142a4d;
+  --color-navy-900: #0e1930;
+  --color-navy-950: #070d1a;
+  --color-success: #297d4e;
+  --color-danger: #c62f2f;
+}

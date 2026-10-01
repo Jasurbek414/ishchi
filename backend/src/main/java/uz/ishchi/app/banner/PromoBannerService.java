@@ -56,6 +56,7 @@ public class PromoBannerService {
         banner.setStartAt(startAt);
         banner.setEndAt(endAt);
         if (image != null && !image.isEmpty()) {
+            fileStorageService.deleteAfterCommit(banner.getImageUrl());
             banner.setImageUrl(fileStorageService.storePromoBannerImage(image));
         }
         return PromoBannerResponse.from(promoBannerRepository.save(banner));
@@ -86,6 +87,7 @@ public class PromoBannerService {
             banner.setEndAt(null);
         }
         if (image != null && !image.isEmpty()) {
+            fileStorageService.deleteAfterCommit(banner.getImageUrl());
             banner.setImageUrl(fileStorageService.storePromoBannerImage(image));
         }
         return PromoBannerResponse.from(banner);
@@ -121,10 +123,10 @@ public class PromoBannerService {
 
     @Transactional
     public void delete(Long id) {
-        if (!promoBannerRepository.existsById(id)) {
-            throw ApiException.notFound("Banner topilmadi");
-        }
-        promoBannerRepository.deleteById(id);
+        PromoBanner banner = promoBannerRepository.findById(id)
+                .orElseThrow(() -> ApiException.notFound("Banner topilmadi"));
+        fileStorageService.deleteAfterCommit(banner.getImageUrl());
+        promoBannerRepository.delete(banner);
     }
 
     private Set<Region> resolveRegions(List<Long> regionIds) {

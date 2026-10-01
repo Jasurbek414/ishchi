@@ -28,8 +28,14 @@ class ProfileRepository {
     WorkPreference? workPreference,
     bool? hasDriverLicense,
     String? driverLicenseCategories,
+    /// True marks the worker free for today (the server expires it at midnight in Tashkent);
+    /// false clears it. Left null so an unrelated profile edit does not reset it.
+    bool? availableToday,
+    /// True removes the place from the map; null coordinates alone leave it as it is.
+    bool clearLocation = false,
   }) async {
     final body = <String, dynamic>{
+      if (clearLocation) 'clearLocation': true,
       if (firstName != null) 'firstName': firstName,
       if (lastName != null) 'lastName': lastName,
       if (regionId != null) 'regionId': regionId,
@@ -43,16 +49,18 @@ class ProfileRepository {
       if (workPreference != null) 'workPreference': workPreference.apiValue,
       if (hasDriverLicense != null) 'hasDriverLicense': hasDriverLicense,
       if (driverLicenseCategories != null) 'driverLicenseCategories': driverLicenseCategories,
+      if (availableToday != null) 'availableToday': availableToday,
     };
     final res = await _client.patch('/profile', data: body);
     return Profile.fromJson(res);
   }
 
   Future<Profile> uploadAvatar(String filePath) async {
-    final formData = FormData.fromMap({
-      'file': await MultipartFile.fromFile(filePath),
-    });
-    final res = await _client.postMultipart('/profile/avatar', formData);
+    // Built on demand rather than up front: a retry after a token refresh needs a fresh stream,
+    // because a FormData body cannot be sent twice.
+    final res = await _client.postMultipart('/profile/avatar', () async => FormData.fromMap({
+          'file': await MultipartFile.fromFile(filePath),
+        }));
     return Profile.fromJson(res);
   }
 

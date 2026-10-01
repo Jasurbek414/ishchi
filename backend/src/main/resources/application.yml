@@ -20,6 +20,13 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+  data:
+    web:
+      pageable:
+        # Without a cap the client picks the page size, and Spring's own default ceiling is 2000 —
+        # enough to drain a whole table in one request.
+        max-page-size: 50
+        default-page-size: 20
   servlet:
     multipart:
       max-file-size: 5MB
@@ -43,17 +50,29 @@ app:
   firebase:
     credentials-path: ${FIREBASE_CREDENTIALS_PATH:}
 
+# The API description lists every endpoint and field, so it is off unless a developer turns it on
+# (API_DOCS_ENABLED=true) on their own machine.
 springdoc:
   swagger-ui:
+    enabled: ${API_DOCS_ENABLED:false}
     path: /swagger-ui.html
   api-docs:
+    enabled: ${API_DOCS_ENABLED:false}
     path: /v3/api-docs
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        # prometheus is included so request, error and connection-pool metrics can be scraped. It is
+        # not in the public allow-list in SecurityConfig, so it needs an admin token from outside.
+        include: health,info,prometheus
+  metrics:
+    tags:
+      application: ishchi
+  observations:
+    key-values:
+      application: ishchi
 
 logging:
   level:

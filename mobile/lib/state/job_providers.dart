@@ -16,6 +16,7 @@ typedef JobFilter = ({
   String sort,
   int? nearRegionId,
   int? nearDistrictId,
+  bool? urgent,
 });
 
 const defaultJobFilter = (
@@ -29,6 +30,7 @@ const defaultJobFilter = (
   sort: 'newest',
   nearRegionId: null,
   nearDistrictId: null,
+  urgent: null,
 );
 
 final jobsSearchProvider = FutureProvider.family<PageResponse<Job>, JobFilter>((ref, filter) {
@@ -43,6 +45,7 @@ final jobsSearchProvider = FutureProvider.family<PageResponse<Job>, JobFilter>((
         sort: filter.sort,
         nearRegionId: filter.nearRegionId,
         nearDistrictId: filter.nearDistrictId,
+        urgent: filter.urgent,
         size: 50,
       );
 });

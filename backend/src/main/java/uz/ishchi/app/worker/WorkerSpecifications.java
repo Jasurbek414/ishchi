@@ -41,11 +41,30 @@ public final class WorkerSpecifications {
         return (root, query, cb) -> workPreference == null ? null : cb.equal(root.get("workPreference"), workPreference);
     }
 
+    /** Workers who said they can work today, and whose "today" has not expired. */
+    public static Specification<WorkerProfile> availableToday(Boolean availableToday) {
+        return (root, query, cb) -> availableToday == null || !availableToday ? null
+                : cb.greaterThan(root.get("availableUntil"), cb.literal(java.time.Instant.now()));
+    }
+
     public static Specification<WorkerProfile> hasCoordinates() {
         return (root, query, cb) -> cb.and(
                 cb.isNotNull(root.get("latitude")),
                 cb.isNotNull(root.get("longitude"))
         );
+    }
+
+    /** Same rough viewport box as {@code JobSpecifications.withinBox}, so the map loads what is on screen. */
+    public static Specification<WorkerProfile> withinBox(Double latitude, Double longitude, Double radiusDegrees) {
+        return (root, query, cb) -> {
+            if (latitude == null || longitude == null || radiusDegrees == null || radiusDegrees <= 0) {
+                return null;
+            }
+            return cb.and(
+                    cb.between(root.get("latitude"), latitude - radiusDegrees, latitude + radiusDegrees),
+                    cb.between(root.get("longitude"), longitude - radiusDegrees, longitude + radiusDegrees)
+            );
+        };
     }
 
     public static Specification<WorkerProfile> search(String keyword) {

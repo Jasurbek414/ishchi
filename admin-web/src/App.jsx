@@ -13,11 +13,14 @@ import TelegramPage from './pages/TelegramPage.jsx';
 import WalletPage from './pages/WalletPage.jsx';
 import SettingsPage from './pages/SettingsPage.jsx';
 import LandingPage from './pages/LandingPage.jsx';
+import ReportsPage from './pages/ReportsPage.jsx';
+import { ToastProvider } from './components/Toast.jsx';
 
 export default function App() {
   return (
-    <AuthProvider>
-      <HashRouter>
+    <ToastProvider>
+      <AuthProvider>
+        <HashRouter>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route
@@ -35,13 +38,15 @@ export default function App() {
             <Route path="jobs" element={<JobsPage />} />
             <Route path="professions" element={<ProfessionsPage />} />
             <Route path="promo-banners" element={<PromoBannersPage />} />
+            <Route path="reports" element={<ReportsPage />} />
             <Route path="telegram" element={<TelegramPage />} />
             <Route path="wallet" element={<WalletPage />} />
             <Route path="landing" element={<LandingPage />} />
             <Route path="settings" element={<SettingsPage />} />
           </Route>
         </Routes>
-      </HashRouter>
-    </AuthProvider>
+        </HashRouter>
+      </AuthProvider>
+    </ToastProvider>
   );
 }

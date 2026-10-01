@@ -1,5 +1,6 @@
 package uz.ishchi.app.job.dto;
 
+import uz.ishchi.app.common.ApplicationStatus;
 import uz.ishchi.app.common.DurationUnit;
 import uz.ishchi.app.common.JobStatus;
 import uz.ishchi.app.common.JobType;
@@ -37,7 +38,24 @@ public record JobResponse(
         List<JobImageResponse> images,
         Double latitude,
         Double longitude,
-        boolean unlocked
+        boolean unlocked,
+        /** "Bugunga kerak" flag, so urgent work can be surfaced first. */
+        boolean urgent,
+
+        /** How many workers have responded. Null where it was not looked up. */
+        Long applicationCount,
+        /** The asking worker's own response to this job, if any — lets a list show "javob berilgan". */
+        ApplicationStatus myApplicationStatus,
+
+        /*
+         * The employer's track record. A worker had no way at all to tell a genuine posting from a
+         * fake one; these are filled on the single-job view, and left null in lists where working
+         * them out per row would mean a query per row.
+         */
+        Long employerJobsPosted,
+        Long employerJobsCompleted,
+        Double employerRatingAverage,
+        Integer employerRatingCount
 ) {
     public static JobResponse from(Job job) {
         return from(job, true);
@@ -75,7 +93,30 @@ public record JobResponse(
                 job.getImages().stream().map(JobImageResponse::from).toList(),
                 job.getLatitude(),
                 job.getLongitude(),
-                unlocked
+                unlocked,
+                job.isUrgent(),
+                null, null,
+                null, null, null, null
         );
+    }
+
+    /** Adds the response figures a list or detail view looked up separately. */
+    public JobResponse withApplications(Long count, ApplicationStatus myStatus) {
+        return new JobResponse(id, employerId, employerName, employerAvatarUrl, employerPhone, title,
+                description, professionId, professionName, regionId, regionName, districtId, districtName,
+                payment, paymentType, jobType, workersNeeded, startDate, durationValue, durationUnit,
+                status, createdAt, images, latitude, longitude, unlocked, urgent,
+                count, myStatus,
+                employerJobsPosted, employerJobsCompleted, employerRatingAverage, employerRatingCount);
+    }
+
+    /** Adds the employer's track record, shown on the single-job view. */
+    public JobResponse withEmployerStats(long posted, long completed, Double ratingAverage, int ratingCount) {
+        return new JobResponse(id, employerId, employerName, employerAvatarUrl, employerPhone, title,
+                description, professionId, professionName, regionId, regionName, districtId, districtName,
+                payment, paymentType, jobType, workersNeeded, startDate, durationValue, durationUnit,
+                status, createdAt, images, latitude, longitude, unlocked, urgent,
+                applicationCount, myApplicationStatus,
+                posted, completed, ratingAverage, ratingCount);
     }
 }

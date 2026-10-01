@@ -81,14 +81,20 @@ public class ProfileService {
             if (request.experienceYears() != null) p.setExperienceYears(request.experienceYears());
             if (request.available() != null) p.setAvailable(request.available());
             if (request.professionIds() != null) {
-                List<Profession> professions = professionRepository.findAllById(request.professionIds());
-                p.setProfessions(new HashSet<>(professions));
+                p.setProfessions(new HashSet<>(resolveProfessions(request.professionIds())));
             }
             if (request.latitude() != null) p.setLatitude(request.latitude());
             if (request.longitude() != null) p.setLongitude(request.longitude());
+            if (Boolean.TRUE.equals(request.clearLocation())) {
+                p.setLatitude(null);
+                p.setLongitude(null);
+            }
             if (request.workPreference() != null) p.setWorkPreference(request.workPreference());
             if (request.hasDriverLicense() != null) p.setHasDriverLicense(request.hasDriverLicense());
             if (request.driverLicenseCategories() != null) p.setDriverLicenseCategories(request.driverLicenseCategories());
+            if (request.availableToday() != null) {
+                p.setAvailableUntil(request.availableToday() ? endOfTodayInTashkent() : null);
+            }
             return toResponse(user, p);
         } else if (user.getRole() == Role.EMPLOYER) {
             EmployerProfile p = employerProfileRepository.findByUserId(user.getId())
@@ -107,6 +113,10 @@ public class ProfileService {
             if (request.about() != null) p.setAbout(request.about());
             if (request.latitude() != null) p.setLatitude(request.latitude());
             if (request.longitude() != null) p.setLongitude(request.longitude());
+            if (Boolean.TRUE.equals(request.clearLocation())) {
+                p.setLatitude(null);
+                p.setLongitude(null);
+            }
             return toResponse(user, p);
         }
         throw ApiException.badRequest("Administrator uchun profil mavjud emas");
@@ -118,11 +128,13 @@ public class ProfileService {
         if (user.getRole() == Role.WORKER) {
             WorkerProfile p = workerProfileRepository.findByUserId(user.getId())
                     .orElseThrow(() -> ApiException.notFound("Profil topilmadi"));
+            fileStorageService.deleteAfterCommit(p.getAvatarUrl());
             p.setAvatarUrl(url);
             return toResponse(user, p);
         } else if (user.getRole() == Role.EMPLOYER) {
             EmployerProfile p = employerProfileRepository.findByUserId(user.getId())
                     .orElseThrow(() -> ApiException.notFound("Profil topilmadi"));
+            fileStorageService.deleteAfterCommit(p.getAvatarUrl());
             p.setAvatarUrl(url);
             return toResponse(user, p);
         }
@@ -169,6 +181,27 @@ public class ProfileService {
         return toResponse(user, p);
     }
 
+    /**
+     * Expiry for "I can work today" — midnight in Tashkent, since that is the day the worker means,
+     * not 24 hours from whenever they happened to tap it.
+     */
+    private static java.time.Instant endOfTodayInTashkent() {
+        java.time.ZoneId zone = java.time.ZoneId.of("Asia/Tashkent");
+        return java.time.LocalDate.now(zone).plusDays(1).atStartOfDay(zone).toInstant();
+    }
+
+    /**
+     * findAllById() drops ids that do not exist without a word, so a typo used to be saved as
+     * "no professions" instead of being rejected the way every other unknown id is.
+     */
+    private List<Profession> resolveProfessions(List<Long> professionIds) {
+        List<Profession> professions = professionRepository.findAllById(professionIds);
+        if (professions.size() != new HashSet<>(professionIds).size()) {
+            throw ApiException.badRequest("Tanlangan kasblardan biri topilmadi");
+        }
+        return professions;
+    }
+
     private void validateExperienceDates(java.time.LocalDate start, java.time.LocalDate end) {
         if (end != null && end.isBefore(start)) {
             throw ApiException.badRequest("Tugash sanasi boshlanish sanasidan oldin bo'lishi mumkin emas");
@@ -196,7 +229,8 @@ public class ProfileService {
                 p.getAbout(), p.getExperienceYears(), p.isAvailable(),
                 professions.stream().map(ProfessionResponse::from).toList(),
                 p.getLatitude(), p.getLongitude(), p.getWorkPreference(),
-                p.isHasDriverLicense(), p.getDriverLicenseCategories(), experiences
+                p.isHasDriverLicense(), p.getDriverLicenseCategories(), experiences,
+                p.getAvailableUntil(), p.getRatingAverage(), p.getRatingCount(), p.isVerified()
         );
     }
 
@@ -208,7 +242,8 @@ public class ProfileService {
                 p.getDistrict().getId(), p.getDistrict().getName(),
                 p.getAbout(), null, null, null,
                 p.getLatitude(), p.getLongitude(), null,
-                null, null, null
+                null, null, null,
+                null, p.getRatingAverage(), p.getRatingCount(), false
         );
     }
 }

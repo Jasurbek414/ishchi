@@ -27,6 +27,18 @@ const LABEL_LINKS = {
   telegramLinkedUsers: { to: '/telegram' },
 };
 
+/**
+ * Which tiles can be read as up or down, and against what.
+ *
+ * "12 new users today" said nothing about whether that is a good day, so the dashboard was asking
+ * the reader to guess. Only the two daily counters have a comparable previous period; the totals do
+ * not, and a delta on them would be meaningless.
+ */
+const TREND_BASELINES = {
+  newUsersToday: 'newUsersYesterday',
+  newJobsToday: 'newJobsYesterday',
+};
+
 const JOB_STATUS_LABELS = {
   ACTIVE: 'Faol',
   IN_PROGRESS: 'Jarayonda',
@@ -36,6 +48,35 @@ const JOB_STATUS_LABELS = {
 };
 
 const JOB_STATUS_ORDER = ['ACTIVE', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'EXPIRED'];
+
+/**
+ * The change against yesterday, as an arrow, a number and words.
+ *
+ * Status colour never carries the meaning on its own: the arrow and the label say which way it went,
+ * so it still reads in greyscale, under colour-vision deficiency and in forced-colors mode.
+ */
+function TrendDelta({ current, previous }) {
+  if (previous == null) return null;
+
+  if (previous === 0) {
+    // No baseline to divide by; state the raw figure rather than inventing a percentage.
+    if (current === 0) {
+      return <div className="stat-trend text-text-secondary">kecha ham 0 edi</div>;
+    }
+    return <div className="stat-trend text-success">↑ kecha 0 edi</div>;
+  }
+
+  const change = Math.round(((current - previous) / previous) * 100);
+  if (change === 0) {
+    return <div className="stat-trend text-text-secondary">→ kecha bilan bir xil</div>;
+  }
+  const up = change > 0;
+  return (
+    <div className={`stat-trend ${up ? 'text-success' : 'text-danger'}`}>
+      {up ? '↑' : '↓'} {Math.abs(change)}% <span className="text-text-secondary">kechagiga nisbatan</span>
+    </div>
+  );
+}
 
 export default function DashboardPage() {
   const { walletEnabled } = useAppSettings();
@@ -70,6 +111,9 @@ export default function DashboardPage() {
                 >
                   <div className="stat-value">{stats[key]}</div>
                   <div className="stat-label">{label}</div>
+                  {TREND_BASELINES[key] && (
+                    <TrendDelta current={stats[key]} previous={stats[TREND_BASELINES[key]]} />
+                  )}
                 </div>
               );
             })}
@@ -82,6 +126,16 @@ export default function DashboardPage() {
                 {stats.pendingFeedback}
               </div>
               <div className="stat-label">Yangi fikr-mulohazalar</div>
+            </div>
+            <div
+              className={`stat-card cursor-pointer ${stats.openReports > 0 ? 'outline outline-2 outline-danger' : ''}`}
+              onClick={() => navigate('/reports')}
+              title="Shikoyatlar bo'limiga o'tish"
+            >
+              <div className={`stat-value ${stats.openReports > 0 ? 'text-danger' : ''}`}>
+                {stats.openReports}
+              </div>
+              <div className="stat-label">Ko'rilmagan shikoyatlar</div>
             </div>
             {walletEnabled && (
               <div className="stat-card">

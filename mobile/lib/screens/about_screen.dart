@@ -4,6 +4,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../core/app_assets.dart';
 import '../l10n/l10n_x.dart';
 import '../state/app_settings_provider.dart';
 
@@ -13,8 +14,6 @@ class AboutScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cs = Theme.of(context).colorScheme;
-    final hsl = HSLColor.fromColor(cs.primary);
-    final lighter = hsl.withLightness((hsl.lightness + 0.20).clamp(0.0, 1.0)).toColor();
     final settingsAsync = ref.watch(appSettingsProvider);
     final settings = settingsAsync.valueOrNull;
 
@@ -27,15 +26,17 @@ class AboutScreen extends ConsumerWidget {
             Center(
               child: Column(
                 children: [
+                  // The logo's navy parts vanish on a dark surface, so its tile stays white in both themes.
                   Container(
-                    width: 84,
-                    height: 84,
+                    width: 104,
+                    height: 104,
+                    padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(colors: [lighter, cs.primary]),
-                      borderRadius: BorderRadius.circular(22),
-                      boxShadow: [BoxShadow(color: cs.primary.withValues(alpha: 0.30), blurRadius: 18, offset: const Offset(0, 8))],
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(26),
+                      boxShadow: [BoxShadow(color: cs.primary.withValues(alpha: 0.22), blurRadius: 18, offset: const Offset(0, 8))],
                     ),
-                    child: Icon(PhosphorIcons.handshake(PhosphorIconsStyle.fill), color: Colors.white, size: 38),
+                    child: Image.asset(AppAssets.logo, fit: BoxFit.contain),
                   ),
                   const SizedBox(height: 16),
                   const Text('Ishchi', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800)),

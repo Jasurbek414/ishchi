@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import uz.ishchi.app.common.Role;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,4 +39,8 @@ public interface DeviceTokenRepository extends JpaRepository<DeviceToken, Long> 
 
     @Query("select dt.token from DeviceToken dt where dt.user.id = :userId")
     List<String> findTokensByUserId(@Param("userId") Long userId);
+
+    /** Batch variant for the nightly reminder, which used to query once per job it notified. */
+    @Query("select dt.user.id, dt.token from DeviceToken dt where dt.user.id in :userIds")
+    List<Object[]> findUserIdAndTokenByUserIdIn(@Param("userIds") Collection<Long> userIds);
 }

@@ -2,7 +2,7 @@ name: ishchi
 description: "Ish topish va kunlik xizmatlar platformasi"
 publish_to: 'none'
 
-version: 1.0.46+47
+version: 1.0.47+48
 
 environment:
   sdk: ^3.7.2
@@ -32,6 +32,7 @@ dependencies:
   firebase_messaging: ^15.1.3
   flutter_local_notifications: ^18.0.1
   package_info_plus: ^8.1.1
+  flutter_map_marker_cluster: ^1.4.0
 
 dev_dependencies:
   flutter_test:
@@ -48,7 +49,10 @@ flutter:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/icon/icon.png"
+  image_path: "assets/icon/logo.png"
   adaptive_icon_background: "#FFFFFF"
-  adaptive_icon_foreground: "assets/icon/icon_foreground.png"
+  adaptive_icon_foreground: "assets/icon/logo.png"
+  # The logo sits on a white square, so it needs a wider margin than the default 16 to clear a
+  # round launcher mask; 26 keeps it where the old padded foreground image had it.
+  adaptive_icon_foreground_inset: 26
   remove_alpha_ios: true

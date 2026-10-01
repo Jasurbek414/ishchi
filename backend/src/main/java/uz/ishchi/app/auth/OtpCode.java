@@ -16,6 +16,9 @@ import java.time.Instant;
 @NoArgsConstructor
 public class OtpCode {
 
+    /** A 4-digit code has 9000 possibilities, so guessing has to be capped hard. */
+    public static final int MAX_ATTEMPTS = 5;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -35,6 +38,10 @@ public class OtpCode {
 
     @Column(name = "is_used", nullable = false)
     private boolean used = false;
+
+    /** Wrong-guess counter; the code is burned once it hits {@code MAX_ATTEMPTS}. */
+    @Column(nullable = false)
+    private int attempts = 0;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

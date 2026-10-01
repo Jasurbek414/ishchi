@@ -13,8 +13,11 @@ import uz.ishchi.app.common.JobStatus;
 import uz.ishchi.app.common.Role;
 import uz.ishchi.app.common.exception.ApiException;
 import uz.ishchi.app.job.Job;
+import uz.ishchi.app.common.FileStorageService;
+import uz.ishchi.app.job.JobImageRepository;
 import uz.ishchi.app.job.JobRepository;
 import uz.ishchi.app.profile.EmployerProfileRepository;
+import uz.ishchi.app.profile.WorkerProfile;
 import uz.ishchi.app.profile.WorkerProfileRepository;
 import uz.ishchi.app.profile.ProfileService;
 import uz.ishchi.app.profile.dto.ProfileResponse;
@@ -27,8 +30,11 @@ import jakarta.persistence.criteria.JoinType;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -41,34 +47,64 @@ public class AdminService {
     private final ProfileService profileService;
     private final TelegramFeedbackRepository telegramFeedbackRepository;
     private final WalletAccountRepository walletAccountRepository;
+    private final JobImageRepository jobImageRepository;
+    private final uz.ishchi.app.report.ReportRepository reportRepository;
+    private final FileStorageService fileStorageService;
 
     private static final ZoneId ZONE = ZoneId.of("Asia/Tashkent");
 
     @Transactional(readOnly = true)
     public Page<AdminUserResponse> listUsers(Role role, Boolean active, Boolean verified, String search, Pageable pageable) {
         Page<User> page = userRepository.search(role, active, verified, search, pageable);
-        return page.map(this::toAdminUserResponse);
+        Map<Long, RowSummary> summaries = summariesFor(page.getContent());
+        return page.map(user -> {
+            RowSummary summary = summaries.get(user.getId());
+            return toResponse(user, summary);
+        });
     }
 
-    /** Table-row summary (name + region) is looked up per user — page size is capped at 20,
-     *  so this stays a handful of cheap indexed lookups rather than a real N+1 concern. */
-    private AdminUserResponse toAdminUserResponse(User user) {
-        String fullName = null;
-        String regionName = null;
-        if (user.getRole() == Role.WORKER) {
-            var p = workerProfileRepository.findByUserId(user.getId()).orElse(null);
-            if (p != null) {
-                fullName = p.getFirstName() + " " + p.getLastName();
-                regionName = p.getRegion().getName();
-            }
-        } else if (user.getRole() == Role.EMPLOYER) {
-            var p = employerProfileRepository.findByUserId(user.getId()).orElse(null);
-            if (p != null) {
-                fullName = p.getFirstName() + " " + p.getLastName();
-                regionName = p.getRegion().getName();
-            }
+    private record RowSummary(String fullName, String regionName, String districtName, String avatarUrl,
+                               boolean workerVerified, Double ratingAverage, Integer ratingCount) {
+    }
+
+    /**
+     * Resolves the name and region shown in each table row for the whole page in two queries. This
+     * used to run a profile lookup per row, which was defended as "page size is capped at 20" —
+     * the cap is a request parameter, so it was never a guarantee.
+     */
+    private Map<Long, RowSummary> summariesFor(List<User> users) {
+        Map<Role, List<Long>> idsByRole = users.stream()
+                .filter(u -> u.getRole() == Role.WORKER || u.getRole() == Role.EMPLOYER)
+                .collect(Collectors.groupingBy(User::getRole, Collectors.mapping(User::getId, Collectors.toList())));
+
+        Map<Long, RowSummary> summaries = new HashMap<>();
+        List<Long> workerIds = idsByRole.getOrDefault(Role.WORKER, List.of());
+        if (!workerIds.isEmpty()) {
+            workerProfileRepository.findByUserIdIn(workerIds).forEach(p -> summaries.put(p.getUser().getId(),
+                    new RowSummary(p.getFirstName() + " " + p.getLastName(), p.getRegion().getName(),
+                            p.getDistrict().getName(), p.getAvatarUrl(),
+                            p.isVerified(), p.getRatingAverage(), p.getRatingCount())));
         }
-        return AdminUserResponse.from(user, fullName, regionName);
+        List<Long> employerIds = idsByRole.getOrDefault(Role.EMPLOYER, List.of());
+        if (!employerIds.isEmpty()) {
+            employerProfileRepository.findByUserIdIn(employerIds).forEach(p -> summaries.put(p.getUser().getId(),
+                    new RowSummary(p.getFirstName() + " " + p.getLastName(), p.getRegion().getName(),
+                            p.getDistrict().getName(), p.getAvatarUrl(),
+                            false, p.getRatingAverage(), p.getRatingCount())));
+        }
+        return summaries;
+    }
+
+    private AdminUserResponse toAdminUserResponse(User user) {
+        return toResponse(user, summariesFor(List.of(user)).get(user.getId()));
+    }
+
+    private AdminUserResponse toResponse(User user, RowSummary summary) {
+        if (summary == null) {
+            return AdminUserResponse.from(user, null, null);
+        }
+        return AdminUserResponse.from(user, summary.fullName(), summary.regionName(), summary.districtName(),
+                summary.avatarUrl(), summary.workerVerified(), summary.ratingAverage(), summary.ratingCount());
     }
 
     @Transactional(readOnly = true)
@@ -118,15 +154,35 @@ public class AdminService {
 
     @Transactional
     public void deleteJob(Long jobId) {
-        if (!jobRepository.existsById(jobId)) {
-            throw ApiException.notFound("Buyurtma topilmadi");
-        }
-        jobRepository.deleteById(jobId);
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> ApiException.notFound("Buyurtma topilmadi"));
+        // The employer's own delete path cleans the image files up; this one did not, so a job
+        // removed by an admin left its uploads behind.
+        jobImageRepository.findByJobIdOrderByCreatedAtAsc(job.getId())
+                .forEach(image -> fileStorageService.deleteAfterCommit(image.getUrl()));
+        jobRepository.delete(job);
+    }
+
+    /**
+     * Marks a worker as checked by a human. In a market with no trust infrastructure this is the one
+     * signal the platform itself can vouch for, so it is deliberately not derivable from activity.
+     */
+    @Transactional
+    public AdminUserResponse setWorkerVerified(Long userId, boolean verified) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> ApiException.notFound("Foydalanuvchi topilmadi"));
+        WorkerProfile profile = workerProfileRepository.findByUserId(userId)
+                .orElseThrow(() -> ApiException.notFound("Ishchi profili topilmadi"));
+        profile.setVerified(verified);
+        profile.setVerifiedAt(verified ? Instant.now() : null);
+        return toAdminUserResponse(user);
     }
 
     @Transactional(readOnly = true)
     public StatsResponse stats() {
-        Instant startOfToday = LocalDate.now(ZONE).atStartOfDay(ZONE).toInstant();
+        LocalDate today = LocalDate.now(ZONE);
+        Instant startOfToday = today.atStartOfDay(ZONE).toInstant();
+        Instant startOfYesterday = today.minusDays(1).atStartOfDay(ZONE).toInstant();
         Map<String, Long> jobsByStatus = new LinkedHashMap<>();
         for (JobStatus status : JobStatus.values()) {
             jobsByStatus.put(status.name(), jobRepository.countByStatus(status));
@@ -138,9 +194,12 @@ public class AdminService {
                 jobRepository.countByStatusAndBlockedFalse(JobStatus.ACTIVE),
                 userRepository.countByCreatedAtAfter(startOfToday),
                 jobRepository.countByCreatedAtAfter(startOfToday),
+                userRepository.countByCreatedAtBetween(startOfYesterday, startOfToday),
+                jobRepository.countByCreatedAtBetween(startOfYesterday, startOfToday),
                 userRepository.countByActiveFalse(),
                 userRepository.countByTelegramChatIdIsNotNull(),
                 telegramFeedbackRepository.countByResolvedFalse(),
+                reportRepository.countByResolvedFalse(),
                 walletAccountRepository.sumAllBalances(),
                 jobsByStatus
         );

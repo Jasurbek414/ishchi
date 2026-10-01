@@ -26,6 +26,16 @@ public record ProfileResponse(
         WorkPreference workPreference,
         Boolean hasDriverLicense,
         String driverLicenseCategories,
-        List<WorkExperienceResponse> experiences
+        List<WorkExperienceResponse> experiences,
+
+        /** "Bugun bo'shman" muddati; null bo'lsa belgilanmagan. */
+
+        java.time.Instant availableUntil,
+
+        Double ratingAverage,
+
+        Integer ratingCount,
+
+        boolean verified
 ) {
 }

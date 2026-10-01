@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../core/design_tokens.dart';
 import 'core_providers.dart';
 
 // ─── Mavzu holati ────────────────────────────────────────────────────────────
 
 class AppThemeState {
   const AppThemeState({
-    this.seedColor = const Color(0xFFE8541F),
+    this.seedColor = DesignTokens.primary,
     this.themeMode = ThemeMode.system,
   });
 
@@ -41,6 +42,7 @@ class AppColorPalette {
 }
 
 const List<AppColorPalette> kColorPalettes = [
+  AppColorPalette(id: 'sky', color: DesignTokens.primary, emoji: '🌤'),
   AppColorPalette(id: 'burntOrange', color: Color(0xFFE8541F), emoji: '🟠'),
   AppColorPalette(id: 'blue', color: Color(0xFF2563EB), emoji: '🔵'),
   AppColorPalette(id: 'green', color: Color(0xFF16A34A), emoji: '🟢'),
@@ -86,7 +88,7 @@ class ThemeNotifier extends Notifier<AppThemeState> {
       return;
     }
 
-    final color = colorValue != null ? Color(colorValue) : const Color(0xFFE8541F);
+    final color = colorValue != null ? Color(colorValue) : DesignTokens.primary;
     final mode = switch (modeStr) {
       'light' => ThemeMode.light,
       'dark' => ThemeMode.dark,

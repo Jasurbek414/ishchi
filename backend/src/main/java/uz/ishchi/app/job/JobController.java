@@ -12,7 +12,9 @@ import uz.ishchi.app.common.JobType;
 import uz.ishchi.app.common.dto.PageResponse;
 import uz.ishchi.app.job.dto.JobCreateRequest;
 import uz.ishchi.app.job.dto.JobImageResponse;
+import uz.ishchi.app.common.PaymentType;
 import uz.ishchi.app.job.dto.JobResponse;
+import uz.ishchi.app.job.dto.PriceGuidanceResponse;
 import uz.ishchi.app.job.dto.JobStatusUpdateRequest;
 import uz.ishchi.app.job.dto.JobUpdateRequest;
 import uz.ishchi.app.security.UserPrincipal;
@@ -41,17 +43,42 @@ public class JobController {
             @RequestParam(required = false, defaultValue = "newest") String sortBy,
             @RequestParam(required = false) Long nearRegionId,
             @RequestParam(required = false) Long nearDistrictId,
+            @RequestParam(required = false) Boolean urgent,
             Pageable pageable
     ) {
         return PageResponse.of(jobService.search(principal.getUser(), regionId, districtId, professionId, jobType,
-                minPayment, maxPayment, status, search, sortBy, nearRegionId, nearDistrictId, pageable));
+                minPayment, maxPayment, status, search, sortBy, nearRegionId, nearDistrictId, urgent, pageable));
+    }
+
+    /** Payment guidance while filling the job form; open to any signed-in user. */
+    @GetMapping("/price-guidance")
+    public PriceGuidanceResponse priceGuidance(@RequestParam Long professionId,
+                                                @RequestParam(required = false) Long regionId,
+                                                @RequestParam PaymentType paymentType) {
+        return jobService.priceGuidance(professionId, regionId, paymentType);
+    }
+
+    /**
+     * Copies a past posting into a new active one. Employers on building sites post the same job
+     * over and over; retyping every field each time was the single most repeated piece of work.
+     */
+    @PostMapping("/{id}/repost")
+    @PreAuthorize("hasRole('EMPLOYER')")
+    public JobResponse repost(@AuthenticationPrincipal UserPrincipal principal, @PathVariable Long id) {
+        return jobService.repost(principal.getUser(), id);
     }
 
     @GetMapping("/map")
     public List<JobResponse> mapSearch(@AuthenticationPrincipal UserPrincipal principal,
                                         @RequestParam(required = false) Long regionId,
-                                        @RequestParam(required = false) Long professionId) {
-        return jobService.mapSearch(principal.getUser(), regionId, professionId);
+                                        @RequestParam(required = false) Long professionId,
+                                        @RequestParam(required = false) Double latitude,
+                                        @RequestParam(required = false) Double longitude,
+                                        @RequestParam(required = false) Double radiusDegrees,
+                                        @RequestParam(required = false) Long employerId,
+                                        @RequestParam(required = false) Boolean urgent) {
+        return jobService.mapSearch(principal.getUser(), regionId, professionId,
+                latitude, longitude, radiusDegrees, employerId, urgent);
     }
 
     @GetMapping("/my")

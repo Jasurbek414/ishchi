@@ -1,16 +1,30 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext.jsx';
+import {
+  Briefcase,
+  Flag,
+  LayoutDashboard,
+  LayoutTemplate,
+  Megaphone,
+  Send,
+  Settings,
+  Tags,
+  Users,
+  Wallet,
+} from 'lucide-react';
+import ThemeToggle from './ThemeToggle.jsx';
 
 const NAV_ITEMS = [
-  { to: '/', label: 'Statistika', end: true },
-  { to: '/users', label: 'Foydalanuvchilar' },
-  { to: '/jobs', label: 'Buyurtmalar' },
-  { to: '/professions', label: 'Kasblar' },
-  { to: '/promo-banners', label: 'Reklama' },
-  { to: '/telegram', label: 'Telegram bot' },
-  { to: '/wallet', label: 'Hamyon' },
-  { to: '/landing', label: 'Landing sahifa' },
-  { to: '/settings', label: 'Sozlamalar' },
+  { to: '/', label: 'Statistika', icon: LayoutDashboard, end: true },
+  { to: '/users', label: 'Foydalanuvchilar', icon: Users },
+  { to: '/jobs', label: 'Buyurtmalar', icon: Briefcase },
+  { to: '/professions', label: 'Kasblar', icon: Tags },
+  { to: '/promo-banners', label: 'Reklama', icon: Megaphone },
+  { to: '/reports', label: 'Shikoyatlar', icon: Flag },
+  { to: '/telegram', label: 'Telegram bot', icon: Send },
+  { to: '/wallet', label: 'Hamyon', icon: Wallet },
+  { to: '/landing', label: 'Landing sahifa', icon: LayoutTemplate },
+  { to: '/settings', label: 'Sozlamalar', icon: Settings },
 ];
 
 export default function Layout() {
@@ -20,10 +34,13 @@ export default function Layout() {
     <div className="app-shell">
       <header className="topbar">
         <div className="topbar-title">
-          <span className="topbar-badge">I</span>
+          <img className="topbar-badge" src={`${import.meta.env.BASE_URL}logo.png`} alt="" />
           Ishchi — Admin
         </div>
-        <button className="logout-btn" onClick={logout}>Chiqish</button>
+        <div className="topbar-actions">
+          <ThemeToggle />
+          <button className="logout-btn" onClick={logout}>Chiqish</button>
+        </div>
       </header>
       <div className="layout-body">
         <nav className="sidebar">
@@ -34,6 +51,7 @@ export default function Layout() {
               end={item.end}
               className={({ isActive }) => 'nav-link' + (isActive ? ' active' : '')}
             >
+              <item.icon size={17} strokeWidth={2.1} />
               {item.label}
             </NavLink>
           ))}
@@ -50,6 +68,7 @@ export default function Layout() {
             end={item.end}
             className={({ isActive }) => 'nav-link' + (isActive ? ' active' : '')}
           >
+            <item.icon size={18} strokeWidth={2.1} />
             {item.label}
           </NavLink>
         ))}

@@ -25,24 +25,52 @@ public record WorkerResponse(
         Double latitude,
         Double longitude,
         WorkPreference workPreference,
+        /** Denormalised on the profile, so a list does not aggregate ratings per row. */
+        /** Set when the worker said they can work today; null or past means they did not. */
+        java.time.Instant availableUntil,
+        Double ratingAverage,
+        Integer ratingCount,
+        /** Checked by an admin — the one trust signal the platform itself vouches for. */
+        boolean verified,
         boolean hasDriverLicense,
         String driverLicenseCategories,
         List<WorkExperienceResponse> experiences
 ) {
-    /** For list/search results — omits work experience to avoid an extra query per row. */
-    public static WorkerResponse from(WorkerProfile p) {
-        return from(p, null);
+    /**
+     * Contact details are deliberately withheld from every bulk response. Handing out a phone
+     * number and exact coordinates per row let any single account page through the whole worker
+     * table and walk away with names, numbers and home locations. They are served only by the
+     * single-worker detail endpoint, one worker at a time.
+     *
+     * <p>The field stays present and blank rather than null on purpose: the mobile client parses
+     * it as a non-nullable String, so a null would crash a released app mid-list.
+     */
+    private static final String WITHHELD = "";
+
+    /** List/search results: no contact details, no coordinates, no work experience. */
+    public static WorkerResponse forList(WorkerProfile p) {
+        return build(p, WITHHELD, null, null, null);
     }
 
-    /** For the single-worker detail view. */
-    public static WorkerResponse from(WorkerProfile p, List<WorkExperienceResponse> experiences) {
+    /** Map pins: coordinates are the whole point, but contact details still are not. */
+    public static WorkerResponse forMap(WorkerProfile p) {
+        return build(p, WITHHELD, p.getLatitude(), p.getLongitude(), null);
+    }
+
+    /** The single-worker detail view an employer opens — the one place the phone is served. */
+    public static WorkerResponse forDetail(WorkerProfile p, List<WorkExperienceResponse> experiences) {
+        return build(p, p.getUser().getPhone(), p.getLatitude(), p.getLongitude(), experiences);
+    }
+
+    private static WorkerResponse build(WorkerProfile p, String phone, Double latitude, Double longitude,
+                                         List<WorkExperienceResponse> experiences) {
         return new WorkerResponse(
                 p.getId(),
                 p.getUser().getId(),
                 p.getFirstName(),
                 p.getLastName(),
                 p.getAvatarUrl(),
-                p.getUser().getPhone(),
+                phone,
                 p.getRegion().getId(),
                 p.getRegion().getName(),
                 p.getDistrict().getId(),
@@ -51,9 +79,13 @@ public record WorkerResponse(
                 p.getAbout(),
                 p.isAvailable(),
                 p.getProfessions().stream().map(ProfessionResponse::from).toList(),
-                p.getLatitude(),
-                p.getLongitude(),
+                latitude,
+                longitude,
                 p.getWorkPreference(),
+                p.getAvailableUntil(),
+                p.getRatingAverage(),
+                p.getRatingCount(),
+                p.isVerified(),
                 p.isHasDriverLicense(),
                 p.getDriverLicenseCategories(),
                 experiences

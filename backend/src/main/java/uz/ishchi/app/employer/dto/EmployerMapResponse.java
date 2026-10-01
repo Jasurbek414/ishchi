@@ -17,6 +17,13 @@ public record EmployerMapResponse(
         Double latitude,
         Double longitude
 ) {
+    /**
+     * Withholds the phone number. Serving it here handed every worker the employer contact details
+     * that the job-view fee is supposed to charge for — 500 at a time, for free — so the paywall
+     * on the job list was bypassable by opening the map instead.
+     *
+     * <p>Blank rather than null: the mobile client parses this field as a non-nullable String.
+     */
     public static EmployerMapResponse from(EmployerProfile p) {
         return new EmployerMapResponse(
                 p.getId(),
@@ -24,7 +31,7 @@ public record EmployerMapResponse(
                 p.getFirstName(),
                 p.getLastName(),
                 p.getAvatarUrl(),
-                p.getUser().getPhone(),
+                "",
                 p.getRegion().getId(),
                 p.getRegion().getName(),
                 p.getDistrict().getId(),

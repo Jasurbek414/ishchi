@@ -13,7 +13,7 @@ import '../widgets/profession_multi_selector.dart';
 import '../widgets/region_district_selector.dart';
 import '../widgets/user_avatar.dart';
 import '../widgets/work_experience_dialog.dart';
-import 'location_picker_screen.dart';
+import '../widgets/map/location_preview.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
@@ -63,13 +63,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     _initialized = true;
   }
 
-  Future<void> _pickLocation() async {
-    final picked = await Navigator.push<LatLng>(
-      context,
-      MaterialPageRoute(builder: (_) => LocationPickerScreen(initial: _location)),
-    );
-    if (picked != null) setState(() => _location = picked);
-  }
 
   Future<void> _pickAvatar() async {
     final picker = ImagePicker();
@@ -107,6 +100,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             professionIds: role == UserRole.worker ? _professionIds.toList() : null,
             latitude: _location?.latitude,
             longitude: _location?.longitude,
+            clearLocation: _location == null,
             workPreference: role == UserRole.worker ? _workPreference : null,
             hasDriverLicense: role == UserRole.worker ? _hasDriverLicense : null,
             driverLicenseCategories: role == UserRole.worker
@@ -339,27 +333,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     )),
             ],
             const SizedBox(height: 14),
-            InkWell(
-              onTap: _pickLocation,
-              child: InputDecorator(
-                decoration: InputDecoration(
-                  labelText: isWorker ? context.l10n.workLocationOnMapLabel : context.l10n.addressOnMapLabel,
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.map_outlined, size: 18, color: cs.primary),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        _location == null
-                            ? context.l10n.pickOnMapAction
-                            : "${_location!.latitude.toStringAsFixed(5)}, ${_location!.longitude.toStringAsFixed(5)}",
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+            LocationField(
+              label: isWorker ? context.l10n.workLocationOnMapLabel : context.l10n.addressOnMapLabel,
+              value: _location,
+              onChanged: (point) => setState(() => _location = point),
             ),
             if (_error != null) ...[
               const SizedBox(height: 8),

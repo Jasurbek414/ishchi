@@ -1,19 +1,118 @@
 import { useEffect, useState } from 'react';
 import { api, ApiError } from '../api/client.js';
 import { useAppSettings } from '../settings/AppSettingsContext.jsx';
+import { useAuth } from '../auth/AuthContext.jsx';
 
 export default function SettingsPage() {
   return (
     <div>
       <h1>Sozlamalar</h1>
+      <AdminAccountCard />
       <AppThemeSettingsCard />
       <AppInfoSettingsCard />
+      <MapSettingsCard />
       <BroadcastNotificationCard />
     </div>
   );
 }
 
+function AdminAccountCard() {
+  const { logout } = useAuth();
+  const [currentPhone, setCurrentPhone] = useState(null);
+  const [phone, setPhone] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [repeat, setRepeat] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    api.get('/api/admin/account').then((a) => {
+      setCurrentPhone(a.phone);
+      setPhone(a.phone);
+    }).catch(() => {});
+  }, []);
+
+  async function save(e) {
+    e.preventDefault();
+    setError(null);
+    setSuccess(null);
+    const trimmedPhone = phone.trim();
+    const phoneChanged = trimmedPhone && trimmedPhone !== currentPhone;
+    if (!phoneChanged && !newPassword) {
+      setError("Yangi telefon raqam yoki yangi parolni kiriting");
+      return;
+    }
+    if (phoneChanged && !/^\+998\d{9}$/.test(trimmedPhone)) {
+      setError('Telefon +998XXXXXXXXX ko\'rinishida bo\'lishi kerak');
+      return;
+    }
+    if (newPassword && newPassword.length < 8) {
+      setError("Yangi parol kamida 8 belgidan iborat bo'lsin");
+      return;
+    }
+    if (newPassword !== repeat) {
+      setError('Yangi parol va takrori bir xil emas');
+      return;
+    }
+    if (!currentPassword) {
+      setError('Tasdiqlash uchun joriy parolni kiriting');
+      return;
+    }
+    setBusy(true);
+    try {
+      await api.patch('/api/admin/account', {
+        currentPassword,
+        phone: phoneChanged ? trimmedPhone : undefined,
+        newPassword: newPassword || undefined,
+      });
+      setSuccess("Saqlandi. Endi yangi ma'lumotlar bilan qayta kirasiz...");
+      setTimeout(() => logout(), 2000);
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : "Saqlab bo'lmadi");
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="card">
+      <h3 className="mt-0 mx-0 mb-1">Kirish ma'lumotlari</h3>
+      <p className="mt-0 mx-0 mb-4 text-text-secondary text-[13px]">
+        Admin panelga kiriladigan telefon raqam va parol. O'zgartirgandan keyin panel sizni chiqaradi — yangi ma'lumotlar bilan qayta kirasiz.
+      </p>
+      {currentPhone === null && <p className="text-[13px] text-text-secondary">Yuklanmoqda...</p>}
+      {currentPhone !== null && (
+        <form onSubmit={save} autoComplete="off">
+          <div className="field">
+            <label>Login (telefon raqam)</label>
+            <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+998901234567" disabled={busy} />
+          </div>
+          <div className="field">
+            <label>Yangi parol (o'zgartirmasangiz bo'sh qoldiring)</label>
+            <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} autoComplete="new-password" disabled={busy} />
+          </div>
+          <div className="field">
+            <label>Yangi parolni takrorlang</label>
+            <input type="password" value={repeat} onChange={(e) => setRepeat(e.target.value)} autoComplete="new-password" disabled={busy} />
+          </div>
+          <div className="field">
+            <label>Joriy parol (tasdiqlash uchun)</label>
+            <input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} autoComplete="current-password" disabled={busy} />
+          </div>
+          {error && <div className="error-text">{error}</div>}
+          {success && <div className="text-success text-[13px] mb-3.5">{success}</div>}
+          <button type="submit" className="btn btn-primary" disabled={busy}>
+            {busy ? 'Saqlanmoqda...' : 'Saqlash'}
+          </button>
+        </form>
+      )}
+    </div>
+  );
+}
+
 const THEME_PALETTES = [
+  { id: 'sky', color: '#0284C7', label: 'Osmon ko\'k' },
   { id: 'burntOrange', color: '#E8541F', label: 'Qizg\'ish-to\'q sariq' },
   { id: 'blue', color: '#2563EB', label: "Ko'k" },
   { id: 'green', color: '#16A34A', label: 'Yashil' },
@@ -33,7 +132,7 @@ const THEME_MODES = [
 function AppThemeSettingsCard() {
   const { settings, refresh } = useAppSettings();
   const [themeMode, setThemeMode] = useState('LIGHT');
-  const [seedColor, setSeedColor] = useState('#E8541F');
+  const [seedColor, setSeedColor] = useState('#0284C7');
   const [initialized, setInitialized] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
@@ -41,7 +140,7 @@ function AppThemeSettingsCard() {
 
   if (settings && !initialized) {
     setThemeMode(settings.defaultThemeMode ?? 'LIGHT');
-    setSeedColor(settings.defaultSeedColor ?? '#E8541F');
+    setSeedColor(settings.defaultSeedColor ?? '#0284C7');
     setInitialized(true);
   }
 
@@ -192,6 +291,118 @@ function AppInfoSettingsCard() {
               onChange={(e) => setAboutText(e.target.value)}
               placeholder="Platforma haqida batafsil ma'lumot..."
               rows={8}
+            />
+          </div>
+          {error && <div className="error-text">{error}</div>}
+          {success && <div className="text-success text-[13px] mb-3.5">{success}</div>}
+          <button type="submit" className="btn btn-primary" disabled={busy}>
+            {busy ? 'Saqlanmoqda...' : 'Saqlash'}
+          </button>
+        </form>
+      )}
+    </div>
+  );
+}
+
+// Ready-made choices: the built-in OpenStreetMap tiles, or providers that hand out a key for app
+// use. {key} is left for the admin to replace with their own.
+const MAP_PRESETS = [
+  { label: 'OpenStreetMap (standart)', url: '', attribution: '' },
+  {
+    label: 'MapTiler Streets (kalit kerak)',
+    url: 'https://api.maptiler.com/maps/streets-v2/256/{z}/{x}/{y}.png?key={key}',
+    attribution: 'MapTiler © OpenStreetMap',
+  },
+  {
+    label: 'Stadia Maps (kalit kerak)',
+    url: 'https://tiles.stadiamaps.com/tiles/osm_bright/{z}/{x}/{y}.png?api_key={key}',
+    attribution: 'Stadia Maps © OpenStreetMap',
+  },
+];
+
+function MapSettingsCard() {
+  const { settings, refresh } = useAppSettings();
+  const [url, setUrl] = useState('');
+  const [attribution, setAttribution] = useState('');
+  const [initialized, setInitialized] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
+  const [busy, setBusy] = useState(false);
+
+  if (settings && !initialized) {
+    setUrl(settings.mapTileUrl ?? '');
+    setAttribution(settings.mapAttribution ?? '');
+    setInitialized(true);
+  }
+
+  async function save(e) {
+    e.preventDefault();
+    const trimmed = url.trim();
+    if (trimmed.includes('{key}')) {
+      setError("Manzildagi {key} o'rniga xizmatdan olingan kalitni qo'ying");
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      await api.patch('/api/admin/settings', { mapTileUrl: trimmed, mapAttribution: attribution.trim() });
+      await refresh();
+      setSuccess("Saqlandi — ilova xaritalari keyingi ochilishda yangi manzildan yuklanadi");
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : "Saqlab bo'lmadi");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="card mt-6">
+      <h3 className="mt-0 mx-0 mb-1">Xarita</h3>
+      <p className="mt-0 mx-0 mb-4 text-text-secondary text-[13px]">
+        Mobil ilovadagi barcha xaritalar shu manzildan chiziladi. Bo'sh qoldirilsa, OpenStreetMap ishlatiladi. Foydalanuvchilar
+        ko'payganda kalitli xizmatga (MapTiler, Stadia) o'tish tavsiya etiladi — OpenStreetMap serverlari katta yuklama uchun
+        mo'ljallanmagan.
+      </p>
+      {!settings && <p className="text-[13px] text-text-secondary">Yuklanmoqda...</p>}
+      {settings && (
+        <form onSubmit={save}>
+          <div className="field">
+            <label>Tayyor variant</label>
+            <select
+              value=""
+              onChange={(e) => {
+                const preset = MAP_PRESETS[Number(e.target.value)];
+                if (!preset) return;
+                setUrl(preset.url);
+                setAttribution(preset.attribution);
+              }}
+              disabled={busy}
+            >
+              <option value="">Tanlang...</option>
+              {MAP_PRESETS.map((p, i) => (
+                <option key={p.label} value={i}>{p.label}</option>
+              ))}
+            </select>
+          </div>
+          <div className="field">
+            <label>Plitkalar manzili ({'{z}'}, {'{x}'}, {'{y}'} bilan)</label>
+            <input
+              type="text"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              placeholder="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+              disabled={busy}
+            />
+          </div>
+          <div className="field">
+            <label>Mualliflik yozuvi (xarita burchagida ko'rinadi)</label>
+            <input
+              type="text"
+              value={attribution}
+              onChange={(e) => setAttribution(e.target.value)}
+              placeholder="OpenStreetMap"
+              disabled={busy}
             />
           </div>
           {error && <div className="error-text">{error}</div>}

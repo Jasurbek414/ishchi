@@ -22,6 +22,8 @@ public record JobCreateRequest(
         @Min(1) Integer durationValue,
         DurationUnit durationUnit,
         Double latitude,
-        Double longitude
+        Double longitude,
+        /** "Bugunga kerak". Optional; absent means not urgent. */
+        Boolean urgent
 ) {
 }

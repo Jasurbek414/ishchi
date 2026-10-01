@@ -15,6 +15,11 @@ public final class JobSortSpecifications {
     /** Orders results: same district first, then same region, then everything else; newest first within each group. */
     public static Specification<Job> nearestFirst(Long regionId, Long districtId) {
         return (root, query, cb) -> {
+            // Spring Data reuses this specification for the page's count query, and an ORDER BY
+            // there is at best pointless and at worst invalid SQL. Skip it for the count.
+            if (Long.class.equals(query.getResultType()) || long.class.equals(query.getResultType())) {
+                return cb.conjunction();
+            }
             List<Order> orders = new java.util.ArrayList<>();
             if (districtId != null) {
                 Expression<Integer> districtRank = cb.<Integer>selectCase()

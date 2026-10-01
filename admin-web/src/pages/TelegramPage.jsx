@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api, ApiError } from '../api/client.js';
 import { useAppSettings } from '../settings/AppSettingsContext.jsx';
+import Modal from '../components/Modal';
+import { useToast } from '../components/Toast.jsx';
 
 export default function TelegramPage() {
+  const toast = useToast();
   return (
     <div>
       <h1>Telegram bot</h1>
@@ -34,7 +37,7 @@ function FeedbackCard() {
       await api.patch(`/api/admin/telegram/feedback/${item.id}/resolved`, { resolved: !item.resolved });
       load();
     } catch (e) {
-      alert(e instanceof ApiError ? e.message : "Amalni bajarib bo'lmadi");
+      toast.error(e instanceof ApiError ? e.message : "Amalni bajarib bo'lmadi");
     }
   }
 
@@ -121,25 +124,22 @@ function ReplyModal({ feedback, onClose, onSent }) {
   }
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <h3>Javob yozish</h3>
-        <p className="mt-0 mx-0 mb-3.5 text-text-secondary text-[13px]">{feedback.message}</p>
-        <form onSubmit={send}>
-          <div className="field">
-            <label>Javob matni</label>
-            <textarea value={text} onChange={(e) => setText(e.target.value)} rows={5} placeholder="Javobingizni yozing..." />
-          </div>
-          {error && <div className="error-text">{error}</div>}
-          <div className="modal-actions">
-            <button type="button" className="btn btn-outline" onClick={onClose}>Bekor qilish</button>
-            <button type="submit" className="btn btn-primary" disabled={sending || !text.trim()}>
-              {sending ? 'Yuborilmoqda...' : 'Yuborish va hal qilingan deb belgilash'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+    <Modal title={<>Javob yozish</>} onClose={onClose}>
+      <p className="mt-0 mx-0 mb-3.5 text-text-secondary text-[13px]">{feedback.message}</p>
+      <form onSubmit={send}>
+        <div className="field">
+          <label>Javob matni</label>
+          <textarea value={text} onChange={(e) => setText(e.target.value)} rows={5} placeholder="Javobingizni yozing..." />
+        </div>
+        {error && <div className="error-text">{error}</div>}
+        <div className="modal-actions">
+          <button type="button" className="btn btn-outline" onClick={onClose}>Bekor qilish</button>
+          <button type="submit" className="btn btn-primary" disabled={sending || !text.trim()}>
+            {sending ? 'Yuborilmoqda...' : 'Yuborish va hal qilingan deb belgilash'}
+          </button>
+        </div>
+      </form>
+    </Modal>
   );
 }
 

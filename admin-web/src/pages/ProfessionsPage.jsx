@@ -1,7 +1,10 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { api, ApiError } from '../api/client.js';
+import Modal from '../components/Modal';
+import { useToast } from '../components/Toast.jsx';
 
 export default function ProfessionsPage() {
+  const toast = useToast();
   const [items, setItems] = useState(null);
   const [error, setError] = useState(null);
   const [busyId, setBusyId] = useState(null);
@@ -49,7 +52,7 @@ export default function ProfessionsPage() {
       await api.patch(`/api/admin/professions/${p.id}/active`, { active: !p.active });
       load();
     } catch (e) {
-      alert(e instanceof ApiError ? e.message : "Amalni bajarib bo'lmadi");
+      toast.error(e instanceof ApiError ? e.message : "Amalni bajarib bo'lmadi");
     } finally {
       setBusyId(null);
     }
@@ -65,7 +68,7 @@ export default function ProfessionsPage() {
       await api.del(`/api/admin/professions/${p.id}`);
       load();
     } catch (e) {
-      alert(e instanceof ApiError ? e.message : "O'chirib bo'lmadi (foydalanilayotgan bo'lishi mumkin)");
+      toast.error(e instanceof ApiError ? e.message : "O'chirib bo'lmadi (foydalanilayotgan bo'lishi mumkin)");
     } finally {
       setBusyId(null);
     }
@@ -205,25 +208,22 @@ function ProfessionModal({ profession, onClose, onSaved }) {
   }
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <h3>{isNew ? 'Yangi kasb' : 'Kasbni tahrirlash'}</h3>
-        <form onSubmit={submit}>
-          <div className="field">
-            <label>Kasb nomi</label>
-            <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="masalan: Elektrik" />
-          </div>
-          <div className="field">
-            <label>Kategoriya</label>
-            <input type="text" value={category} onChange={(e) => setCategory(e.target.value)} placeholder="masalan: Qurilish" />
-          </div>
-          {error && <div className="error-text">{error}</div>}
-          <div className="modal-actions">
-            <button type="button" className="btn btn-outline" onClick={onClose}>Bekor qilish</button>
-            <button type="submit" className="btn btn-primary" disabled={busy}>Saqlash</button>
-          </div>
-        </form>
-      </div>
-    </div>
+    <Modal title={isNew ? 'Yangi kasb' : 'Kasbni tahrirlash'} onClose={onClose}>
+      <form onSubmit={submit}>
+        <div className="field">
+          <label>Kasb nomi</label>
+          <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="masalan: Elektrik" />
+        </div>
+        <div className="field">
+          <label>Kategoriya</label>
+          <input type="text" value={category} onChange={(e) => setCategory(e.target.value)} placeholder="masalan: Qurilish" />
+        </div>
+        {error && <div className="error-text">{error}</div>}
+        <div className="modal-actions">
+          <button type="button" className="btn btn-outline" onClick={onClose}>Bekor qilish</button>
+          <button type="submit" className="btn btn-primary" disabled={busy}>Saqlash</button>
+        </div>
+      </form>
+    </Modal>
   );
 }

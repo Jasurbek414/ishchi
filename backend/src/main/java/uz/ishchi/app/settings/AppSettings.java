@@ -30,6 +30,10 @@ public class AppSettings {
     @Column(name = "telegram_bot_username")
     private String telegramBotUsername;
 
+    /** Random per-deployment value, unrelated to the bot token; travels in Telegram's header. */
+    @Column(name = "telegram_webhook_secret", length = 100)
+    private String telegramWebhookSecret;
+
     @Column(name = "support_phone", length = 20)
     private String supportPhone;
 
@@ -59,7 +63,19 @@ public class AppSettings {
     @Column(name = "default_theme_mode", nullable = false, length = 10)
     private String defaultThemeMode = "LIGHT";
 
-    /** Hex color (e.g. {@code #E8541F}) seeding the app's default Material color scheme. */
+    /** Hex color (e.g. {@code #0284C7}) seeding the app's default Material color scheme. */
     @Column(name = "default_seed_color", nullable = false, length = 9)
-    private String defaultSeedColor = "#E8541F";
+    private String defaultSeedColor = "#0284C7";
+
+    /** Map tile URL template for the mobile app ({z}/{x}/{y}); null means the app's default. */
+    @Column(name = "map_tile_url", length = 500)
+    private String mapTileUrl;
+
+    /** Attribution shown on the map for the tile source above; null means the default's. */
+    @Column(name = "map_attribution", length = 200)
+    private String mapAttribution;
+
+    /** Salted hash of the ADMIN_PHONE/ADMIN_PASSWORD pair last applied by {@code AdminSeeder}. */
+    @Column(name = "admin_env_fingerprint", length = 100)
+    private String adminEnvFingerprint;
 }

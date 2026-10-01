@@ -10,9 +10,7 @@ import uz.ishchi.app.common.JobType;
 import uz.ishchi.app.common.PaymentType;
 import uz.ishchi.app.common.TelegramDraftStep;
 import uz.ishchi.app.common.exception.ApiException;
-import uz.ishchi.app.job.JobService;
 import uz.ishchi.app.job.dto.JobCreateRequest;
-import uz.ishchi.app.job.dto.JobImageResponse;
 import uz.ishchi.app.job.dto.JobResponse;
 import uz.ishchi.app.location.District;
 import uz.ishchi.app.location.DistrictRepository;
@@ -31,8 +29,9 @@ import java.util.Optional;
 
 /** The "post a job" conversational wizard reachable from the bot's main menu. Walks an
  *  employer through the same fields the app's job-posting form collects, one message at a
- *  time, then creates the job through the normal {@link JobService} — so it's subject to the
- *  exact same rules (posting fee, notifications to matching workers) as posting from the app. */
+ *  time, then publishes it through {@link TelegramJobPublisher}, which goes on to the normal
+ *  JobService — so it's subject to the exact same rules (posting fee, notifications to matching
+ *  workers) as posting from the app. */
 @Service
 public class TelegramJobWizardService {
 
@@ -44,7 +43,7 @@ public class TelegramJobWizardService {
     private final DistrictRepository districtRepository;
     private final EmployerProfileRepository employerProfileRepository;
     private final UserRepository userRepository;
-    private final JobService jobService;
+    private final TelegramJobPublisher jobPublisher;
     private final TelegramClient telegramClient;
     private final FileStorageService fileStorageService;
     // Lazy to break the constructor cycle — TelegramService itself depends on this bean.
@@ -56,7 +55,7 @@ public class TelegramJobWizardService {
                                      DistrictRepository districtRepository,
                                      EmployerProfileRepository employerProfileRepository,
                                      UserRepository userRepository,
-                                     JobService jobService,
+                                     TelegramJobPublisher jobPublisher,
                                      TelegramClient telegramClient,
                                      FileStorageService fileStorageService,
                                      @Lazy TelegramService telegramService) {
@@ -66,11 +65,14 @@ public class TelegramJobWizardService {
         this.districtRepository = districtRepository;
         this.employerProfileRepository = employerProfileRepository;
         this.userRepository = userRepository;
-        this.jobService = jobService;
+        this.jobPublisher = jobPublisher;
         this.telegramClient = telegramClient;
         this.fileStorageService = fileStorageService;
         this.telegramService = telegramService;
     }
+
+    /** Each photo is written to disk, so an unbounded count was a free way to fill the volume. */
+    private static final int MAX_IMAGES = 10;
 
     public static final String BTN_CANCEL = "❌ Bekor qilish";
     private static final String BTN_CONFIRM = "✅ Tasdiqlash va joylashtirish";
@@ -99,6 +101,9 @@ public class TelegramJobWizardService {
                             + "(Profil → Rolni almashtirish).");
             return;
         }
+        // Starting over replaces the previous draft row, so its already-uploaded photos would
+        // otherwise stay on disk with nothing pointing at them.
+        draftRepository.findById(chatId).ifPresent(this::discardImages);
         draftRepository.save(new TelegramJobDraft(chatId));
         telegramClient.sendMessage(token, chatId, SAMPLE);
         telegramClient.sendMessageWithKeyboard(token, chatId,
@@ -110,6 +115,11 @@ public class TelegramJobWizardService {
     public void handlePhoto(String token, long chatId, String fileId) {
         TelegramJobDraft draft = draftRepository.findById(chatId).orElse(null);
         if (draft == null || draft.getStep() != TelegramDraftStep.IMAGES) {
+            return;
+        }
+        if (draft.getImageUrls().size() >= MAX_IMAGES) {
+            telegramClient.sendMessage(token, chatId,
+                    "Ko'pi bilan " + MAX_IMAGES + " ta rasm qo'shish mumkin. \"" + BTN_IMAGES_DONE + "\" tugmasini bosing.");
             return;
         }
         Optional<byte[]> bytes = telegramClient.downloadPhoto(token, fileId);
@@ -130,6 +140,7 @@ public class TelegramJobWizardService {
             return;
         }
         if (BTN_CANCEL.equals(text)) {
+            discardImages(draft);
             draftRepository.deleteById(chatId);
             telegramClient.sendMessage(token, chatId, "Bekor qilindi.");
             telegramService.sendMainMenu(token, chatId);
@@ -272,22 +283,20 @@ public class TelegramJobWizardService {
     }
 
     private void finish(String token, long chatId, TelegramJobDraft draft) {
+        int imageCount = draft.getImageUrls().size();
+        JobCreateRequest request = new JobCreateRequest(
+                draft.getTitle(), draft.getDescription(), draft.getProfession().getId(),
+                draft.getRegion().getId(), draft.getDistrict().getId(), draft.getPayment(),
+                draft.getPaymentType(), draft.getJobType(), draft.getWorkersNeeded(),
+                null, null, null, null, null, null);
         try {
-            User employerUser = userRepository.findByTelegramChatId(chatId)
-                    .orElseThrow(() -> ApiException.badRequest("Akkaunt topilmadi, /start bilan qayta boshlang"));
-            JobCreateRequest request = new JobCreateRequest(
-                    draft.getTitle(), draft.getDescription(), draft.getProfession().getId(),
-                    draft.getRegion().getId(), draft.getDistrict().getId(), draft.getPayment(),
-                    draft.getPaymentType(), draft.getJobType(), draft.getWorkersNeeded(),
-                    null, null, null, null, null);
-            JobResponse job = jobService.create(employerUser, request);
-            List<JobImageResponse> attached = draft.getImageUrls().isEmpty()
-                    ? List.of()
-                    : jobService.attachImageUrls(job.id(), draft.getImageUrls());
+            // Published in its own transaction, so a rejection (an insufficient balance, say) does
+            // not poison this one and leave the draft unusable — the user can simply confirm again.
+            JobResponse job = jobPublisher.publish(chatId, request, List.copyOf(draft.getImageUrls()));
             draftRepository.deleteById(chatId);
             telegramClient.sendMessage(token, chatId,
                     "✅ Buyurtma joylashtirildi!\n\n\"" + job.title() + "\" — mos ishchilarga bildirishnoma yuborildi."
-                            + (attached.isEmpty() ? "" : " " + attached.size() + " ta rasm biriktirildi."));
+                            + (imageCount == 0 ? "" : " " + imageCount + " ta rasm biriktirildi."));
             telegramService.sendMainMenu(token, chatId);
         } catch (ApiException e) {
             telegramClient.sendMessage(token, chatId, "❗ " + e.getMessage());
@@ -295,6 +304,11 @@ public class TelegramJobWizardService {
             log.error("Telegram orqali buyurtma joylashtirishda xatolik", e);
             telegramClient.sendMessage(token, chatId, "❗ Buyurtmani joylashtirib bo'lmadi, birozdan so'ng qayta urinib ko'ring.");
         }
+    }
+
+    /** Removes the photos a draft uploaded but never published. */
+    void discardImages(TelegramJobDraft draft) {
+        draft.getImageUrls().forEach(fileStorageService::deleteAfterCommit);
     }
 
     private String summary(TelegramJobDraft draft) {

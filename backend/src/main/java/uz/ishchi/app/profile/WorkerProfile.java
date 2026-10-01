@@ -1,6 +1,7 @@
 package uz.ishchi.app.profile;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.BatchSize;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -63,6 +64,31 @@ public class WorkerProfile {
     @Column(name = "work_preference", length = 20)
     private WorkPreference workPreference;
 
+    // Batched rather than join-fetched: a collection fetch combined with pagination makes
+    // Hibernate page in memory, so a worker list would load the whole table to return 20 rows.
+    /**
+     * "Bugun bo'shman", with an expiry. {@code available} is a standing preference a worker sets once
+     * and forgets; day labour is decided the same morning, so this is the signal that actually says
+     * somebody can be called today.
+     */
+    @Column(name = "available_until")
+    private java.time.Instant availableUntil;
+
+    /** Denormalised from the ratings table so a list never aggregates per row. */
+    @Column(name = "rating_average", columnDefinition = "numeric(3, 2)")
+    private Double ratingAverage;
+
+    @Column(name = "rating_count", nullable = false)
+    private int ratingCount = 0;
+
+    /** Set by an admin after checking documents — the one trust signal the platform can vouch for. */
+    @Column(nullable = false)
+    private boolean verified = false;
+
+    @Column(name = "verified_at")
+    private java.time.Instant verifiedAt;
+
+    @BatchSize(size = 50)
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "worker_professions",

@@ -15,6 +15,7 @@ class WorkerRepository {
     int? minExperience,
     String? search,
     WorkPreference? workPreference,
+    bool? availableToday,
     int page = 0,
     int size = 20,
   }) async {
@@ -25,6 +26,7 @@ class WorkerRepository {
       if (minExperience != null) 'minExperience': minExperience,
       if (search != null && search.isNotEmpty) 'search': search,
       if (workPreference != null) 'workPreference': workPreference.apiValue,
+      if (availableToday == true) 'availableToday': true,
       'page': page,
       'size': size,
     });
@@ -36,10 +38,19 @@ class WorkerRepository {
     return Worker.fromJson(res);
   }
 
-  Future<List<Worker>> mapSearch({int? regionId, int? professionId}) async {
+  Future<List<Worker>> mapSearch({
+    int? regionId,
+    int? professionId,
+    double? latitude,
+    double? longitude,
+    double? radiusDegrees,
+  }) async {
     final res = await _client.getList('/workers/map', query: {
       if (regionId != null) 'regionId': regionId,
       if (professionId != null) 'professionId': professionId,
+      if (latitude != null) 'latitude': latitude,
+      if (longitude != null) 'longitude': longitude,
+      if (radiusDegrees != null) 'radiusDegrees': radiusDegrees,
     });
     return res.map((e) => Worker.fromJson(e as Map<String, dynamic>)).toList();
   }

@@ -3,6 +3,7 @@ package uz.ishchi.app.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -13,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import uz.ishchi.app.common.exception.ErrorResponse;
+import uz.ishchi.app.config.CorsProperties;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -25,11 +27,16 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final RateLimitFilter rateLimitFilter;
     private final ObjectMapper objectMapper;
+    private final CorsProperties corsProperties;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, ObjectMapper objectMapper) {
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, RateLimitFilter rateLimitFilter,
+                           ObjectMapper objectMapper, CorsProperties corsProperties) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.rateLimitFilter = rateLimitFilter;
         this.objectMapper = objectMapper;
+        this.corsProperties = corsProperties;
     }
 
     @Bean
@@ -48,16 +55,18 @@ public class SecurityConfig {
                                 "/api/auth/**",
                                 "/api/regions/**",
                                 "/api/professions/**",
-                                "/api/promo-banners/**",
                                 "/api/app-settings/**",
                                 "/api/landing/**",
-                                "/api/telegram/webhook/**",
+                                "/api/telegram/webhook", "/api/telegram/webhook/**",
                                 "/uploads/**",
                                 "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html",
                                 "/actuator/health", "/actuator/info",
                                 "/admin", "/admin/**",
-                                "/", "/index.html", "/favicon.ico", "/assets/**", "/vite.svg"
+                                "/", "/index.html", "/favicon.ico", "/assets/**", "/vite.svg", "/privacy.html", "/privacy"
                         ).permitAll()
+                        // Reading banners stays public; the view/click counters do not, because
+                        // anonymous POSTs let anyone inflate a banner's statistics at will.
+                        .requestMatchers(HttpMethod.GET, "/api/promo-banners", "/api/promo-banners/**").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
@@ -67,7 +76,10 @@ public class SecurityConfig {
                         .accessDeniedHandler((request, response, accessDeniedException) ->
                                 writeJsonError(response, 403, "Forbidden", "Ruxsat berilmagan"))
                 )
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                // Ahead of the JWT filter so unauthenticated floods are dropped before any DB work.
+                // Must come after it: a custom filter can only be an anchor once it is registered.
+                .addFilterBefore(rateLimitFilter, JwtAuthenticationFilter.class);
 
         return http.build();
     }
@@ -82,7 +94,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(List.of("*"));
+        configuration.setAllowedOriginPatterns(corsProperties.originPatterns());
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(false);

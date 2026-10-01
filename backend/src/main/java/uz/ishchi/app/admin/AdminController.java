@@ -41,6 +41,11 @@ public class AdminController {
         return adminService.setUserActive(id, request.active());
     }
 
+    @PatchMapping("/users/{id}/verified")
+    public AdminUserResponse setWorkerVerified(@PathVariable Long id, @RequestParam boolean verified) {
+        return adminService.setWorkerVerified(id, verified);
+    }
+
     @GetMapping("/users/{id}/profile")
     public ProfileResponse getUserProfile(@PathVariable Long id) {
         return adminService.getUserProfile(id);

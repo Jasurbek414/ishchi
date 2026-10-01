@@ -24,6 +24,10 @@ class Profile {
     this.hasDriverLicense = false,
     this.driverLicenseCategories,
     this.experiences = const [],
+    this.availableUntil,
+    this.ratingAverage,
+    this.ratingCount = 0,
+    this.verified = false,
   });
 
   final int userId;
@@ -46,6 +50,14 @@ class Profile {
   final bool hasDriverLicense;
   final String? driverLicenseCategories;
   final List<WorkExperience> experiences;
+
+  /// Set while "I can work today" is still in effect; the server expires it at midnight.
+  final DateTime? availableUntil;
+  final double? ratingAverage;
+  final int ratingCount;
+
+  /// Documents checked by an admin. Only ever true for a worker profile.
+  final bool verified;
 
   String get fullName => '$firstName $lastName';
 
@@ -74,5 +86,11 @@ class Profile {
         experiences: (json['experiences'] as List<dynamic>? ?? [])
             .map((e) => WorkExperience.fromJson(e as Map<String, dynamic>))
             .toList(),
+        availableUntil: json['availableUntil'] == null
+            ? null
+            : DateTime.tryParse(json['availableUntil'] as String),
+        ratingAverage: (json['ratingAverage'] as num?)?.toDouble(),
+        ratingCount: (json['ratingCount'] as num?)?.toInt() ?? 0,
+        verified: json['verified'] as bool? ?? false,
       );
 }

@@ -142,16 +142,15 @@ public class TelegramService {
 
     /**
      * Handles every incoming webhook update. Two paths resolve a pending OTP link and are
-     * returned to the caller so it can dispatch the actual code: {@code /start <token>} (deep
-     * link tapped from the app) and sharing a contact whose phone number matches an existing
-     * user (tapped the "share phone number" button — Telegram guarantees this is the viewer's
-     * own verified number, so it can't be spoofed to link someone else's account). Everything
-     * else is a self-contained menu interaction this method answers directly.
+     * returned to the caller so it can dispatch the actual code. Linking only ever happens on a
+     * shared contact that Telegram confirms is the sender's own verified number — a
+     * {@code /start <token>} deep link just asks for that number. Everything else is a
+     * self-contained menu interaction this method answers directly.
      */
     @Transactional
-    public Optional<LinkedUser> handleWebhookUpdate(String secret, TelegramUpdate update) {
+    public Optional<LinkedUser> handleWebhookUpdate(String presentedSecret, TelegramUpdate update) {
         String token = appSettingsService.getTelegramBotToken();
-        if (token == null || !AppSettingsService.webhookSecret(token).equals(secret)) {
+        if (token == null || !appSettingsService.matchesWebhookSecret(presentedSecret)) {
             return Optional.empty();
         }
         if (update.message() == null || update.message().chat() == null) {
@@ -160,7 +159,8 @@ public class TelegramService {
         long chatId = update.message().chat().id();
 
         if (update.message().contact() != null) {
-            return handleContact(token, chatId, update.message().contact());
+            Long senderId = update.message().from() == null ? null : update.message().from().id();
+            return handleContact(token, chatId, senderId, update.message().contact());
         }
 
         // Photos only ever matter mid-wizard (the "post a job" image step) — the message
@@ -177,8 +177,8 @@ public class TelegramService {
         }
 
         if (text.startsWith("/start ")) {
-            String linkToken = text.substring("/start ".length()).trim();
-            return userRepository.findByTelegramLinkToken(linkToken).map(user -> linkUser(user, chatId));
+            requestPhoneForLink(token, chatId, text.substring("/start ".length()).trim());
+            return Optional.empty();
         }
 
         // A job draft in progress owns every message until it's finished or cancelled —
@@ -252,7 +252,40 @@ public class TelegramService {
         sendMainMenu(token, chatId);
     }
 
-    private Optional<LinkedUser> handleContact(String token, long chatId, TelegramUpdate.Message.Contact contact) {
+    /**
+     * A deep link only says that <em>someone</em> asked to link this phone number — it proves
+     * nothing about who is holding the bot. Linking on {@code /start <token>} alone let anyone
+     * register under a stranger's number, and take over any not-yet-linked account through
+     * forgot-password, because the code was then delivered to the attacker's own chat. So
+     * {@code /start} never links any more: it asks for the number, and {@link #handleContact}
+     * does the linking once Telegram has vouched for it.
+     */
+    private void requestPhoneForLink(String token, long chatId, String linkToken) {
+        boolean known = linkToken != null && !linkToken.isBlank()
+                && userRepository.findByTelegramLinkToken(linkToken).isPresent();
+        String message = known
+                ? "Akkountingizni ulash uchun pastdagi \"" + BTN_SHARE_PHONE + "\" tugmasini bosing.\n\n"
+                        + "Raqamingiz ilovada kiritgan raqam bilan mos kelsa, tasdiqlash kodi shu yerga yuboriladi."
+                : "Bu havola eskirgan. Ilovada qaytadan urinib ko'ring yoki pastdagi \"" + BTN_SHARE_PHONE
+                        + "\" tugmasi bilan raqamingizni ulang.";
+        telegramClient.sendMessageWithKeyboard(token, chatId, message, List.of(
+                List.of(TelegramClient.KeyboardButton.contactRequest(BTN_SHARE_PHONE))
+        ));
+    }
+
+    private Optional<LinkedUser> handleContact(String token, long chatId, Long senderId,
+                                                TelegramUpdate.Message.Contact contact) {
+        // Telegram vouches that a number belongs to the sender only when the contact it delivers
+        // carries the sender's own user id — which is what the request_contact keyboard button
+        // produces. A contact card forwarded from the address book carries somebody else's id (or
+        // none at all), and accepting those would hand an attacker any account whose number they
+        // happen to know.
+        if (senderId == null || contact.userId() == null || !contact.userId().equals(senderId)) {
+            telegramClient.sendMessage(token, chatId,
+                    "Iltimos, boshqa odamning kontaktini yubormang — pastdagi \"" + BTN_SHARE_PHONE
+                            + "\" tugmasini bosib o'zingizning raqamingizni ulashing.");
+            return Optional.empty();
+        }
         String phone = normalizePhone(contact.phoneNumber());
         if (phone == null) {
             telegramClient.sendMessage(token, chatId, "Telefon raqam formatini aniqlab bo'lmadi.");

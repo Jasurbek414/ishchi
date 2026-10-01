@@ -5,9 +5,12 @@ import 'package:go_router/go_router.dart';
 import '../core/api_exception.dart';
 import '../l10n/l10n_x.dart';
 import '../state/core_providers.dart';
-import '../state/profile_provider.dart';
-import '../widgets/telegram_link_waiting.dart';
 
+/// Changing a password from inside the app now proves knowledge of the current one.
+///
+/// It used to drive the public forgot-password flow instead: request a code, type the code, set a
+/// new password. That meant anyone holding an unlocked phone with the linked Telegram on it could
+/// take the account over without ever knowing the password.
 class ChangePasswordScreen extends ConsumerStatefulWidget {
   const ChangePasswordScreen({super.key});
 
@@ -16,19 +19,17 @@ class ChangePasswordScreen extends ConsumerStatefulWidget {
 }
 
 class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
-  final _codeController = TextEditingController();
-  final _passwordController = TextEditingController();
+  final _currentPasswordController = TextEditingController();
+  final _newPasswordController = TextEditingController();
 
-  bool _codeSent = false;
   bool _loading = false;
   String? _error;
-  String? _telegramLinkUrl;
-  String? get _phone => ref.read(profileProvider).value?.phone;
 
-  Future<void> _sendCode() async {
-    final phone = _phone;
-    if (phone == null) {
-      setState(() => _error = context.l10n.phoneNotFoundError);
+  Future<void> _submit() async {
+    final currentPassword = _currentPasswordController.text;
+    final newPassword = _newPasswordController.text;
+    if (currentPassword.isEmpty || newPassword.length < 6) {
+      setState(() => _error = context.l10n.changePasswordFormError);
       return;
     }
     setState(() {
@@ -36,38 +37,9 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
       _error = null;
     });
     try {
-      final result = await ref.read(authRepositoryProvider).forgotPassword(phone);
-      if (result.telegramLinkUrl != null) {
-        setState(() => _telegramLinkUrl = result.telegramLinkUrl);
-      } else {
-        setState(() => _codeSent = true);
-      }
-    } on ApiException catch (e) {
-      setState(() => _error = e.message);
-    } finally {
-      if (mounted) setState(() => _loading = false);
-    }
-  }
-
-  Future<void> _reset() async {
-    final phone = _phone;
-    if (phone == null) {
-      setState(() => _error = context.l10n.phoneNotFoundError);
-      return;
-    }
-    if (_codeController.text.trim().length < 4 || _passwordController.text.length < 6) {
-      setState(() => _error = context.l10n.resetPasswordFormError);
-      return;
-    }
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
-    try {
-      await ref.read(authRepositoryProvider).resetPassword(
-            phone: phone,
-            code: _codeController.text.trim(),
-            newPassword: _passwordController.text,
+      await ref.read(authRepositoryProvider).changePassword(
+            currentPassword: currentPassword,
+            newPassword: newPassword,
           );
       if (!mounted) return;
       context.pop();
@@ -83,8 +55,8 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
 
   @override
   void dispose() {
-    _codeController.dispose();
-    _passwordController.dispose();
+    _currentPasswordController.dispose();
+    _newPasswordController.dispose();
     super.dispose();
   }
 
@@ -94,51 +66,42 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(context.l10n.changePasswordMenu)),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(context.l10n.codeWillBeSentTo(_phone ?? ''),
-                  style: TextStyle(color: cs.onSurfaceVariant)),
-              if (_telegramLinkUrl != null) ...[
-                const SizedBox(height: 20),
-                TelegramLinkWaiting(
-                  phone: _phone ?? '',
-                  linkUrl: _telegramLinkUrl!,
-                  onLinked: () => setState(() {
-                    _telegramLinkUrl = null;
-                    _codeSent = true;
-                  }),
-                ),
-              ],
-              if (_codeSent) ...[
-                const SizedBox(height: 16),
-                TextField(
-                  controller: _codeController,
-                  keyboardType: TextInputType.number,
-                  maxLength: 4,
-                  decoration: InputDecoration(labelText: context.l10n.otpCodeFieldLabel),
-                ),
-                TextField(
-                  controller: _passwordController,
-                  obscureText: true,
-                  decoration: InputDecoration(labelText: context.l10n.newPasswordFieldLabel),
-                ),
-              ],
+              Text(context.l10n.changePasswordHint, style: TextStyle(color: cs.onSurfaceVariant)),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _currentPasswordController,
+                obscureText: true,
+                autofillHints: const [AutofillHints.password],
+                decoration: InputDecoration(labelText: context.l10n.currentPasswordFieldLabel),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _newPasswordController,
+                obscureText: true,
+                autofillHints: const [AutofillHints.newPassword],
+                decoration: InputDecoration(labelText: context.l10n.newPasswordFieldLabel),
+                onSubmitted: (_) => _loading ? null : _submit(),
+              ),
               if (_error != null) ...[
                 const SizedBox(height: 8),
                 Text(_error!, style: TextStyle(color: cs.error)),
               ],
-              if (_telegramLinkUrl == null) ...[
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: _loading ? null : (_codeSent ? _reset : _sendCode),
-                  child: _loading
-                      ? const SizedBox(height: 22, width: 22, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                      : Text(_codeSent ? context.l10n.updatePasswordAction : context.l10n.sendCodeAction),
-                ),
-              ],
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _loading ? null : _submit,
+                child: _loading
+                    ? const SizedBox(
+                        height: 22,
+                        width: 22,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      )
+                    : Text(context.l10n.updatePasswordAction),
+              ),
             ],
           ),
         ),

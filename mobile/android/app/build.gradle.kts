@@ -6,7 +6,14 @@ plugins {
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
-    id("com.google.gms.google-services")
+    id("com.google.gms.google-services") apply false
+}
+
+// Push notifications need google-services.json, which is kept out of the repository. Without it
+// the Google Services plugin fails the whole build, so it is applied only when the file is there;
+// otherwise the app still builds and runs, and main.dart simply leaves push switched off.
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
 }
 
 val keystorePropertiesFile = rootProject.file("key.properties")

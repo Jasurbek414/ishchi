@@ -1,0 +1,165 @@
+name: Deploy
+
+# Ships a commit to the production server over SSH:
+#   1. tools/deploy-server.sh on the server backs up the database and rebuilds the backend;
+#   2. the APK is built here (the server has no Flutter), signed with the key kept on the
+#      server in ~/ishchi-signing/, and published as /uploads/apk/ishchi.apk.
+#
+# Needs three repository secrets (Settings → Secrets and variables → Actions):
+#   SERVER_HOST     the server's address
+#   SERVER_USER     the SSH user
+#   SERVER_SSH_KEY  a private key whose public half is in that user's ~/.ssh/authorized_keys
+#
+# Runs on every push to main, or by hand from the Actions tab ("Run workflow").
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      create_signing_key:
+        description: >-
+          Create a NEW app signing key if the server has none. An APK signed with a new key
+          will not install over an already installed app — users must uninstall it once.
+        type: boolean
+        default: false
+
+# Two deploys at once would race on the same containers and the same database.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  # What the backend already runs with while APP_BASE_URL is missing from the server's .env;
+  # deploy-server.sh writes it there so behaviour stays the same.
+  DEFAULT_APP_BASE_URL: https://api.uzbishchi.uz
+
+jobs:
+  deploy:
+    name: Deploy to the server
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      TARGET: ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}
+      REMOTE_DIR: /tmp/ishchi-deploy-${{ github.run_id }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The whole history, so the bundle below is self-contained.
+          fetch-depth: 0
+
+      - name: Check the secrets are set
+        env:
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          SERVER_SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}
+        run: |
+          missing=
+          [ -n "$SERVER_HOST" ] || missing="$missing SERVER_HOST"
+          [ -n "$SERVER_USER" ] || missing="$missing SERVER_USER"
+          [ -n "$SERVER_SSH_KEY" ] || missing="$missing SERVER_SSH_KEY"
+          if [ -n "$missing" ]; then
+            echo "::error::Repository secret(s) not set:$missing"
+            exit 1
+          fi
+
+      - name: Set up SSH
+        env:
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$SERVER_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -T 15 -H "$SERVER_HOST" >> ~/.ssh/known_hosts
+          # Spelled out with $HOME: a ~ stored inside a variable is never expanded.
+          echo "SSH=ssh -i $HOME/.ssh/deploy_key -o BatchMode=yes" >> "$GITHUB_ENV"
+          echo "SCP=scp -i $HOME/.ssh/deploy_key -o BatchMode=yes" >> "$GITHUB_ENV"
+
+      # The commit travels as a git bundle, so the server needs no access to this private repo.
+      - name: Deploy the backend
+        run: |
+          git bundle create "$RUNNER_TEMP/ishchi.bundle" HEAD
+          $SSH "$TARGET" "mkdir -p '$REMOTE_DIR'"
+          $SCP "$RUNNER_TEMP/ishchi.bundle" tools/deploy-server.sh "$TARGET:$REMOTE_DIR/"
+          $SSH "$TARGET" "DEFAULT_APP_BASE_URL='$DEFAULT_APP_BASE_URL' bash '$REMOTE_DIR/deploy-server.sh' deploy '$REMOTE_DIR/ishchi.bundle'"
+
+      # The signing key lives on the server, never in the repository: every APK must carry the
+      # same signature, or phones refuse to update over the installed app.
+      - name: Get the app signing key
+        id: signing
+        env:
+          CREATE_KEY: ${{ inputs.create_signing_key }}
+        run: |
+          key_dir="$RUNNER_TEMP/signing"
+          install -d -m 700 "$key_dir"
+          if $SSH "$TARGET" 'test -f ~/ishchi-signing/release.keystore && test -f ~/ishchi-signing/signing.env'; then
+            $SCP "$TARGET:ishchi-signing/release.keystore" "$TARGET:ishchi-signing/signing.env" "$key_dir/"
+          elif [ "$CREATE_KEY" = "true" ]; then
+            pass=$(openssl rand -hex 24)
+            echo "::add-mask::$pass"
+            keytool -genkeypair -keystore "$key_dir/release.keystore" -storetype PKCS12 \
+              -alias ishchi -keyalg RSA -keysize 2048 -validity 10000 \
+              -storepass "$pass" -keypass "$pass" -dname "CN=Uzb Ishchi, O=Uzb Ishchi, C=UZ"
+            printf 'KEY_ALIAS=ishchi\nSTORE_PASSWORD=%s\nKEY_PASSWORD=%s\n' "$pass" "$pass" > "$key_dir/signing.env"
+            $SSH "$TARGET" 'install -d -m 700 ~/ishchi-signing'
+            $SCP "$key_dir/release.keystore" "$key_dir/signing.env" "$TARGET:ishchi-signing/"
+            $SSH "$TARGET" 'chmod 600 ~/ishchi-signing/*'
+            echo "::warning::A new signing key was created and stored on the server in ~/ishchi-signing/. Keep a copy somewhere safe: losing it means no future APK can update the installed app."
+          else
+            echo "::warning::No app signing key on the server (~/ishchi-signing/), so no APK was built. The backend is deployed. Run this workflow by hand with 'create_signing_key' ticked to create one."
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # shellcheck disable=SC1091
+          . "$key_dir/signing.env"
+          echo "::add-mask::$STORE_PASSWORD"
+          echo "::add-mask::$KEY_PASSWORD"
+          {
+            echo "storeFile=$key_dir/release.keystore"
+            echo "storePassword=$STORE_PASSWORD"
+            echo "keyAlias=$KEY_ALIAS"
+            echo "keyPassword=$KEY_PASSWORD"
+          } > mobile/android/key.properties
+          echo "available=true" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-java@v4
+        if: steps.signing.outputs.available == 'true'
+        with:
+          java-version: '17'
+          distribution: temurin
+
+      - uses: subosito/flutter-action@v2
+        if: steps.signing.outputs.available == 'true'
+        with:
+          flutter-version: 3.29.3
+          channel: stable
+          cache: true
+
+      - name: Build the APK
+        if: steps.signing.outputs.available == 'true'
+        working-directory: mobile
+        run: |
+          flutter pub get
+          # Obfuscated so class and function names cannot be read back out of the APK; the
+          # symbol map stays on the runner and is discarded with it.
+          flutter build apk --release --obfuscate --split-debug-info=build/symbols
+
+      - name: Publish the APK
+        if: steps.signing.outputs.available == 'true'
+        run: |
+          $SCP mobile/build/app/outputs/flutter-apk/app-release.apk "$TARGET:$REMOTE_DIR/ishchi.apk"
+          $SSH "$TARGET" "bash '$REMOTE_DIR/deploy-server.sh' publish-apk '$REMOTE_DIR/ishchi.apk'"
+
+      - name: Keep the APK as a run artifact
+        if: steps.signing.outputs.available == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ishchi-apk
+          path: mobile/build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 14
+
+      - name: Clean up
+        if: always()
+        run: |
+          if [ -f ~/.ssh/deploy_key ] && [ -n "${SSH:-}" ]; then $SSH "$TARGET" "rm -rf '$REMOTE_DIR'" || true; fi
+          rm -rf ~/.ssh/deploy_key "$RUNNER_TEMP/signing" mobile/android/key.properties
