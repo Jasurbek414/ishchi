@@ -1,16 +1,14 @@
 import Nav from './components/Nav.jsx';
 import Hero from './components/Hero.jsx';
-import About from './components/About.jsx';
-import TwoSides from './components/TwoSides.jsx';
-import Features from './components/Features.jsx';
+import Categories from './components/Categories.jsx';
 import HowItWorks from './components/HowItWorks.jsx';
+import Features from './components/Features.jsx';
+import TelegramBand from './components/TelegramBand.jsx';
 import Coverage from './components/Coverage.jsx';
-import Roadmap from './components/Roadmap.jsx';
+import Faq from './components/Faq.jsx';
+import DownloadCta from './components/DownloadCta.jsx';
 import Footer from './components/Footer.jsx';
 import { useAppSettings, useCoverage, useLandingData } from './hooks/useLandingData.js';
-
-const FALLBACK_ABOUT =
-  "Ishchi — O'zbekiston bo'ylab ish beruvchi va ishchini bevosita bog'laydigan zamonaviy platforma.";
 
 export default function App() {
   const landing = useLandingData();
@@ -24,12 +22,13 @@ export default function App() {
       <Nav />
       <main>
         <Hero data={landing} botUrl={botUrl} />
-        <About aboutText={settings?.aboutText || FALLBACK_ABOUT} />
-        <TwoSides />
-        <Features features={landing.features} />
+        <Categories professions={professions} />
         <HowItWorks />
-        <Coverage regions={regions} professions={professions} />
-        <Roadmap items={landing.roadmap} />
+        <Features features={landing.features} />
+        <TelegramBand botUrl={botUrl} />
+        <Coverage regions={regions} />
+        <Faq />
+        <DownloadCta botUrl={botUrl} />
       </main>
       <Footer settings={settings} botUrl={botUrl} />
     </div>

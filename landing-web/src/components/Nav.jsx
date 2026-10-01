@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
+import { APK_URL } from '../lib/links.js';
 
 const LINKS = [
-  { href: '#loyiha', label: 'Loyiha haqida' },
-  { href: '#ikki-tomon', label: 'Ikki tomon' },
-  { href: '#imkoniyatlar', label: 'Imkoniyatlar' },
+  { href: '#ish-turlari', label: 'Ish turlari' },
   { href: '#qanday-ishlaydi', label: 'Qanday ishlaydi' },
-  { href: '#qamrov', label: 'Qamrov' },
-  { href: '#yol-xaritasi', label: "Yo'l xaritasi" },
+  { href: '#afzalliklar', label: 'Afzalliklar' },
+  { href: '#hududlar', label: 'Hududlar' },
+  { href: '#savollar', label: 'Savollar' },
 ];
 
 export default function Nav() {
@@ -33,7 +33,7 @@ export default function Nav() {
             alt="Ishchi"
             className="h-10 w-10 object-contain transition-transform duration-300 group-hover:-rotate-6"
           />
-          <span className="font-display text-lg font-extrabold tracking-tight text-navy-900">ISHCHI</span>
+          <span className="font-display text-lg font-extrabold tracking-tight text-navy-900">Ishchi</span>
         </a>
 
         <nav className="hidden items-center gap-8 text-sm font-semibold text-navy-700/70 lg:flex">
@@ -46,10 +46,10 @@ export default function Nav() {
 
         <div className="flex items-center gap-3">
           <a
-            href="/uploads/apk/ishchi.apk"
+            href={APK_URL}
             className="hidden rounded-full bg-navy-900 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-navy-900/15 transition-all hover:-translate-y-0.5 hover:bg-brand-500 hover:shadow-brand-500/25 sm:inline-block"
           >
-            APK yuklab olish
+            Yuklab olish
           </a>
           <button
             onClick={() => setOpen((v) => !v)}
@@ -77,10 +77,10 @@ export default function Nav() {
       >
         <nav className="flex flex-col gap-1 px-5 pb-5 pt-2">
           <a
-            href="/uploads/apk/ishchi.apk"
+            href={APK_URL}
             className="mb-2 rounded-xl bg-brand-500 px-4 py-3 text-center text-sm font-bold text-white"
           >
-            APK yuklab olish
+            Yuklab olish
           </a>
           {LINKS.map((l) => (
             <a
