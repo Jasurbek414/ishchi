@@ -31,8 +31,11 @@ class ProfileRepository {
     /// True marks the worker free for today (the server expires it at midnight in Tashkent);
     /// false clears it. Left null so an unrelated profile edit does not reset it.
     bool? availableToday,
+    /// True removes the place from the map; null coordinates alone leave it as it is.
+    bool clearLocation = false,
   }) async {
     final body = <String, dynamic>{
+      if (clearLocation) 'clearLocation': true,
       if (firstName != null) 'firstName': firstName,
       if (lastName != null) 'lastName': lastName,
       if (regionId != null) 'regionId': regionId,

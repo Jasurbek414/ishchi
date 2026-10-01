@@ -22,6 +22,10 @@ public interface EmployerProfileRepository extends JpaRepository<EmployerProfile
 
     @Query("select e from EmployerProfile e where e.latitude is not null and e.longitude is not null " +
             "and e.user.active = true and (:regionId is null or e.region.id = :regionId) " +
+            "and e.latitude between :minLat and :maxLat and e.longitude between :minLon and :maxLon " +
             "order by e.updatedAt desc")
-    List<EmployerProfile> findForMap(@Param("regionId") Long regionId, Pageable pageable);
+    List<EmployerProfile> findForMap(@Param("regionId") Long regionId,
+                                     @Param("minLat") double minLat, @Param("maxLat") double maxLat,
+                                     @Param("minLon") double minLon, @Param("maxLon") double maxLon,
+                                     Pageable pageable);
 }

@@ -24,6 +24,7 @@ class ProfileNotifier extends AsyncNotifier<Profile> {
     WorkPreference? workPreference,
     bool? hasDriverLicense,
     String? driverLicenseCategories,
+    bool clearLocation = false,
   }) async {
     final updated = await ref.read(profileRepositoryProvider).updateProfile(
           firstName: firstName,
@@ -39,6 +40,7 @@ class ProfileNotifier extends AsyncNotifier<Profile> {
           workPreference: workPreference,
           hasDriverLicense: hasDriverLicense,
           driverLicenseCategories: driverLicenseCategories,
+          clearLocation: clearLocation,
         );
     state = AsyncData(updated);
   }

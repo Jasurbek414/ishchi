@@ -38,10 +38,19 @@ class WorkerRepository {
     return Worker.fromJson(res);
   }
 
-  Future<List<Worker>> mapSearch({int? regionId, int? professionId}) async {
+  Future<List<Worker>> mapSearch({
+    int? regionId,
+    int? professionId,
+    double? latitude,
+    double? longitude,
+    double? radiusDegrees,
+  }) async {
     final res = await _client.getList('/workers/map', query: {
       if (regionId != null) 'regionId': regionId,
       if (professionId != null) 'professionId': professionId,
+      if (latitude != null) 'latitude': latitude,
+      if (longitude != null) 'longitude': longitude,
+      if (radiusDegrees != null) 'radiusDegrees': radiusDegrees,
     });
     return res.map((e) => Worker.fromJson(e as Map<String, dynamic>)).toList();
   }

@@ -15,6 +15,8 @@ public record AppSettingsResponse(
         boolean jobViewFeeEnabled,
         BigDecimal jobViewFee,
         String defaultThemeMode,
-        String defaultSeedColor
+        String defaultSeedColor,
+        String mapTileUrl,
+        String mapAttribution
 ) {
 }

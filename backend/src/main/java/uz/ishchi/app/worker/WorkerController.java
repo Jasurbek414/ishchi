@@ -37,8 +37,11 @@ public class WorkerController {
 
     @GetMapping("/map")
     public java.util.List<WorkerResponse> mapSearch(@RequestParam(required = false) Long regionId,
-                                                      @RequestParam(required = false) Long professionId) {
-        return workerService.mapSearch(regionId, professionId);
+                                                      @RequestParam(required = false) Long professionId,
+                                                      @RequestParam(required = false) Double latitude,
+                                                      @RequestParam(required = false) Double longitude,
+                                                      @RequestParam(required = false) Double radiusDegrees) {
+        return workerService.mapSearch(regionId, professionId, latitude, longitude, radiusDegrees);
     }
 
     @GetMapping("/{id}")

@@ -54,8 +54,12 @@ class JobRepository {
     double? latitude,
     double? longitude,
     double? radiusDegrees,
+    int? employerId,
+    bool urgentOnly = false,
   }) async {
     final res = await _client.getList('/jobs/map', query: {
+      if (employerId != null) 'employerId': employerId,
+      if (urgentOnly) 'urgent': true,
       if (regionId != null) 'regionId': regionId,
       if (professionId != null) 'professionId': professionId,
       if (latitude != null) 'latitude': latitude,

@@ -54,6 +54,19 @@ public final class WorkerSpecifications {
         );
     }
 
+    /** Same rough viewport box as {@code JobSpecifications.withinBox}, so the map loads what is on screen. */
+    public static Specification<WorkerProfile> withinBox(Double latitude, Double longitude, Double radiusDegrees) {
+        return (root, query, cb) -> {
+            if (latitude == null || longitude == null || radiusDegrees == null || radiusDegrees <= 0) {
+                return null;
+            }
+            return cb.and(
+                    cb.between(root.get("latitude"), latitude - radiusDegrees, latitude + radiusDegrees),
+                    cb.between(root.get("longitude"), longitude - radiusDegrees, longitude + radiusDegrees)
+            );
+        };
+    }
+
     public static Specification<WorkerProfile> search(String keyword) {
         return (root, query, cb) -> {
             if (keyword == null || keyword.isBlank()) return null;

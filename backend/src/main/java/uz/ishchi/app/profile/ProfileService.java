@@ -85,6 +85,10 @@ public class ProfileService {
             }
             if (request.latitude() != null) p.setLatitude(request.latitude());
             if (request.longitude() != null) p.setLongitude(request.longitude());
+            if (Boolean.TRUE.equals(request.clearLocation())) {
+                p.setLatitude(null);
+                p.setLongitude(null);
+            }
             if (request.workPreference() != null) p.setWorkPreference(request.workPreference());
             if (request.hasDriverLicense() != null) p.setHasDriverLicense(request.hasDriverLicense());
             if (request.driverLicenseCategories() != null) p.setDriverLicenseCategories(request.driverLicenseCategories());
@@ -109,6 +113,10 @@ public class ProfileService {
             if (request.about() != null) p.setAbout(request.about());
             if (request.latitude() != null) p.setLatitude(request.latitude());
             if (request.longitude() != null) p.setLongitude(request.longitude());
+            if (Boolean.TRUE.equals(request.clearLocation())) {
+                p.setLatitude(null);
+                p.setLongitude(null);
+            }
             return toResponse(user, p);
         }
         throw ApiException.badRequest("Administrator uchun profil mavjud emas");

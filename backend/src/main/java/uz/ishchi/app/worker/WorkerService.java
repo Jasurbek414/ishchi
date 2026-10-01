@@ -45,11 +45,13 @@ public class WorkerService {
     }
 
     @Transactional(readOnly = true)
-    public java.util.List<WorkerResponse> mapSearch(Long regionId, Long professionId) {
+    public java.util.List<WorkerResponse> mapSearch(Long regionId, Long professionId,
+                                                     Double latitude, Double longitude, Double radiusDegrees) {
         Specification<WorkerProfile> spec = Specification.where(WorkerSpecifications.activeUser())
                 .and(WorkerSpecifications.hasCoordinates())
                 .and(WorkerSpecifications.regionId(regionId))
-                .and(WorkerSpecifications.professionId(professionId));
+                .and(WorkerSpecifications.professionId(professionId))
+                .and(WorkerSpecifications.withinBox(latitude, longitude, radiusDegrees));
         Pageable limit = org.springframework.data.domain.PageRequest.of(0, 500,
                 Sort.by(Sort.Direction.DESC, "updatedAt"));
         return workerProfileRepository.findAll(spec, limit).map(WorkerResponse::forMap).getContent();

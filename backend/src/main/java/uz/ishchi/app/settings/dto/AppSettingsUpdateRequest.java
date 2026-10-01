@@ -11,6 +11,8 @@ import java.math.BigDecimal;
  * any other value replaces it (and is validated + wired up to a webhook). The support/about
  * fields are plain optional overwrites — {@code null} leaves each unchanged. Same for the
  * paid-service toggles/fees and the default-theme fields: {@code null} leaves each unchanged.
+ * {@code mapTileUrl}/{@code mapAttribution}: {@code null} leaves unchanged, {@code ""} goes back to
+ * the app's built-in map.
  */
 public record AppSettingsUpdateRequest(
         Boolean walletEnabled,
@@ -26,6 +28,11 @@ public record AppSettingsUpdateRequest(
         @Pattern(regexp = "LIGHT|DARK|SYSTEM", message = "Mavzu rejimi LIGHT, DARK yoki SYSTEM bo'lishi kerak")
         String defaultThemeMode,
         @Pattern(regexp = "#[0-9A-Fa-f]{6}", message = "Rang #RRGGBB formatida bo'lishi kerak")
-        String defaultSeedColor
+        String defaultSeedColor,
+        @Size(max = 500)
+        @Pattern(regexp = "|(?=\\S*\\{z\\})(?=\\S*\\{x\\})(?=\\S*\\{y\\})https://\\S+",
+                message = "Xarita manzili https:// bilan boshlanib, {z}, {x} va {y} ni o'z ichiga olishi kerak")
+        String mapTileUrl,
+        @Size(max = 200) String mapAttribution
 ) {
 }

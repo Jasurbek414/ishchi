@@ -18,8 +18,8 @@ import '../../state/core_providers.dart';
 import '../../state/job_providers.dart';
 import '../../widgets/profession_dropdown.dart';
 import '../../widgets/region_district_selector.dart';
-import '../location_picker_screen.dart';
 import '../../widgets/price_guidance_hint.dart';
+import '../../widgets/map/location_preview.dart';
 
 class JobFormScreen extends ConsumerStatefulWidget {
   const JobFormScreen({super.key, this.jobId});
@@ -130,13 +130,6 @@ class _JobFormScreenState extends ConsumerState<JobFormScreen> {
     }
   }
 
-  Future<void> _pickLocation() async {
-    final picked = await Navigator.push<LatLng>(
-      context,
-      MaterialPageRoute(builder: (_) => LocationPickerScreen(initial: _location)),
-    );
-    if (picked != null) setState(() => _location = picked);
-  }
 
   Future<void> _pickStartDate() async {
     final picked = await showDatePicker(
@@ -289,25 +282,10 @@ class _JobFormScreenState extends ConsumerState<JobFormScreen> {
                 }),
               ),
               const SizedBox(height: 14),
-              InkWell(
-                onTap: _pickLocation,
-                child: InputDecorator(
-                  decoration: InputDecoration(labelText: context.l10n.workLocationOnMapLabel),
-                  child: Row(
-                    children: [
-                      Icon(Icons.map_outlined, size: 18, color: cs.primary),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          _location == null
-                              ? context.l10n.pickOnMapAction
-                              : "${_location!.latitude.toStringAsFixed(5)}, ${_location!.longitude.toStringAsFixed(5)}",
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+              LocationField(
+                label: context.l10n.workLocationOnMapLabel,
+                value: _location,
+                onChanged: (point) => setState(() => _location = point),
               ),
               const SizedBox(height: 14),
               Row(

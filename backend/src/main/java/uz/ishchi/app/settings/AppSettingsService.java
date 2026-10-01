@@ -53,6 +53,8 @@ public class AppSettingsService {
         if (request.jobViewFee() != null) settings.setJobViewFee(request.jobViewFee());
         if (request.defaultThemeMode() != null) settings.setDefaultThemeMode(request.defaultThemeMode());
         if (request.defaultSeedColor() != null) settings.setDefaultSeedColor(request.defaultSeedColor());
+        if (request.mapTileUrl() != null) settings.setMapTileUrl(blankToNull(request.mapTileUrl()));
+        if (request.mapAttribution() != null) settings.setMapAttribution(blankToNull(request.mapAttribution()));
 
         if (telegramBotToken != null) {
             if (telegramBotToken.isBlank()) {
@@ -165,7 +167,13 @@ public class AppSettingsService {
                 s.isJobViewFeeEnabled(),
                 s.getJobViewFee(),
                 s.getDefaultThemeMode(),
-                s.getDefaultSeedColor()
+                s.getDefaultSeedColor(),
+                s.getMapTileUrl(),
+                s.getMapAttribution()
         );
+    }
+
+    private static String blankToNull(String value) {
+        return value.isBlank() ? null : value.trim();
     }
 }

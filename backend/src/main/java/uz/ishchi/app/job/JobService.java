@@ -98,12 +98,15 @@ public class JobService {
 
     @Transactional(readOnly = true)
     public List<JobResponse> mapSearch(User currentUser, Long regionId, Long professionId,
-                                        Double latitude, Double longitude, Double radiusDegrees) {
+                                        Double latitude, Double longitude, Double radiusDegrees,
+                                        Long employerId, Boolean urgent) {
         Specification<Job> spec = Specification.where(JobSpecifications.notBlocked())
                 .and(JobSpecifications.status(JobStatus.ACTIVE))
                 .and(JobSpecifications.hasCoordinates())
                 .and(JobSpecifications.regionId(regionId))
                 .and(JobSpecifications.professionId(professionId))
+                .and(JobSpecifications.employerId(employerId))
+                .and(JobSpecifications.urgent(urgent))
                 // Without this the map answered with the newest 500 jobs whatever was on screen, so
                 // panning somewhere else showed the same pins.
                 .and(JobSpecifications.withinBox(latitude, longitude, radiusDegrees));

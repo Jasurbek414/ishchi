@@ -5,6 +5,7 @@ import '../core/token_storage.dart';
 import '../data/auth_repository.dart';
 import '../data/employer_repository.dart';
 import '../data/job_application_repository.dart';
+import '../data/geo_repository.dart';
 import '../data/job_repository.dart';
 import '../data/rating_repository.dart';
 import '../data/report_repository.dart';
@@ -66,3 +67,5 @@ final savedSearchRepositoryProvider =
 
 final reportRepositoryProvider =
     Provider<ReportRepository>((ref) => ReportRepository(ref.watch(apiClientProvider)));
+
+final geoRepositoryProvider = Provider<GeoRepository>((ref) => GeoRepository(ref.watch(apiClientProvider)));

@@ -94,7 +94,12 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: 'jobs-map',
-            builder: (context, state) => const JobsMapScreen(),
+            // ?employerId=&name= narrows the map to one employer's jobs ("their jobs" on the
+            // employers map).
+            builder: (context, state) => JobsMapScreen(
+              employerId: int.tryParse(state.uri.queryParameters['employerId'] ?? ''),
+              employerName: state.uri.queryParameters['name'],
+            ),
           ),
           GoRoute(
             path: 'employers-map',

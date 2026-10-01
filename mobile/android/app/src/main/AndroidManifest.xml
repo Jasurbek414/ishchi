@@ -56,5 +56,10 @@
             <action android:name="android.intent.action.DIAL"/>
             <data android:scheme="tel"/>
         </intent>
+        <!-- "Yo'nalish" on a job hands the point to whichever maps app the phone has. -->
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="geo"/>
+        </intent>
     </queries>
 </manifest>

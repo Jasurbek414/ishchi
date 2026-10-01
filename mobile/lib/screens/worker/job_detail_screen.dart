@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/api_config.dart';
@@ -14,6 +15,7 @@ import '../../state/app_settings_provider.dart';
 import '../../state/core_providers.dart';
 import '../../state/job_providers.dart';
 import '../../widgets/async_view.dart';
+import '../../widgets/map/location_preview.dart';
 import '../../widgets/report_sheet.dart';
 import '../../widgets/status_badge.dart';
 import '../../widgets/trust_badges.dart';
@@ -249,6 +251,10 @@ class _JobDetailBody extends StatelessWidget {
                   _InfoRow(icon: Icons.badge_outlined, text: job.professionName),
                 ],
               ),
+              if (job.latitude != null && job.longitude != null) ...[
+                const SizedBox(height: 16),
+                _JobPlace(job: job),
+              ],
               const SizedBox(height: 22),
               _PriceCard(job: job),
               const SizedBox(height: 14),
@@ -632,6 +638,46 @@ class _StatColumn extends StatelessWidget {
         const SizedBox(height: 2),
         Text(label, textAlign: TextAlign.center, style: TextStyle(color: cs.onSurfaceVariant, fontSize: 11)),
       ],
+    );
+  }
+}
+
+/// Where the work is: a small map, the address, and directions in the phone's maps app.
+class _JobPlace extends StatelessWidget {
+  const _JobPlace({required this.job});
+
+  final Job job;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final l10n = context.l10n;
+    final point = LatLng(job.latitude!, job.longitude!);
+    return Card(
+      margin: EdgeInsets.zero,
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          LocationPreview(point: point, height: 150, onTap: () => openDirections(point, label: job.title)),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 12, 10, 12),
+            child: Row(
+              children: [
+                Icon(Icons.place_outlined, color: cs.primary),
+                const SizedBox(width: 10),
+                Expanded(child: PlaceText(point: point, fallback: job.location)),
+                const SizedBox(width: 8),
+                FilledButton.tonalIcon(
+                  onPressed: () => openDirections(point, label: job.title),
+                  icon: const Icon(Icons.directions, size: 18),
+                  label: Text(l10n.directionsAction),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

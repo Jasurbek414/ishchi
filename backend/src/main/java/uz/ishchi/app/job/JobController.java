@@ -74,9 +74,11 @@ public class JobController {
                                         @RequestParam(required = false) Long professionId,
                                         @RequestParam(required = false) Double latitude,
                                         @RequestParam(required = false) Double longitude,
-                                        @RequestParam(required = false) Double radiusDegrees) {
+                                        @RequestParam(required = false) Double radiusDegrees,
+                                        @RequestParam(required = false) Long employerId,
+                                        @RequestParam(required = false) Boolean urgent) {
         return jobService.mapSearch(principal.getUser(), regionId, professionId,
-                latitude, longitude, radiusDegrees);
+                latitude, longitude, radiusDegrees, employerId, urgent);
     }
 
     @GetMapping("/my")

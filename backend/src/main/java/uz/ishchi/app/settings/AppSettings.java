@@ -66,4 +66,12 @@ public class AppSettings {
     /** Hex color (e.g. {@code #0284C7}) seeding the app's default Material color scheme. */
     @Column(name = "default_seed_color", nullable = false, length = 9)
     private String defaultSeedColor = "#0284C7";
+
+    /** Map tile URL template for the mobile app ({z}/{x}/{y}); null means the app's default. */
+    @Column(name = "map_tile_url", length = 500)
+    private String mapTileUrl;
+
+    /** Attribution shown on the map for the tile source above; null means the default's. */
+    @Column(name = "map_attribution", length = 200)
+    private String mapAttribution;
 }
