@@ -1,4 +1,5 @@
 import {
+  Armchair,
   Bike,
   BrickWall,
   Car,
@@ -26,15 +27,16 @@ import SectionHead from './SectionHead.jsx';
 // Professions come from the admin-managed list; an icon is picked from words in the name, so a
 // newly added profession still gets a sensible one.
 const ICONS = [
+  [/suvoq|bo'yoq|boyoq|malyar/i, PaintRoller],
   [/santex|suv/i, Droplets],
   [/elektr/i, Zap],
   [/payvand/i, Flame],
   [/kafel|plitka/i, Grid3x3],
-  [/suvoq|bo'yoq|boyoq|malyar/i, PaintRoller],
   [/beton|g'isht|qurilish/i, BrickWall],
   [/^tom\b|tom yop/i, House],
   [/tozala/i, Sparkles],
-  [/yuk/i, Truck],
+  [/yuk|ko'chir/i, Truck],
+  [/mebel/i, Armchair],
   [/konditsioner/i, Snowflake],
   [/maishiy|texnika/i, WashingMachine],
   [/shin/i, CircleDot],
