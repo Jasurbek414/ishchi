@@ -51,4 +51,7 @@ flutter_launcher_icons:
   image_path: "assets/icon/logo.png"
   adaptive_icon_background: "#FFFFFF"
   adaptive_icon_foreground: "assets/icon/logo.png"
+  # The logo sits on a white square, so it needs a wider margin than the default 16 to clear a
+  # round launcher mask; 26 keeps it where the old padded foreground image had it.
+  adaptive_icon_foreground_inset: 26
   remove_alpha_ios: true
