@@ -74,4 +74,8 @@ public class AppSettings {
     /** Attribution shown on the map for the tile source above; null means the default's. */
     @Column(name = "map_attribution", length = 200)
     private String mapAttribution;
+
+    /** Salted hash of the ADMIN_PHONE/ADMIN_PASSWORD pair last applied by {@code AdminSeeder}. */
+    @Column(name = "admin_env_fingerprint", length = 100)
+    private String adminEnvFingerprint;
 }

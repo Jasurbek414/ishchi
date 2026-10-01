@@ -1,9 +1,12 @@
 package uz.ishchi.app.config;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import uz.ishchi.app.common.Role;
+import uz.ishchi.app.settings.AppSettings;
+import uz.ishchi.app.settings.AppSettingsRepository;
 import uz.ishchi.app.user.User;
 import uz.ishchi.app.user.UserRepository;
 
@@ -21,10 +24,17 @@ class AdminSeederTest {
     private static final String PHONE = "+998900000099";
 
     private final UserRepository users = mock(UserRepository.class);
+    private final AppSettingsRepository settingsRepository = mock(AppSettingsRepository.class);
     private final PasswordEncoder encoder = new BCryptPasswordEncoder(4);
+    private final AppSettings settings = new AppSettings();
+
+    @BeforeEach
+    void setUp() {
+        when(settingsRepository.findById(1L)).thenReturn(Optional.of(settings));
+    }
 
     private AdminSeeder seeder(String password) {
-        return new AdminSeeder(new AdminProperties(PHONE, password), users, encoder);
+        return new AdminSeeder(new AdminProperties(PHONE, password), users, encoder, settingsRepository);
     }
 
     @Test
@@ -34,29 +44,29 @@ class AdminSeederTest {
         seeder("first-pass").run();
 
         verify(users).save(any(User.class));
+        assertThat(settings.getAdminEnvFingerprint()).isNotBlank();
     }
 
     @Test
     void aChangedPasswordInEnvReplacesTheStoredOne() {
         User admin = new User(PHONE, encoder.encode("old-pass"), Role.ADMIN);
-        admin.setActive(true);
         when(users.findByPhone(PHONE)).thenReturn(Optional.of(admin));
 
         seeder("new-pass").run();
 
         assertThat(encoder.matches("new-pass", admin.getPasswordHash())).isTrue();
-        verify(users).save(admin);
     }
 
     @Test
-    void anUnchangedPasswordIsNotRewritten() {
-        User admin = new User(PHONE, encoder.encode("same-pass"), Role.ADMIN);
-        admin.setActive(true);
+    void aPasswordChangedInThePanelSurvivesARestart() {
+        User admin = new User(PHONE, encoder.encode("env-pass"), Role.ADMIN);
         when(users.findByPhone(PHONE)).thenReturn(Optional.of(admin));
+        seeder("env-pass").run();
 
-        seeder("same-pass").run();
+        admin.setPasswordHash(encoder.encode("changed-in-panel"));
+        seeder("env-pass").run();
 
-        verify(users, never()).save(any(User.class));
+        assertThat(encoder.matches("changed-in-panel", admin.getPasswordHash())).isTrue();
     }
 
     @Test
@@ -68,5 +78,6 @@ class AdminSeederTest {
 
         assertThat(worker.getRole()).isEqualTo(Role.WORKER);
         verify(users, never()).save(any(User.class));
+        assertThat(settings.getAdminEnvFingerprint()).isNull();
     }
 }

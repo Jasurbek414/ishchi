@@ -1,15 +1,112 @@
 import { useEffect, useState } from 'react';
 import { api, ApiError } from '../api/client.js';
 import { useAppSettings } from '../settings/AppSettingsContext.jsx';
+import { useAuth } from '../auth/AuthContext.jsx';
 
 export default function SettingsPage() {
   return (
     <div>
       <h1>Sozlamalar</h1>
+      <AdminAccountCard />
       <AppThemeSettingsCard />
       <AppInfoSettingsCard />
       <MapSettingsCard />
       <BroadcastNotificationCard />
+    </div>
+  );
+}
+
+function AdminAccountCard() {
+  const { logout } = useAuth();
+  const [currentPhone, setCurrentPhone] = useState(null);
+  const [phone, setPhone] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [repeat, setRepeat] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    api.get('/api/admin/account').then((a) => {
+      setCurrentPhone(a.phone);
+      setPhone(a.phone);
+    }).catch(() => {});
+  }, []);
+
+  async function save(e) {
+    e.preventDefault();
+    setError(null);
+    setSuccess(null);
+    const trimmedPhone = phone.trim();
+    const phoneChanged = trimmedPhone && trimmedPhone !== currentPhone;
+    if (!phoneChanged && !newPassword) {
+      setError("Yangi telefon raqam yoki yangi parolni kiriting");
+      return;
+    }
+    if (phoneChanged && !/^\+998\d{9}$/.test(trimmedPhone)) {
+      setError('Telefon +998XXXXXXXXX ko\'rinishida bo\'lishi kerak');
+      return;
+    }
+    if (newPassword && newPassword.length < 8) {
+      setError("Yangi parol kamida 8 belgidan iborat bo'lsin");
+      return;
+    }
+    if (newPassword !== repeat) {
+      setError('Yangi parol va takrori bir xil emas');
+      return;
+    }
+    if (!currentPassword) {
+      setError('Tasdiqlash uchun joriy parolni kiriting');
+      return;
+    }
+    setBusy(true);
+    try {
+      await api.patch('/api/admin/account', {
+        currentPassword,
+        phone: phoneChanged ? trimmedPhone : undefined,
+        newPassword: newPassword || undefined,
+      });
+      setSuccess("Saqlandi. Endi yangi ma'lumotlar bilan qayta kirasiz...");
+      setTimeout(() => logout(), 2000);
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : "Saqlab bo'lmadi");
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="card">
+      <h3 className="mt-0 mx-0 mb-1">Kirish ma'lumotlari</h3>
+      <p className="mt-0 mx-0 mb-4 text-text-secondary text-[13px]">
+        Admin panelga kiriladigan telefon raqam va parol. O'zgartirgandan keyin panel sizni chiqaradi — yangi ma'lumotlar bilan qayta kirasiz.
+      </p>
+      {currentPhone === null && <p className="text-[13px] text-text-secondary">Yuklanmoqda...</p>}
+      {currentPhone !== null && (
+        <form onSubmit={save} autoComplete="off">
+          <div className="field">
+            <label>Login (telefon raqam)</label>
+            <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+998901234567" disabled={busy} />
+          </div>
+          <div className="field">
+            <label>Yangi parol (o'zgartirmasangiz bo'sh qoldiring)</label>
+            <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} autoComplete="new-password" disabled={busy} />
+          </div>
+          <div className="field">
+            <label>Yangi parolni takrorlang</label>
+            <input type="password" value={repeat} onChange={(e) => setRepeat(e.target.value)} autoComplete="new-password" disabled={busy} />
+          </div>
+          <div className="field">
+            <label>Joriy parol (tasdiqlash uchun)</label>
+            <input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} autoComplete="current-password" disabled={busy} />
+          </div>
+          {error && <div className="error-text">{error}</div>}
+          {success && <div className="text-success text-[13px] mb-3.5">{success}</div>}
+          <button type="submit" className="btn btn-primary" disabled={busy}>
+            {busy ? 'Saqlanmoqda...' : 'Saqlash'}
+          </button>
+        </form>
+      )}
     </div>
   );
 }
