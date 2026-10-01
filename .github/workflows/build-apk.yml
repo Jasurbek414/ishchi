@@ -11,6 +11,11 @@ on:
       - '.github/workflows/build-apk.yml'
   workflow_dispatch:
 
+permissions:
+  # To attach the APK to a pre-release: a release asset downloads from a plain link (handy on a
+  # phone), where a run artifact needs a GitHub login and comes zipped.
+  contents: write
+
 jobs:
   apk:
     name: Build test APK
@@ -43,3 +48,15 @@ jobs:
           name: ${{ env.APK_NAME }}
           path: mobile/build/app/outputs/flutter-apk/app-release.apk
           retention-days: 14
+
+      - name: Publish as a pre-release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="test-apk-${{ github.run_number }}"
+          cp mobile/build/app/outputs/flutter-apk/app-release.apk "$APK_NAME.apk"
+          gh release create "$tag" "$APK_NAME.apk" \
+            --target "$GITHUB_SHA" --prerelease \
+            --title "Test APK ${APK_NAME#ishchi-} (${GITHUB_SHA::7})" \
+            --notes "Test build from ${GITHUB_REF_NAME}. Signed with the debug key and built without google-services.json: push notifications are off, and it cannot update an app signed with the release key — uninstall that first."
+          echo "url=https://github.com/${GITHUB_REPOSITORY}/releases/download/$tag/$APK_NAME.apk" >> "$GITHUB_STEP_SUMMARY"
