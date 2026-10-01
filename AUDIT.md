@@ -65,7 +65,7 @@ shu telefonlarni 500 tagacha tekinga berardi.
 **Tuzatildi.** 5 urinishdan keyin kod kuyadi. Hisoblagich **alohida tranzaksiyada** saqlanadi —
 aks holda rad etish exception'i rollback qilib, cheklov hech qachon ishlamas edi. Qo'shimcha:
 IP bo'yicha rate-limit.
-`OtpAttemptTracker.java`, `AuthService.java`, `V23__otp_attempts.sql`, `RateLimitFilter.java`
+`OtpAttemptTracker.java`, `AuthService.java`, `V24__otp_attempts.sql`, `RateLimitFilter.java`
 
 ### K-5. CORS sozlamasi e'tiborsiz qoldirilgan
 
@@ -103,7 +103,7 @@ va `CORS_ALLOWED_ORIGINS` hech qayerda o'qilmasdi.
 | O-9 | `_refreshDio`da timeout yo'q — osilib qolsa butun ilova kutadi | Asosiy mijoz bilan bir xil timeout |
 | O-10 | 401'dan keyin `FormData` qayta yuborilmaydi — upload uzilardi | Chaqiruvchi builder beradi, qayta urinish yangi body quradi |
 | O-11 | Parolni almashtirish joriy parolni so'ramasdi | `POST /api/profile/change-password` + ekran 4 tilda qayta yozildi |
-| O-12 | Yetishmayotgan indekslar, `timestamp` nomuvofiqligi | `V24__performance_indexes.sql` |
+| O-12 | Yetishmayotgan indekslar, `timestamp` nomuvofiqligi | `V25__performance_indexes.sql` |
 | O-13 | Scheduler'larda qulf yo'q — 2 nusxada ikki marta yuborardi | Postgres advisory lock (tranzaksiyaga bog'langan) |
 
 ## ⚪ TEXNIK QARZ

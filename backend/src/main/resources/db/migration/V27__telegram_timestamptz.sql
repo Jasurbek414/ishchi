@@ -1,5 +1,5 @@
 -- The Telegram tables were created with plain `timestamp`, unlike every other table in the schema
--- (job_unlocks had the same slip, fixed in V24). Aligning them keeps instants unambiguous.
+-- (job_unlocks had the same slip, fixed in V25). Aligning them keeps instants unambiguous.
 alter table telegram_job_draft
     alter column created_at type timestamptz,
     alter column updated_at type timestamptz;

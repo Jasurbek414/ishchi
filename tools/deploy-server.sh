@@ -69,7 +69,14 @@ deploy() {
     log ".env ga APP_BASE_URL=$DEFAULT_APP_BASE_URL qo'shildi (server hozir ham shu qiymatda ishlayapti; eski nusxa .env.bak-*)"
   fi
   if [ "$(env_value FIREBASE_CREDENTIALS_PATH)" = "/app/firebase-service-account.json" ]; then
-    warn ".env: FIREBASE_CREDENTIALS_PATH eski yo'lga qarab turibdi. Qatorni o'chiring va faylni backend/secrets/firebase-service-account.json ga qo'ying, aks holda push-bildirishnomalar o'chib qoladi."
+    # docker-compose used to mount the credentials file itself at that path; it now mounts the
+    # backend/secrets directory at /app/secrets, so the same file lives one level down.
+    cp .env ".env.bak-$(date +%Y%m%d-%H%M%S)-firebase"
+    sed -i 's|^FIREBASE_CREDENTIALS_PATH=.*|FIREBASE_CREDENTIALS_PATH=/app/secrets/firebase-service-account.json|' .env
+    log ".env: FIREBASE_CREDENTIALS_PATH yangi joyga o'tkazildi (/app/secrets/firebase-service-account.json)"
+  fi
+  if [ ! -f backend/secrets/firebase-service-account.json ]; then
+    warn "backend/secrets/firebase-service-account.json topilmadi — push-bildirishnomalar o'chiq bo'ladi (backend baribir ishlaydi)."
   fi
 
   # --- Code ------------------------------------------------------------------------------------

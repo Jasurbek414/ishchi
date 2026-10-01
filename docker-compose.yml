@@ -1,3 +1,9 @@
+name: ishchi
+
+# Serverda ishlaydigan variant. Maktab loyihasi bilan aralashmasligi uchun:
+#  - alohida compose loyihasi ("ishchi") -> alohida tarmoq va volume nomlari
+#  - portlar faqat 127.0.0.1 da (tashqaridan ochiq emas, maktab portlari 8085/5434 bilan to'qnashmaydi)
+#  - har bir servisga xotira chegarasi: biri "qochib" ketsa ham maktab loyihasiga ta'sir qilmaydi
 services:
   db:
     image: postgres:16-alpine
@@ -7,10 +13,12 @@ services:
       POSTGRES_DB: ${DB_NAME:-ishchi}
       POSTGRES_USER: ${DB_USER:-ishchi}
       POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+      TZ: Asia/Tashkent
     volumes:
       - ishchi_db_data:/var/lib/postgresql/data
     ports:
       - "127.0.0.1:5439:5432"
+    mem_limit: 512m
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-ishchi} -d ${DB_NAME:-ishchi}"]
       interval: 5s
@@ -42,6 +50,7 @@ services:
       # which silently points a different deployment's bot at the wrong host.
       APP_BASE_URL: ${APP_BASE_URL:?APP_BASE_URL is required}
       FIREBASE_CREDENTIALS_PATH: ${FIREBASE_CREDENTIALS_PATH:-/app/secrets/firebase-service-account.json}
+      TZ: Asia/Tashkent
     volumes:
       - ishchi_uploads:/app/uploads
       # The whole directory, not the file: a file bind-mount makes Docker create a *directory* in
@@ -51,6 +60,7 @@ services:
       - ./backend/secrets:/app/secrets:ro
     ports:
       - "127.0.0.1:8090:8080"
+    mem_limit: 1500m
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/actuator/health | grep -q UP"]
       interval: 15s
@@ -65,6 +75,7 @@ services:
     depends_on:
       - backend
     command: tunnel --no-autoupdate run --token ${CLOUDFLARE_LANDING_TUNNEL_TOKEN:?CLOUDFLARE_LANDING_TUNNEL_TOKEN is required}
+    mem_limit: 256m
 
 volumes:
   ishchi_db_data:
