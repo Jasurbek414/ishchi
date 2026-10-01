@@ -85,7 +85,7 @@ export default function Categories({ professions }) {
         <SectionHead
           eyebrow="Ish turlari"
           title="Uy ta'miridan yuk tashishgacha"
-          text="Usta, mardikor yoki mutaxassis — kerakli odamni kasbi bo'yicha toping yoki o'zingiz bilgan ish bo'yicha e'lonlarni ko'ring."
+          text="Usta, kunlik ishchi yoki mutaxassis — kerakli odamni kasbi bo'yicha toping yoki o'zingiz bilgan ish bo'yicha e'lonlarni ko'ring."
         />
 
         <div className="mt-12 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">

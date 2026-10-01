@@ -4,7 +4,7 @@ import { getJson } from '../lib/api.js';
 const FALLBACK_LANDING = {
   heroTitle: "Ishchi va ish beruvchini bevosita bog'laydi",
   heroSubtitle:
-    "Mardikor, usta va mutaxassisni ish beruvchi bilan vositachisiz uchrashtiradigan mobil platforma.",
+    "Kunlik ishchi, usta va mutaxassisni ish beruvchi bilan vositachisiz uchrashtiradigan mobil platforma.",
   stats: [
     { value: '14', label: 'viloyat qamrovi' },
     { value: '26+', label: 'kasb toifasi' },
