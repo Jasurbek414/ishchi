@@ -1,5 +1,5 @@
 import { Mail, Phone, Send } from 'lucide-react';
-import { APK_URL, PRIVACY_URL } from '../lib/links.js';
+import { PLAY_STORE_URL, PRIVACY_URL } from '../lib/links.js';
 
 export default function Footer({ settings, botUrl }) {
   const linkCls = 'mb-2.5 flex w-fit items-center gap-2 text-sm transition-colors hover:text-white';
@@ -19,7 +19,7 @@ export default function Footer({ settings, botUrl }) {
 
           <div>
             <h5 className="mb-4 text-xs font-bold uppercase tracking-wide text-brand-300">Ilova</h5>
-            <a href={APK_URL} className={linkCls}>Android uchun yuklab olish</a>
+            <a href={PLAY_STORE_URL} className={linkCls}>Android uchun yuklab olish</a>
             <a href={botUrl} className={linkCls}>Telegram bot</a>
             <a href={PRIVACY_URL} className={linkCls}>Maxfiylik siyosati</a>
           </div>

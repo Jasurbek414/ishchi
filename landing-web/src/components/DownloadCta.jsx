@@ -1,5 +1,5 @@
 import { Download, Send } from 'lucide-react';
-import { APK_URL } from '../lib/links.js';
+import { PLAY_STORE_URL } from '../lib/links.js';
 import Reveal from './Reveal.jsx';
 
 export default function DownloadCta({ botUrl }) {
@@ -18,7 +18,7 @@ export default function DownloadCta({ botUrl }) {
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <a
-              href={APK_URL}
+              href={PLAY_STORE_URL}
               className="inline-flex items-center gap-2 rounded-full bg-brand-500 px-7 py-3.5 text-sm font-bold text-white shadow-xl shadow-brand-500/30 transition-transform hover:-translate-y-0.5"
             >
               <Download size={17} strokeWidth={2.5} /> Android uchun yuklab olish

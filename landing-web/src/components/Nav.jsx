@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { APK_URL } from '../lib/links.js';
+import { PLAY_STORE_URL } from '../lib/links.js';
 
 const LINKS = [
   { href: '#ish-turlari', label: 'Ish turlari' },
@@ -46,7 +46,7 @@ export default function Nav() {
 
         <div className="flex items-center gap-3">
           <a
-            href={APK_URL}
+            href={PLAY_STORE_URL}
             className="hidden rounded-full bg-navy-900 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-navy-900/15 transition-all hover:-translate-y-0.5 hover:bg-brand-500 hover:shadow-brand-500/25 sm:inline-block"
           >
             Yuklab olish
@@ -77,7 +77,7 @@ export default function Nav() {
       >
         <nav className="flex flex-col gap-1 px-5 pb-5 pt-2">
           <a
-            href={APK_URL}
+            href={PLAY_STORE_URL}
             className="mb-2 rounded-xl bg-brand-500 px-4 py-3 text-center text-sm font-bold text-white"
           >
             Yuklab olish

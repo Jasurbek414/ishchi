@@ -1,6 +1,6 @@
 import { ArrowRight, Download, Hammer, Search, Send } from 'lucide-react';
 import { useCounter } from '../hooks/useCounter.js';
-import { APK_URL } from '../lib/links.js';
+import { PLAY_STORE_URL } from '../lib/links.js';
 import PhoneMockup from './PhoneMockup.jsx';
 
 function Stat({ value, label }) {
@@ -92,7 +92,7 @@ export default function Hero({ data, botUrl }) {
             {ROLES.map(({ icon: Icon, title, text, tint }) => (
               <a
                 key={title}
-                href={APK_URL}
+                href={PLAY_STORE_URL}
                 className="group flex items-center gap-3.5 rounded-2xl border border-navy-900/8 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:border-brand-500/30 hover:shadow-lg hover:shadow-brand-500/10"
               >
                 <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl ${tint}`}>
@@ -109,7 +109,7 @@ export default function Hero({ data, botUrl }) {
 
           <div className="mt-6 flex flex-wrap items-center gap-3">
             <a
-              href={APK_URL}
+              href={PLAY_STORE_URL}
               className="inline-flex items-center gap-2 rounded-full bg-navy-900 px-6 py-3.5 text-sm font-bold text-white shadow-xl shadow-navy-900/20 transition-all hover:-translate-y-0.5 hover:bg-brand-500"
             >
               <Download size={17} strokeWidth={2.5} />
