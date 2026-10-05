@@ -70,6 +70,7 @@ public class TelegramService {
     private static final String BTN_ABOUT = "ℹ️ Ilova haqida";
     private static final String BTN_CONTACT = "📞 Bog'lanish";
     private static final String BTN_DOWNLOAD = "📱 Ilovani yuklab olish";
+    private static final String PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=uz.ecos.ishchi.app";
     private static final String BTN_SHARE_PHONE = "📲 Telefon raqamni ulash";
     private static final String BTN_FEEDBACK = "💬 Fikr-mulohaza / Muammo";
     private static final String BTN_JOB_MENU = "📋 Buyurtma joylashtirish / Ish topish";
@@ -196,7 +197,7 @@ public class TelegramService {
             sendContact(token, chatId);
         } else if (text.equals(BTN_DOWNLOAD)) {
             telegramClient.sendMessage(token, chatId,
-                    "Ilovani shu havoladan yuklab oling:\n" + baseUrl + "/uploads/apk/ishchi.apk");
+                    "Ilovani shu havoladan yuklab oling:\n" + PLAY_STORE_URL);
         } else if (text.equals(BTN_SHARE_PHONE)) {
             telegramClient.sendMessage(token, chatId,
                     "Pastdagi \"📲 Telefon raqamni ulash\" tugmasini bosib, raqamingizni ulashing.");
@@ -248,7 +249,7 @@ public class TelegramService {
                         + "• Xarita orqali yaqin atrofdagi ishlarni topasiz\n"
                         + "• Ish beruvchiga bir tugma bosib qo'ng'iroq qilasiz\n\n"
                         + "📋 Namuna: \"Kafel yotqizish kerak — Toshkent shahri, Chilonzor — 1 500 000 so'm\"\n\n"
-                        + "Ilovani ochib qidiruvni boshlang:\n" + baseUrl + "/uploads/apk/ishchi.apk");
+                        + "Ilovani ochib qidiruvni boshlang:\n" + PLAY_STORE_URL);
         sendMainMenu(token, chatId);
     }
 
