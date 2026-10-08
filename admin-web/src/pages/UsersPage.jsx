@@ -18,6 +18,7 @@ import {
   Send,
   ShieldCheck,
   Star,
+  Trash2,
   UserCheck,
   UserPlus,
   Users,
@@ -188,7 +189,7 @@ function SummaryCard({ icon: Icon, label, value, tone, active, onClick }) {
 }
 
 /** The "⋯" menu with the less frequent actions of a row. */
-function RowMenu({ user, walletEnabled, busy, onToggleActive, onToggleVerified, onWallet, onMessage }) {
+function RowMenu({ user, walletEnabled, busy, onToggleActive, onToggleVerified, onWallet, onMessage, onDelete }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -254,6 +255,10 @@ function RowMenu({ user, walletEnabled, busy, onToggleActive, onToggleVerified, 
             {user.active ? <Ban size={15} /> : <UserCheck size={15} />}
             {user.active ? 'Bloklash' : 'Blokdan chiqarish'}
           </button>
+          <button role="menuitem" className={`${item} text-danger`} disabled={busy} onClick={run(onDelete)}>
+            <Trash2 size={15} />
+            O'chirish
+          </button>
         </div>
       )}
     </div>
@@ -293,6 +298,7 @@ export default function UsersPage() {
   const [detailUser, setDetailUser] = useState(null);
   const [messageUser, setMessageUser] = useState(null);
   const [confirmBlock, setConfirmBlock] = useState(null);
+  const [deletingUser, setDeletingUser] = useState(null);
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -386,6 +392,7 @@ export default function UsersPage() {
     onToggleVerified: toggleWorkerVerified,
     onWallet: setWalletUser,
     onMessage: setMessageUser,
+    onDelete: setDeletingUser,
   };
 
   return (
@@ -658,6 +665,22 @@ export default function UsersPage() {
           </div>
         </Modal>
       )}
+      {deletingUser && (
+        <DeleteUserModal
+          user={deletingUser}
+          walletEnabled={walletEnabled}
+          onClose={() => setDeletingUser(null)}
+          onDeleted={() => {
+            const gone = deletingUser;
+            setDeletingUser(null);
+            setDetailUser((cur) => (cur && cur.id === gone.id ? null : cur));
+            // Deleting the only row on a later page would otherwise leave that page empty.
+            if (data && data.content.length === 1 && page > 0) setPage((p) => p - 1);
+            else load();
+            loadStats();
+          }}
+        />
+      )}
       {walletUser && <WalletModal user={walletUser} onClose={() => setWalletUser(null)} />}
       {messageUser && <SendMessageModal user={messageUser} onClose={() => setMessageUser(null)} />}
     </div>
@@ -665,7 +688,7 @@ export default function UsersPage() {
 }
 
 /** The selected user's full profile, sliding in from the right. */
-function UserDrawer({ user, busy, onClose, walletEnabled, onToggleActive, onToggleVerified, onWallet, onMessage }) {
+function UserDrawer({ user, busy, onClose, walletEnabled, onToggleActive, onToggleVerified, onWallet, onMessage, onDelete }) {
   const [profile, setProfile] = useState(null);
   const [error, setError] = useState(null);
   const panelRef = useRef(null);
@@ -753,6 +776,14 @@ function UserDrawer({ user, busy, onClose, walletEnabled, onToggleActive, onTogg
           >
             {user.active ? <Ban size={15} /> : <Check size={15} />} {user.active ? 'Bloklash' : 'Blokdan chiqarish'}
           </button>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => onDelete(user)}
+            className={`${action} bg-danger/8 border-danger/30 text-danger`}
+          >
+            <Trash2 size={15} /> O'chirish
+          </button>
         </div>
 
         {error && <div className="error-text mx-5">{error}</div>}
@@ -838,6 +869,87 @@ function Info({ label, value, tone = '' }) {
       <span className="text-[12.5px] text-text-secondary shrink-0">{label}</span>
       <span className={`text-[13.5px] text-right font-medium ${tone}`}>{value}</span>
     </div>
+  );
+}
+
+function DeleteUserModal({ user, walletEnabled, onClose, onDeleted }) {
+  const toast = useToast();
+  const [confirmText, setConfirmText] = useState('');
+  const [balance, setBalance] = useState(null);
+  const [error, setError] = useState(null);
+  const [busy, setBusy] = useState(false);
+
+  // Deleting an account also deletes its wallet, so show what is about to be lost.
+  useEffect(() => {
+    if (!walletEnabled) return;
+    api
+      .get(`/api/admin/wallets/${user.id}`)
+      .then((w) => setBalance(Number(w.balance)))
+      .catch(() => setBalance(null));
+  }, [user.id, walletEnabled]);
+
+  // Typing the phone number is the confirmation: this cannot be undone, and a plain "Are you
+  // sure?" is far too easy to click through next to the Block action.
+  const confirmed = confirmText.trim() === user.phone;
+
+  async function remove(e) {
+    e.preventDefault();
+    if (!confirmed || busy) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await api.del(`/api/admin/users/${user.id}`);
+      toast.success("Foydalanuvchi o'chirildi");
+      onDeleted();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "O'chirib bo'lmadi");
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Modal title="Foydalanuvchini o'chirish" onClose={busy ? () => {} : onClose}>
+      <p className="mt-0 mb-3 text-[14px]">
+        <strong>{user.fullName || user.phone}</strong> akkaunti butunlay o'chiriladi. Bu amalni{' '}
+        <strong>qaytarib bo'lmaydi</strong>. Faqat vaqtincha to'xtatmoqchi bo'lsangiz, "Bloklash"dan foydalaning.
+      </p>
+      <ul className="mt-0 mx-0 mb-3.5 pl-[18px] text-[13px] text-text-secondary">
+        <li>Profil va yuklangan rasmlari</li>
+        {user.role === 'EMPLOYER' && <li>U joylashtirgan barcha buyurtmalar, rasmlari va arizalari</li>}
+        {user.role === 'WORKER' && <li>Ish tajribasi, arizalari va ochilgan buyurtmalar tarixi</li>}
+        <li>Baholari, shikoyatlari va saqlangan qidiruvlari</li>
+        {walletEnabled && <li>Hamyon va uning tranzaksiya tarixi</li>}
+        <li>Tizimga kirish huquqi (barcha qurilmalarda)</li>
+      </ul>
+      {walletEnabled && balance > 0 && (
+        <div className="error-text">
+          Diqqat: hamyonda {balance.toLocaleString('uz-UZ')} so'm qoldiq bor, u ham yo'qoladi.
+        </div>
+      )}
+      <form onSubmit={remove}>
+        <div className="field">
+          <label>
+            Tasdiqlash uchun telefon raqamini kiriting: <strong>{user.phone}</strong>
+          </label>
+          <input
+            type="text"
+            value={confirmText}
+            onChange={(e) => setConfirmText(e.target.value)}
+            placeholder={user.phone}
+            autoComplete="off"
+          />
+        </div>
+        {error && <div className="error-text">{error}</div>}
+        <div className="modal-actions">
+          <button type="button" className="btn btn-outline" onClick={onClose} disabled={busy}>
+            Bekor qilish
+          </button>
+          <button type="submit" className="btn bg-danger text-white" disabled={!confirmed || busy}>
+            {busy ? "O'chirilmoqda..." : "Butunlay o'chirish"}
+          </button>
+        </div>
+      </form>
+    </Modal>
   );
 }
 

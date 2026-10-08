@@ -14,12 +14,16 @@ class SplashScreen extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // White disc: the logo's navy figure would sink into the blue background.
-            DecoratedBox(
-              decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-              child: Padding(
-                padding: EdgeInsets.all(16),
-                child: Image(image: AssetImage(AppAssets.logo), width: 112, height: 112),
+            // White disc: the logo's navy figure would sink into the blue background. Clipped to
+            // the circle - the logo file is a white square, and its corners used to stick out past
+            // the disc as a rectangle.
+            ClipOval(
+              child: ColoredBox(
+                color: Colors.white,
+                child: Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Image(image: AssetImage(AppAssets.logo), width: 112, height: 112),
+                ),
               ),
             ),
             SizedBox(height: 16),

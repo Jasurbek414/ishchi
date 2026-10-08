@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
+import 'core_providers.dart';
 
 /// Persists the worker's preferred region/district filter for the jobs list across app
 /// restarts, so it doesn't need to be re-picked every time the app is opened.
@@ -15,14 +16,12 @@ const _kDistrictKey = 'job_filter_district_id';
 
 class JobRegionFilterNotifier extends Notifier<JobRegionFilter> {
   @override
+  // Read synchronously: loading it asynchronously meant the jobs list was first fetched unfiltered
+  // and then refetched with the saved region a moment later - a flicker and an extra request on
+  // every launch.
   JobRegionFilter build() {
-    _load();
-    return const JobRegionFilter();
-  }
-
-  Future<void> _load() async {
-    final prefs = await SharedPreferences.getInstance();
-    state = JobRegionFilter(
+    final prefs = ref.read(sharedPreferencesProvider);
+    return JobRegionFilter(
       regionId: prefs.getInt(_kRegionKey),
       districtId: prefs.getInt(_kDistrictKey),
     );
@@ -30,7 +29,7 @@ class JobRegionFilterNotifier extends Notifier<JobRegionFilter> {
 
   Future<void> set(int? regionId, int? districtId) async {
     state = JobRegionFilter(regionId: regionId, districtId: districtId);
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = ref.read(sharedPreferencesProvider);
     if (regionId == null) {
       await prefs.remove(_kRegionKey);
     } else {

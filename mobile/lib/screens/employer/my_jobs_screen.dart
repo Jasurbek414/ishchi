@@ -55,12 +55,12 @@ class _MyJobsScreenState extends ConsumerState<MyJobsScreen> with SingleTickerPr
           tabs: _statuses.map((s) => Tab(text: _tabLabel(context, s))).toList(),
         ),
       ),
-      // The outer shell Scaffold uses extendBody so the floating bottom nav pill
-      // can blur real content behind it — that means this nested Scaffold's body
-      // now extends behind the pill too, so the FAB needs an explicit lift to
-      // clear it instead of sitting at its default bottom-right margin.
+      // The outer shell Scaffold uses extendBody so the floating bottom nav pill can blur real
+      // content behind it — that means this nested Scaffold extends behind the pill too, so the
+      // FAB needs a lift to clear it. The MediaQuery bottom padding already equals the pill's
+      // height, so lifting by exactly that leaves the FAB's usual 16 px gap above the pill.
       floatingActionButton: Padding(
-        padding: EdgeInsets.only(bottom: bottomNavClearance(context)),
+        padding: EdgeInsets.only(bottom: MediaQuery.paddingOf(context).bottom),
         child: FloatingActionButton.extended(
           onPressed: () => context.push('/employer/jobs/new'),
           icon: Icon(Icons.add, color: cs.onPrimary),

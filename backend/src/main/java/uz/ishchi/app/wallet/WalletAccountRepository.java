@@ -12,6 +12,10 @@ public interface WalletAccountRepository extends JpaRepository<WalletAccount, Lo
 
     Optional<WalletAccount> findByUserId(Long userId);
 
+    @Query("select w.balance from WalletAccount w where w.user.id = :userId")
+    Optional<BigDecimal> findBalanceByUserId(
+            @org.springframework.data.repository.query.Param("userId") Long userId);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<WalletAccount> findWithLockByUserId(Long userId);
 

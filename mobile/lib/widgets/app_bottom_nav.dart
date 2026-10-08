@@ -7,8 +7,13 @@ import 'package:flutter/services.dart';
 /// hidden behind the floating [AppBottomNav] pill once the Scaffold uses
 /// `extendBody: true` (required so the pill's frosted-glass blur has real
 /// page content behind it instead of a flat, unrelated background color).
+///
+/// Under a Scaffold with `extendBody: true` the body's MediaQuery bottom padding ALREADY includes
+/// the height of the bottom bar (measured: 80 = 66 + 14 on a phone without a gesture bar). The old
+/// formula added the bar's height on top of that, so lists ended 80 px too early and, worse, the
+/// "new job" button floated ~108 px above the bar instead of ~16 px.
 double bottomNavClearance(BuildContext context) {
-  return 66 + 14 + MediaQuery.paddingOf(context).bottom + 12;
+  return MediaQuery.paddingOf(context).bottom + 12;
 }
 
 class NavItem {

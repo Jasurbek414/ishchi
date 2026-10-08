@@ -13,6 +13,8 @@ public interface OtpCodeRepository extends JpaRepository<OtpCode, Long> {
 
     Optional<OtpCode> findTopByPhoneAndPurposeAndUsedFalseOrderByCreatedAtDesc(String phone, OtpPurpose purpose);
 
+    void deleteByPhone(String phone);
+
     /** Housekeeping: expired and spent codes were kept forever. */
     @Modifying
     @Query("delete from OtpCode o where o.expiresAt < :cutoff")

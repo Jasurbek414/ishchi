@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../core/api_exception.dart';
 import '../l10n/l10n_x.dart';
 import '../state/core_providers.dart';
+import '../widgets/password_field.dart';
 
 /// Changing a password from inside the app now proves knowledge of the current one.
 ///
@@ -73,19 +74,17 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
             children: [
               Text(context.l10n.changePasswordHint, style: TextStyle(color: cs.onSurfaceVariant)),
               const SizedBox(height: 16),
-              TextField(
+              PasswordField(
                 controller: _currentPasswordController,
-                obscureText: true,
                 autofillHints: const [AutofillHints.password],
-                decoration: InputDecoration(labelText: context.l10n.currentPasswordFieldLabel),
+                labelText: context.l10n.currentPasswordFieldLabel,
               ),
               const SizedBox(height: 8),
-              TextField(
+              PasswordField(
                 controller: _newPasswordController,
-                obscureText: true,
                 autofillHints: const [AutofillHints.newPassword],
-                decoration: InputDecoration(labelText: context.l10n.newPasswordFieldLabel),
-                onSubmitted: (_) => _loading ? null : _submit(),
+                labelText: context.l10n.newPasswordFieldLabel,
+                onFieldSubmitted: (_) => _loading ? null : _submit(),
               ),
               if (_error != null) ...[
                 const SizedBox(height: 8),

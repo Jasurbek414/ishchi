@@ -3,6 +3,7 @@ package uz.ishchi.app.user;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import uz.ishchi.app.common.Role;
@@ -14,6 +15,15 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByPhone(String phone);
+
+    /** Removes the user row directly, bypassing the persistence context. Everything that hangs
+     *  off a user (profiles, jobs and their images/unlocks/applications, ratings, reports, saved
+     *  searches, wallet, tokens) is cleaned up by the database's ON DELETE CASCADE rules, so
+     *  loading and removing entities here would only leave stale managed profiles behind for
+     *  Hibernate to trip over at flush. */
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query("delete from User u where u.id = :id")
+    int deleteUserById(@Param("id") Long id);
 
     Optional<User> findByTelegramLinkToken(String telegramLinkToken);
 

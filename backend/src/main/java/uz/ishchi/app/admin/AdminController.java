@@ -46,6 +46,11 @@ public class AdminController {
         return adminService.setWorkerVerified(id, verified);
     }
 
+    @DeleteMapping("/users/{id}")
+    public void deleteUser(@PathVariable Long id) {
+        adminService.deleteUser(id);
+    }
+
     @GetMapping("/users/{id}/profile")
     public ProfileResponse getUserProfile(@PathVariable Long id) {
         return adminService.getUserProfile(id);

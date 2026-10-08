@@ -21,6 +21,9 @@ public interface WorkerProfileRepository extends JpaRepository<WorkerProfile, Lo
 
     boolean existsByUserId(Long userId);
 
+    @org.springframework.data.jpa.repository.Query("select p.avatarUrl from WorkerProfile p where p.user.id = :userId")
+    Optional<String> findAvatarUrlByUserId(@org.springframework.data.repository.query.Param("userId") Long userId);
+
     /**
      * Search results used to lazy-load user, region and district per row — four extra queries for
      * every worker returned. Only the to-one sides are graphed here; join-fetching the professions

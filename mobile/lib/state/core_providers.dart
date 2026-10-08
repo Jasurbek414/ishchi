@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../core/api_client.dart';
 import '../core/token_storage.dart';
@@ -18,6 +19,14 @@ import '../data/profile_repository.dart';
 import '../data/promo_banner_repository.dart';
 import '../data/wallet_repository.dart';
 import '../data/worker_repository.dart';
+
+/// Overridden in `main()` with an instance opened before `runApp`, so providers that restore a
+/// saved setting can read it synchronously on their first build. Reading it asynchronously made
+/// the app paint its first frames with the default colour/language and then visibly switch once
+/// the stored value arrived.
+final sharedPreferencesProvider = Provider<SharedPreferences>(
+  (ref) => throw UnimplementedError('sharedPreferencesProvider must be overridden in main()'),
+);
 
 final tokenStorageProvider = Provider<TokenStorage>((ref) => TokenStorage());
 

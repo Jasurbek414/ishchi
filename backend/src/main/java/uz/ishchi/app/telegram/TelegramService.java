@@ -311,13 +311,25 @@ public class TelegramService {
         // Telegram account to a different phone number leaves it on both users, and any
         // later findByTelegramChatId() lookup (feedback, direct messages) throws
         // NonUniqueResultException — which is exactly what silently broke bot replies before.
+        //
+        // The previous owner must be written to the database BEFORE the new owner is: users has
+        // a unique index on telegram_chat_id (V18), and Hibernate flushes pending updates in no
+        // guaranteed order. When it wrote the new owner first, the index rejected it - but only
+        // at commit, i.e. after handleContact() had already told the user "Akkountingiz
+        // ulandi". The webhook then answered an error, Telegram redelivered the very same update,
+        // and the bot repeated that message endlessly (and held back every later message,
+        // including /start). Flushing each step here makes a failure show up before anything is
+        // sent to the user.
         userRepository.findByTelegramChatId(chatId)
                 .filter(existing -> !existing.getId().equals(user.getId()))
-                .ifPresent(existing -> existing.setTelegramChatId(null));
+                .ifPresent(existing -> {
+                    existing.setTelegramChatId(null);
+                    userRepository.saveAndFlush(existing);
+                });
         user.setTelegramChatId(chatId);
         user.setTelegramLinkToken(null);
         user.setTelegramLinkPurpose(null);
-        userRepository.save(user);
+        userRepository.saveAndFlush(user);
         return new LinkedUser(user, purpose);
     }
 

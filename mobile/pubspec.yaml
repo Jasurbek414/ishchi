@@ -2,7 +2,7 @@ name: ishchi
 description: "Ish topish va kunlik xizmatlar platformasi"
 publish_to: 'none'
 
-version: 1.0.51+52
+version: 1.0.52+56
 
 environment:
   sdk: ^3.7.2

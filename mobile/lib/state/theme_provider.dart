@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../core/design_tokens.dart';
 import 'core_providers.dart';
@@ -61,41 +60,43 @@ const _kThemeModeKey = 'theme_mode';
 // ─── Notifier ─────────────────────────────────────────────────────────────────
 
 class ThemeNotifier extends Notifier<AppThemeState> {
+  // Read straight out of the preferences opened in main() instead of awaiting them: the old
+  // async read returned the default first and only then swapped in the user's saved colour,
+  // which showed up as the app changing colour a moment after it opened.
   @override
   AppThemeState build() {
-    _loadFromPrefs();
-    return const AppThemeState();
-  }
-
-  Future<void> _loadFromPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = ref.read(sharedPreferencesProvider);
     final colorValue = prefs.getInt(_kSeedColorKey);
     final modeStr = prefs.getString(_kThemeModeKey);
 
-    // No local choice saved yet — this is a fresh install (or first launch after an
-    // update). Use whatever default the admin has configured server-side, rather than
-    // the hardcoded fallback, so a new user's very first impression is intentional.
+    // No local choice saved yet — a fresh install. Use whatever default the admin has configured
+    // server-side, rather than the hardcoded fallback, so a new user's very first impression is
+    // intentional.
     if (colorValue == null && modeStr == null) {
-      try {
-        final settings = await ref.read(appSettingsRepositoryProvider).get();
-        state = AppThemeState(
-          seedColor: _parseHexColor(settings.defaultSeedColor) ?? state.seedColor,
-          themeMode: _parseThemeMode(settings.defaultThemeMode),
-        );
-      } catch (_) {
-        // Offline on first launch — keep the built-in AppThemeState() default.
-      }
-      return;
+      _loadServerDefaults();
+      return const AppThemeState();
     }
 
-    final color = colorValue != null ? Color(colorValue) : DesignTokens.primary;
-    final mode = switch (modeStr) {
-      'light' => ThemeMode.light,
-      'dark' => ThemeMode.dark,
-      _ => ThemeMode.system,
-    };
+    return AppThemeState(
+      seedColor: colorValue != null ? Color(colorValue) : DesignTokens.primary,
+      themeMode: switch (modeStr) {
+        'light' => ThemeMode.light,
+        'dark' => ThemeMode.dark,
+        _ => ThemeMode.system,
+      },
+    );
+  }
 
-    state = AppThemeState(seedColor: color, themeMode: mode);
+  Future<void> _loadServerDefaults() async {
+    try {
+      final settings = await ref.read(appSettingsRepositoryProvider).get();
+      state = AppThemeState(
+        seedColor: _parseHexColor(settings.defaultSeedColor) ?? state.seedColor,
+        themeMode: _parseThemeMode(settings.defaultThemeMode),
+      );
+    } catch (_) {
+      // Offline on first launch — keep the built-in AppThemeState() default.
+    }
   }
 
   Color? _parseHexColor(String hex) {
@@ -112,19 +113,17 @@ class ThemeNotifier extends Notifier<AppThemeState> {
 
   Future<void> setSeedColor(Color color) async {
     state = state.copyWith(seedColor: color);
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(_kSeedColorKey, color.toARGB32());
+    await ref.read(sharedPreferencesProvider).setInt(_kSeedColorKey, color.toARGB32());
   }
 
   Future<void> setThemeMode(ThemeMode mode) async {
     state = state.copyWith(themeMode: mode);
-    final prefs = await SharedPreferences.getInstance();
     final modeStr = switch (mode) {
       ThemeMode.light => 'light',
       ThemeMode.dark => 'dark',
       _ => 'system',
     };
-    await prefs.setString(_kThemeModeKey, modeStr);
+    await ref.read(sharedPreferencesProvider).setString(_kThemeModeKey, modeStr);
   }
 }
 

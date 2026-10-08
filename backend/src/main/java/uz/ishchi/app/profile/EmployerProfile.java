@@ -50,7 +50,6 @@ public class EmployerProfile {
 
     private Double longitude;
 
-    @UpdateTimestamp
     /** Denormalised from the ratings table, same as on the worker side. */
     @Column(name = "rating_average", columnDefinition = "numeric(3, 2)")
     private Double ratingAverage;
@@ -58,6 +57,11 @@ public class EmployerProfile {
     @Column(name = "rating_count", nullable = false)
     private int ratingCount = 0;
 
+    // This annotation used to sit above ratingAverage (the doc comment above it had been
+    // inserted between the annotation and its field), so Hibernate tried to write the current
+    // timestamp into the numeric rating column and every insert or update of an employer profile
+    // failed - registering as an employer, editing the profile and switching role from worker.
+    @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 }

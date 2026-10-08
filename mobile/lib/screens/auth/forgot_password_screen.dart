@@ -6,6 +6,7 @@ import '../../core/api_exception.dart';
 import '../../l10n/l10n_x.dart';
 import '../../state/core_providers.dart';
 import '../../widgets/telegram_link_waiting.dart';
+import '../../widgets/password_field.dart';
 
 class ForgotPasswordScreen extends ConsumerStatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -110,10 +111,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                   maxLength: 4,
                   decoration: InputDecoration(labelText: context.l10n.otpCodeFieldLabel),
                 ),
-                TextField(
+                PasswordField(
                   controller: _passwordController,
-                  obscureText: true,
-                  decoration: InputDecoration(labelText: context.l10n.newPasswordFieldLabel),
+                  labelText: context.l10n.newPasswordFieldLabel,
                 ),
               ],
               if (_error != null) ...[
