@@ -19,6 +19,7 @@ import uz.ishchi.app.profile.EmployerProfile;
 import uz.ishchi.app.profile.EmployerProfileRepository;
 import uz.ishchi.app.profile.WorkerProfile;
 import uz.ishchi.app.profile.WorkerProfileRepository;
+import uz.ishchi.app.security.AuthThrottle;
 import uz.ishchi.app.security.JwtService;
 import uz.ishchi.app.security.TokenHasher;
 import uz.ishchi.app.telegram.TelegramService;
@@ -53,6 +54,7 @@ public class AuthService {
     private final TelegramService telegramService;
     private final OtpProperties otpProperties;
     private final OtpAttemptTracker otpAttemptTracker;
+    private final AuthThrottle authThrottle;
 
     private static final SecureRandom RANDOM = new SecureRandom();
 
@@ -72,6 +74,9 @@ public class AuthService {
         if (!district.getRegion().getId().equals(region.getId())) {
             throw ApiException.badRequest("Tanlangan tuman ushbu viloyatga tegishli emas");
         }
+
+        // After the cheap validation above, so a malformed request does not burn the phone's allowance.
+        authThrottle.acquireOtpSend(request.phone());
 
         User user = new User(request.phone(), passwordEncoder.encode(request.password()), request.role());
         user = userRepository.save(user);
@@ -101,6 +106,8 @@ public class AuthService {
 
     @Transactional
     public OtpDispatchResponse resendOtp(PhoneRequest request) {
+        // Before the lookup, and for unknown numbers too, so the limit says nothing about who exists.
+        authThrottle.acquireOtpSend(request.phone());
         return userRepository.findByPhone(request.phone())
                 .map(user -> dispatchOtp(user, OtpPurpose.REGISTER))
                 .orElseGet(() -> decoyDispatch(OtpPurpose.REGISTER));
@@ -115,6 +122,7 @@ public class AuthService {
 
     @Transactional
     public MessageResponse verifyOtp(VerifyOtpRequest request) {
+        authThrottle.checkOtpVerify(request.phone());
         User user = userRepository.findByPhone(request.phone())
                 .orElseThrow(() -> ApiException.badRequest("Tasdiqlash kodi noto'g'ri"));
         if (user.isVerified()) {
@@ -127,12 +135,16 @@ public class AuthService {
 
     @Transactional
     public AuthResponse login(LoginRequest request) {
-        User user = userRepository.findByPhone(request.phone())
-                .orElseThrow(() -> ApiException.unauthorized("Telefon raqam yoki parol noto'g'ri", "INVALID_CREDENTIALS"));
+        // Per account, not per caller address: a password can only be guessed so many times however
+        // many addresses the guesses come from. Unknown numbers count too, so this reveals nothing.
+        authThrottle.checkLogin(request.phone());
 
-        if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+        User user = userRepository.findByPhone(request.phone()).orElse(null);
+        if (user == null || !passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+            authThrottle.recordLoginFailure(request.phone());
             throw ApiException.unauthorized("Telefon raqam yoki parol noto'g'ri", "INVALID_CREDENTIALS");
         }
+        authThrottle.clearLogin(request.phone());
         if (!user.isActive()) {
             throw ApiException.forbidden("Akkauntingiz bloklangan", "ACCOUNT_BLOCKED");
         }
@@ -174,6 +186,7 @@ public class AuthService {
 
     @Transactional
     public OtpDispatchResponse forgotPassword(PhoneRequest request) {
+        authThrottle.acquireOtpSend(request.phone());
         return userRepository.findByPhone(request.phone())
                 .map(user -> dispatchOtp(user, OtpPurpose.RESET_PASSWORD))
                 .orElseGet(() -> decoyDispatch(OtpPurpose.RESET_PASSWORD));
@@ -181,6 +194,7 @@ public class AuthService {
 
     @Transactional
     public MessageResponse resetPassword(ResetPasswordRequest request) {
+        authThrottle.checkOtpVerify(request.phone());
         User user = userRepository.findByPhone(request.phone())
                 .orElseThrow(() -> ApiException.badRequest("Tasdiqlash kodi noto'g'ri"));
         consumeOtp(request.phone(), request.code(), OtpPurpose.RESET_PASSWORD);
@@ -277,6 +291,7 @@ public class AuthService {
             throw ApiException.badRequest("Tasdiqlash kodi muddati tugagan, qaytadan so'rang");
         }
         if (!otp.getCode().equals(code)) {
+            authThrottle.recordOtpVerifyFailure(phone);
             int attempts = otpAttemptTracker.recordFailure(otp.getId());
             if (attempts >= OtpCode.MAX_ATTEMPTS) {
                 throw ApiException.badRequest("Kod bir necha marta xato kiritildi. Yangi kod so'rang");

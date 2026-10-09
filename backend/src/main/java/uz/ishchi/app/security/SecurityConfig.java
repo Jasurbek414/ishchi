@@ -13,6 +13,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
+import org.springframework.security.web.util.matcher.AnyRequestMatcher;
 import uz.ishchi.app.common.exception.ErrorResponse;
 import uz.ishchi.app.config.CorsProperties;
 import org.springframework.web.cors.CorsConfiguration;
@@ -50,6 +52,15 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                // HSTS on every response: the backend only ever sees plain HTTP from the tunnel, so
+                // Spring's default (only on requests it believes are secure) would never send it.
+                // Six months, no subdomains: long enough to matter, narrow enough to undo.
+                .headers(headers -> headers
+                        .httpStrictTransportSecurity(hsts -> hsts
+                                .requestMatcher(AnyRequestMatcher.INSTANCE)
+                                .maxAgeInSeconds(15_552_000)
+                                .includeSubDomains(false))
+                        .referrerPolicy(ref -> ref.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.SAME_ORIGIN)))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/auth/**",

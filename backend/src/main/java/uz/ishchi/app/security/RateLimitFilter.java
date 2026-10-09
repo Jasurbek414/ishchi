@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
 
 /**
  * Fixed-window request cap for the endpoints worth abusing: credential and OTP checks (guessing),
@@ -112,15 +113,29 @@ public class RateLimitFilter extends OncePerRequestFilter {
         return RULES.stream().filter(r -> path.startsWith(r.pathPrefix())).findFirst().orElse(null);
     }
 
+    private static final Pattern IP_LIKE = Pattern.compile("^[0-9a-fA-F:.]{3,45}$");
+
     /**
-     * The backend sits behind a Cloudflare tunnel that sets X-Forwarded-For, so the left-most
-     * entry is the real client. Falls back to the socket address when the header is absent (direct
-     * access), which is also what makes this safe to spoof only from inside the network.
+     * The backend sits behind a Cloudflare tunnel, and only a header Cloudflare itself writes can
+     * be believed. {@code CF-Connecting-IP} is exactly that. {@code X-Forwarded-For} is not: a
+     * caller can send any value, and Cloudflare APPENDS the real address to whatever was there, so
+     * the LEFT-most entry (which this used to trust) is the one the caller controls and the
+     * RIGHT-most is the one Cloudflare added. Trusting the left-most let anyone start a fresh
+     * allowance on every request just by changing that header. Falls back to the socket address,
+     * which a caller cannot choose, when neither header is usable (direct access).
      */
     private String clientIp(HttpServletRequest request) {
+        String cloudflare = request.getHeader("CF-Connecting-IP");
+        if (cloudflare != null && IP_LIKE.matcher(cloudflare.trim()).matches()) {
+            return cloudflare.trim();
+        }
         String forwarded = request.getHeader("X-Forwarded-For");
         if (forwarded != null && !forwarded.isBlank()) {
-            return forwarded.split(",")[0].trim();
+            String[] hops = forwarded.split(",");
+            String last = hops[hops.length - 1].trim();
+            if (IP_LIKE.matcher(last).matches()) {
+                return last;
+            }
         }
         return request.getRemoteAddr() == null ? "unknown" : request.getRemoteAddr();
     }

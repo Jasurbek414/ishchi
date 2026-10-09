@@ -23,6 +23,7 @@ import uz.ishchi.app.location.RegionRepository;
 import uz.ishchi.app.profession.ProfessionRepository;
 import uz.ishchi.app.profile.EmployerProfileRepository;
 import uz.ishchi.app.profile.WorkerProfileRepository;
+import uz.ishchi.app.security.AuthThrottle;
 import uz.ishchi.app.security.JwtService;
 import uz.ishchi.app.telegram.TelegramService;
 import uz.ishchi.app.user.RefreshTokenRepository;
@@ -70,7 +71,7 @@ class AuthServiceSecurityTest {
         authService = new AuthService(userRepository, refreshTokenRepository, otpCodeRepository, otpService,
                 passwordEncoder, jwtService, regionRepository, districtRepository, workerProfileRepository,
                 employerProfileRepository, professionRepository, walletService, telegramService,
-                new OtpProperties(10), otpAttemptTracker);
+                new OtpProperties(10), otpAttemptTracker, new AuthThrottle());
 
         user = new User("+998901234567", passwordEncoder.encode("oldPassword1"), Role.WORKER);
         ReflectionTestUtils.setField(user, "id", 7L);

@@ -109,6 +109,41 @@ class RateLimitFilterTest {
         }
     }
 
+    private MockHttpServletResponse callWithForwardedChain(String chain) throws Exception {
+        MockHttpServletRequest request = new MockHttpServletRequest("POST", "/api/auth/login");
+        request.setRequestURI("/api/auth/login");
+        request.addHeader("X-Forwarded-For", chain);
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        filter.doFilter(request, response, this.chain);
+        return response;
+    }
+
+    @Test
+    void aForgedLeadingForwardedEntryDoesNotStartAFreshAllowance() throws Exception {
+        // Cloudflare appends the real address to whatever the caller sent, so the right-most entry is
+        // the one that can be trusted. Changing the left-most on every request used to bypass the cap.
+        for (int i = 0; i < 10; i++) {
+            assertThat(callWithForwardedChain("10.0." + i + ".1, 8.8.8.8").getStatus()).isEqualTo(200);
+        }
+
+        assertThat(callWithForwardedChain("10.0.99.1, 8.8.8.8").getStatus()).isEqualTo(429);
+    }
+
+    @Test
+    void cloudflaresOwnHeaderWinsOverTheForwardedChain() throws Exception {
+        for (int i = 0; i < 11; i++) {
+            MockHttpServletRequest request = new MockHttpServletRequest("POST", "/api/auth/login");
+            request.setRequestURI("/api/auth/login");
+            request.addHeader("CF-Connecting-IP", "203.0.113.7");
+            request.addHeader("X-Forwarded-For", "10.9." + i + ".1");
+            MockHttpServletResponse response = new MockHttpServletResponse();
+            filter.doFilter(request, response, chain);
+            if (i == 10) {
+                assertThat(response.getStatus()).isEqualTo(429);
+            }
+        }
+    }
+
     private static MockHttpServletResponse same(MockHttpServletResponse response) {
         return org.mockito.ArgumentMatchers.eq(response);
     }
