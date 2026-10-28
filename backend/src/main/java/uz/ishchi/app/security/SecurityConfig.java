@@ -73,7 +73,8 @@ public class SecurityConfig {
                                 "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html",
                                 "/actuator/health", "/actuator/info",
                                 "/admin", "/admin/**",
-                                "/", "/index.html", "/favicon.ico", "/assets/**", "/vite.svg", "/privacy.html", "/privacy"
+                                "/", "/index.html", "/favicon.ico", "/assets/**", "/vite.svg", "/privacy.html", "/privacy",
+                                "/sitemap.xml", "/robots.txt"
                         ).permitAll()
                         // Reading banners stays public; the view/click counters do not, because
                         // anonymous POSTs let anyone inflate a banner's statistics at will.
