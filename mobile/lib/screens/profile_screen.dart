@@ -101,7 +101,7 @@ class ProfileScreen extends ConsumerWidget {
           value: profileAsync,
           onRetry: () => ref.invalidate(profileProvider),
           data: (profile) => ListView(
-            padding: EdgeInsets.fromLTRB(20, 12, 20, 32 + bottomNavClearance(context)),
+            padding: EdgeInsets.fromLTRB(20, 12, 20, 48 + bottomNavClearance(context)),
             children: [
               Center(
                 child: Column(
@@ -237,6 +237,13 @@ class ProfileScreen extends ConsumerWidget {
                     icon: PhosphorIcons.info(),
                     label: context.l10n.aboutAppMenu,
                     onTap: () => context.push('/profile/about'),
+                  ),
+                  const Divider(height: 1),
+                  _MenuTile(
+                    icon: PhosphorIcons.trash(),
+                    label: context.l10n.deleteAccountAction,
+                    color: cs.error,
+                    onTap: () => _confirmDeleteAccount(context, ref),
                   ),
                 ],
               ),
@@ -426,25 +433,27 @@ class _AvailableTodayCardState extends ConsumerState<_AvailableTodayCard> {
 }
 
 class _MenuTile extends StatelessWidget {
-  const _MenuTile({required this.icon, required this.label, required this.onTap});
+  const _MenuTile({required this.icon, required this.label, required this.onTap, this.color});
 
   final IconData icon;
   final String label;
   final VoidCallback onTap;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final itemColor = color ?? cs.onSurface;
     return InkWell(
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Row(
           children: [
-            Icon(icon, color: cs.onSurface, size: 20),
+            Icon(icon, color: itemColor, size: 20),
             const SizedBox(width: 14),
-            Expanded(child: Text(label, style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w500))),
-            Icon(PhosphorIcons.caretRight(), color: cs.onSurfaceVariant, size: 16),
+            Expanded(child: Text(label, style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w500, color: itemColor))),
+            Icon(PhosphorIcons.caretRight(), color: color ?? cs.onSurfaceVariant, size: 16),
           ],
         ),
       ),

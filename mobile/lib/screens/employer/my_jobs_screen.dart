@@ -60,7 +60,6 @@ class _MyJobsScreenState extends ConsumerState<MyJobsScreen> with SingleTickerPr
       // FAB needs a lift to clear it. The MediaQuery bottom padding already equals the pill's
       // height, so lifting by exactly that leaves the FAB's usual 16 px gap above the pill.
       floatingActionButton: Padding(
-      floatingActionButton: Padding(
         padding: const EdgeInsets.only(bottom: 96),
         child: FloatingActionButton.extended(
           onPressed: () => context.push('/employer/jobs/new'),

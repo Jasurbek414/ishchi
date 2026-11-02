@@ -28,12 +28,8 @@ class PushNotifications {
 
     await _localNotifications.initialize(
       const InitializationSettings(
-    await _localNotifications.initialize(
-      const InitializationSettings(
         android: AndroidInitializationSettings('@drawable/ic_stat_notification'),
         iOS: DarwinInitializationSettings(),
-      ),
-    );
       ),
     );
     await _localNotifications
