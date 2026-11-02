@@ -89,7 +89,7 @@ class _ReportSheetState extends ConsumerState<ReportSheet> {
           Text(widget.subtitle, style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13)),
           const SizedBox(height: 16),
           DropdownButtonFormField<ReportReason>(
-            initialValue: _reason,
+            value: _reason,
             decoration: InputDecoration(labelText: context.l10n.reportReasonFieldLabel),
             items: [
               for (final reason in ReportReason.values)

@@ -221,7 +221,7 @@ class _SavedSearchEditorState extends ConsumerState<_SavedSearchEditor> {
             const SizedBox(height: 12),
             professionsAsync.maybeWhen(
               data: (professions) => DropdownButtonFormField<int?>(
-                initialValue: _professionId,
+                value: _professionId,
                 isExpanded: true,
                 decoration: InputDecoration(labelText: context.l10n.anyProfessionOption),
                 items: [
@@ -236,7 +236,7 @@ class _SavedSearchEditorState extends ConsumerState<_SavedSearchEditor> {
             const SizedBox(height: 12),
             regionsAsync.maybeWhen(
               data: (regions) => DropdownButtonFormField<int?>(
-                initialValue: _regionId,
+                value: _regionId,
                 isExpanded: true,
                 decoration: InputDecoration(labelText: context.l10n.anyRegionOption),
                 items: [
@@ -250,7 +250,7 @@ class _SavedSearchEditorState extends ConsumerState<_SavedSearchEditor> {
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<JobType?>(
-              initialValue: _jobType,
+              value: _jobType,
               isExpanded: true,
               decoration: InputDecoration(labelText: context.l10n.anyJobTypeOption),
               items: [

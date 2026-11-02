@@ -261,7 +261,7 @@ class _AvailabilityCard extends StatelessWidget {
           if (busy)
             SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: color))
           else
-            Switch(value: available, onChanged: (_) => onToggle(), activeThumbColor: color),
+            Switch(value: available, onChanged: (_) => onToggle(), activeColor: color),
         ],
       ),
     );

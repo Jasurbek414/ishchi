@@ -14,6 +14,7 @@ RUN yes | sdkmanager --install "platforms;android-36" "build-tools;36.0.0" "buil
 COPY . .
 
 RUN flutter pub get
+RUN flutter gen-l10n
 RUN dart run flutter_launcher_icons
 # Catches real compile errors before the (much slower) release builds; warnings and
 # infos are printed but don't fail the image.

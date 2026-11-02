@@ -39,12 +39,12 @@ run_build() {
 # Gradle daemon, the APK's lint pass inherited the bundle's already-full metaspace
 # and died with OutOfMemoryError: Metaspace. A fresh daemon per artifact avoids it.
 run_build 'set -e
-  flutter build appbundle --release --obfuscate --split-debug-info=build/symbols-aab
+  flutter build appbundle --release --no-tree-shake-icons --obfuscate --split-debug-info=build/symbols-aab
   cp build/app/outputs/bundle/release/app-release.aab /out/
   mkdir -p /out/symbols && rm -rf /out/symbols/aab && cp -r build/symbols-aab /out/symbols/aab'
 
 run_build 'set -e
-  flutter build apk --release --obfuscate --split-debug-info=build/symbols-apk
+  flutter build apk --release --no-tree-shake-icons --obfuscate --split-debug-info=build/symbols-apk
   cp build/app/outputs/flutter-apk/app-release.apk /out/
   mkdir -p /out/symbols && rm -rf /out/symbols/apk && cp -r build/symbols-apk /out/symbols/apk'
 
