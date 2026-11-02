@@ -25,7 +25,7 @@ class RegionDistrictSelector extends ConsumerWidget {
       children: [
         regionsAsync.when(
           data: (regions) => DropdownButtonFormField<int>(
-            value: regionId,
+            initialValue: regionId,
             decoration: InputDecoration(labelText: context.l10n.regionFieldLabel),
             isExpanded: true,
             items: regions
@@ -43,7 +43,7 @@ class RegionDistrictSelector extends ConsumerWidget {
               final districtsAsync = ref.watch(districtsProvider(regionId!));
               return districtsAsync.when(
                 data: (districts) => DropdownButtonFormField<int>(
-                  value: districts.any((d) => d.id == districtId) ? districtId : null,
+                  initialValue: districts.any((d) => d.id == districtId) ? districtId : null,
                   decoration: InputDecoration(labelText: context.l10n.districtFieldLabel),
                   isExpanded: true,
                   items: districts

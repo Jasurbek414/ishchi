@@ -301,7 +301,7 @@ class _JobFormScreenState extends ConsumerState<JobFormScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: DropdownButtonFormField<PaymentType>(
-                      value: _paymentType,
+                      initialValue: _paymentType,
                       isExpanded: true,
                       decoration: InputDecoration(labelText: context.l10n.paymentTypeFieldLabel),
                       items: PaymentType.values
@@ -320,7 +320,7 @@ class _JobFormScreenState extends ConsumerState<JobFormScreen> {
               ),
               const SizedBox(height: 14),
               DropdownButtonFormField<JobType>(
-                value: _jobType,
+                initialValue: _jobType,
                 isExpanded: true,
                 decoration: InputDecoration(labelText: context.l10n.jobTypeLabel),
                 items: JobType.values.map((t) => DropdownMenuItem(value: t, child: Text(t.label(context)))).toList(),
@@ -363,7 +363,7 @@ class _JobFormScreenState extends ConsumerState<JobFormScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: DropdownButtonFormField<DurationUnit>(
-                      value: _durationUnit,
+                      initialValue: _durationUnit,
                       isExpanded: true,
                       decoration: InputDecoration(labelText: context.l10n.unitFieldLabel),
                       items: DurationUnit.values.map((u) => DropdownMenuItem(value: u, child: Text(u.label(context)))).toList(),

@@ -2,7 +2,7 @@ name: ishchi
 description: "Ish topish va kunlik xizmatlar platformasi"
 publish_to: 'none'
 
-version: 1.0.53+57
+version: 1.0.53+58
 
 environment:
   sdk: ^3.7.2
@@ -21,9 +21,10 @@ dependencies:
   image_picker: ^1.1.2
   url_launcher: ^6.3.1
   cached_network_image: ^3.4.1
-  intl: ^0.19.0
+  intl: ^0.20.2
   curved_navigation_bar: ^1.0.6
-  phosphor_flutter: ^2.1.0
+  phosphor_flutter:
+    path: packages/phosphor_flutter
   shared_preferences: ^2.3.3
   flutter_map: ^7.0.2
   latlong2: ^0.9.1

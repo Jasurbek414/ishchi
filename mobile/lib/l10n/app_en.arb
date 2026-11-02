@@ -96,6 +96,10 @@
   "logoutAction": "Log out",
   "logoutConfirmTitle": "Log out",
   "logoutConfirmMessage": "Are you sure you want to log out?",
+  "deleteAccountAction": "Delete account",
+  "deleteAccountConfirmTitle": "Delete account",
+  "deleteAccountConfirmMessage": "Are you sure you want to permanently delete your account? Your profile and all personal data will be erased and cannot be recovered.",
+  "deleteAccountSuccess": "Your account has been deleted",
 
   "fieldRegion": "Region",
   "experienceLabel": "Experience",

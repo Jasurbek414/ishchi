@@ -96,6 +96,10 @@
   "logoutAction": "Чиқиш",
   "logoutConfirmTitle": "Тизимдан чиқиш",
   "logoutConfirmMessage": "Ростдан ҳам тизимдан чиқмоқчимисиз?",
+  "deleteAccountAction": "Ҳисобни ўчириш",
+  "deleteAccountConfirmTitle": "Ҳисобни бутунлай ўчириш",
+  "deleteAccountConfirmMessage": "Ҳисобингизни ўчиришни хоҳлайсизми? Сизнинг профилингиз ва барча шахсий маълумотларингиз бутунлай ўчирилади ва уларни қайта тиклаб бўлмайди.",
+  "deleteAccountSuccess": "Ҳисобингиз муваффақиятли ўчирилди",
 
   "fieldRegion": "Ҳудуд",
   "experienceLabel": "Тажриба",

@@ -45,6 +45,34 @@ class ProfileScreen extends ConsumerWidget {
     }
   }
 
+  Future<void> _confirmDeleteAccount(BuildContext context, WidgetRef ref) async {
+    final cs = Theme.of(context).colorScheme;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(context.l10n.deleteAccountConfirmTitle),
+        content: Text(context.l10n.deleteAccountConfirmMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(context.l10n.commonCancel),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: cs.error),
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(context.l10n.deleteAccountAction),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.deleteAccountSuccess)),
+      );
+      await ref.read(authNotifierProvider.notifier).deleteAccount();
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cs = Theme.of(context).colorScheme;
@@ -218,6 +246,15 @@ class ProfileScreen extends ConsumerWidget {
                 icon: Icon(PhosphorIcons.signOut(), color: cs.error, size: 18),
                 label: Text(context.l10n.logoutAction, style: TextStyle(color: cs.error)),
                 style: OutlinedButton.styleFrom(side: BorderSide(color: cs.error)),
+              ),
+              const SizedBox(height: 12),
+              TextButton.icon(
+                onPressed: () => _confirmDeleteAccount(context, ref),
+                icon: Icon(PhosphorIcons.trash(), color: cs.error.withValues(alpha: 0.8), size: 18),
+                label: Text(
+                  context.l10n.deleteAccountAction,
+                  style: TextStyle(color: cs.error.withValues(alpha: 0.8)),
+                ),
               ),
             ],
           ),

@@ -143,12 +143,16 @@ class _WorkerHomeScreenState extends ConsumerState<WorkerHomeScreen> {
                   const SizedBox(height: 16),
                 ],
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      context.l10n.jobsNearYouSection,
-                      style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: cs.onSurface),
+                    Expanded(
+                      child: Text(
+                        context.l10n.jobsNearYouSection,
+                        style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: cs.onSurface),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
+                    const SizedBox(width: 8),
                     TextButton(
                       onPressed: widget.onSeeAllJobs,
                       child: Text(context.l10n.viewAllAction),
@@ -257,7 +261,7 @@ class _AvailabilityCard extends StatelessWidget {
           if (busy)
             SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: color))
           else
-            Switch(value: available, onChanged: (_) => onToggle(), activeColor: color),
+            Switch(value: available, onChanged: (_) => onToggle(), activeThumbColor: color),
         ],
       ),
     );

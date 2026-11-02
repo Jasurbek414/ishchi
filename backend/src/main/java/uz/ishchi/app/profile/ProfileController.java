@@ -69,4 +69,9 @@ public class ProfileController {
     public ProfileResponse deleteExperience(@AuthenticationPrincipal UserPrincipal principal, @PathVariable Long id) {
         return profileService.deleteExperience(principal.getUser(), id);
     }
+
+    @DeleteMapping
+    public MessageResponse deleteAccount(@AuthenticationPrincipal UserPrincipal principal) {
+        return profileService.deleteAccount(principal.getUser());
+    }
 }

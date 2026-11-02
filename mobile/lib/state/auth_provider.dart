@@ -88,6 +88,18 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = const AuthState(status: AuthStatus.unauthenticated);
   }
 
+  Future<void> deleteAccount() async {
+    try {
+      await _ref.read(authRepositoryProvider).deleteAccount();
+    } catch (_) {
+      // best-effort; local session is cleared regardless
+    }
+    final storage = _ref.read(tokenStorageProvider);
+    await storage.clear();
+    _invalidateUserScopedProviders();
+    state = const AuthState(status: AuthStatus.unauthenticated);
+  }
+
   /// Clears cached per-user data so a different account logging in on the same
   /// app instance never shows the previous user's profile/wallet/jobs.
   void _invalidateUserScopedProviders() {

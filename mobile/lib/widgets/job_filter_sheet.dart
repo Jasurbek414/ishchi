@@ -85,7 +85,7 @@ class _JobFilterSheetState extends State<JobFilterSheet> {
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<JobType?>(
-              value: _jobType,
+              initialValue: _jobType,
               isExpanded: true,
               decoration: InputDecoration(labelText: context.l10n.jobTypeLabel),
               items: [
@@ -116,7 +116,7 @@ class _JobFilterSheetState extends State<JobFilterSheet> {
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
-              value: _sort,
+              initialValue: _sort,
               isExpanded: true,
               decoration: InputDecoration(labelText: context.l10n.sortByLabel),
               items: [

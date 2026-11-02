@@ -26,7 +26,7 @@ class ProfessionDropdown extends ConsumerWidget {
       value: professionsAsync,
       data: (professions) {
         return DropdownButtonFormField<int>(
-          value: value,
+          initialValue: value,
           decoration: InputDecoration(labelText: label ?? context.l10n.professionFieldLabel),
           isExpanded: true,
           items: [

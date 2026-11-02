@@ -96,6 +96,10 @@
   "logoutAction": "Выйти",
   "logoutConfirmTitle": "Выход из системы",
   "logoutConfirmMessage": "Вы действительно хотите выйти из системы?",
+  "deleteAccountAction": "Удалить аккаунт",
+  "deleteAccountConfirmTitle": "Удаление аккаунта",
+  "deleteAccountConfirmMessage": "Вы уверены, что хотите удалить свой аккаунт? Ваш профиль и все персональные данные будут безвозвратно удалены.",
+  "deleteAccountSuccess": "Ваш аккаунт был успешно удален",
 
   "fieldRegion": "Регион",
   "experienceLabel": "Опыт",

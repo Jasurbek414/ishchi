@@ -97,6 +97,10 @@
   "logoutAction": "Chiqish",
   "logoutConfirmTitle": "Tizimdan chiqish",
   "logoutConfirmMessage": "Rostdan ham tizimdan chiqmoqchimisiz?",
+  "deleteAccountAction": "Hisobni o'chirish",
+  "deleteAccountConfirmTitle": "Hisobni butunlay o'chirish",
+  "deleteAccountConfirmMessage": "Hisobingizni o'chirishni xohlaysizmi? Sizning profilingiz va barcha shaxsiy ma'lumotlaringiz butunlay o'chiriladi va ularni qayta tiklab bo'lmaydi.",
+  "deleteAccountSuccess": "Hisobingiz muvaffaqiyatli o'chirildi",
 
   "fieldRegion": "Hudud",
   "experienceLabel": "Tajriba",

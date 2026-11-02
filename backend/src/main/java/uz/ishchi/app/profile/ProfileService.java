@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import uz.ishchi.app.auth.dto.MessageResponse;
 import uz.ishchi.app.common.FileStorageService;
 import uz.ishchi.app.common.Role;
 import uz.ishchi.app.common.exception.ApiException;
@@ -18,7 +19,9 @@ import uz.ishchi.app.profile.dto.ProfileResponse;
 import uz.ishchi.app.profile.dto.ProfileUpdateRequest;
 import uz.ishchi.app.profile.dto.WorkExperienceRequest;
 import uz.ishchi.app.profile.dto.WorkExperienceResponse;
+import uz.ishchi.app.user.RefreshTokenRepository;
 import uz.ishchi.app.user.User;
+import uz.ishchi.app.user.UserRepository;
 
 import java.util.HashSet;
 import java.util.List;
@@ -35,6 +38,8 @@ public class ProfileService {
     private final DistrictRepository districtRepository;
     private final ProfessionRepository professionRepository;
     private final FileStorageService fileStorageService;
+    private final UserRepository userRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     @Transactional(readOnly = true)
     public ProfileResponse getProfile(User user) {
@@ -245,5 +250,13 @@ public class ProfileService {
                 null, null, null,
                 null, p.getRatingAverage(), p.getRatingCount(), false
         );
+    }
+
+    @Transactional
+    public MessageResponse deleteAccount(User user) {
+        user.setActive(false);
+        userRepository.save(user);
+        refreshTokenRepository.revokeAllForUser(user.getId());
+        return new MessageResponse("Hisob muvaffaqiyatli o'chirildi");
     }
 }

@@ -59,6 +59,10 @@ class AuthRepository {
     await _client.post('/auth/logout', data: {'refreshToken': refreshToken});
   }
 
+  Future<void> deleteAccount() async {
+    await _client.delete('/profile');
+  }
+
   Future<OtpDispatchResult> forgotPassword(String phone) async {
     final res = await _client.post('/auth/forgot-password', data: {'phone': phone});
     return OtpDispatchResult.fromJson(res);
