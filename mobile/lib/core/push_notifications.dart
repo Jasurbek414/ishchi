@@ -1,18 +1,45 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:go_router/go_router.dart';
 
 import 'design_tokens.dart';
+import 'navigator_key.dart';
 
 /// Handles the device side of push notifications: local display for foreground
-/// messages, and requesting permission. Token registration with the backend is
-/// driven separately (see `state/push_token_provider.dart`) since it needs to
-/// know who's logged in.
+/// messages, requesting permission, and routing when notifications are tapped.
 class PushNotifications {
   PushNotifications._();
 
   static final PushNotifications instance = PushNotifications._();
 
   static void Function(RemoteMessage message)? onMessageReceived;
+
+  static String? pendingRoute;
+
+  static void navigateToNotifications() {
+    final context = rootNavigatorKey.currentContext;
+    if (context != null) {
+      try {
+        GoRouter.of(context).push('/notifications');
+        pendingRoute = null;
+        return;
+      } catch (_) {}
+    }
+    pendingRoute = '/notifications';
+  }
+
+  static void checkPendingNavigation() {
+    if (pendingRoute != null) {
+      final route = pendingRoute!;
+      final context = rootNavigatorKey.currentContext;
+      if (context != null) {
+        try {
+          GoRouter.of(context).push(route);
+          pendingRoute = null;
+        } catch (_) {}
+      }
+    }
+  }
 
   static const _channel = AndroidNotificationChannel(
     'ishchi_default',
@@ -33,20 +60,31 @@ class PushNotifications {
         android: AndroidInitializationSettings('@drawable/ic_stat_notification'),
         iOS: DarwinInitializationSettings(),
       ),
+      onDidReceiveNotificationResponse: (response) {
+        _handleTap(null);
+      },
     );
     await _localNotifications
         .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(_channel);
 
     FirebaseMessaging.onMessage.listen(_showForegroundNotification);
+
     FirebaseMessaging.onMessageOpenedApp.listen((message) {
-      onMessageReceived?.call(message);
+      _handleTap(message);
     });
 
     final initial = await FirebaseMessaging.instance.getInitialMessage();
     if (initial != null) {
-      onMessageReceived?.call(initial);
+      _handleTap(initial);
     }
+  }
+
+  void _handleTap(RemoteMessage? message) {
+    if (message != null && onMessageReceived != null) {
+      onMessageReceived!(message);
+    }
+    navigateToNotifications();
   }
 
   Future<bool> requestPermission() async {

@@ -27,6 +27,7 @@ void main() async {
   try {
     await Firebase.initializeApp();
     FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+    await PushNotifications.instance.init();
   } catch (e) {
     // No google-services.json on this build, or Firebase project not reachable —
     // the app must still run fine without push notifications.

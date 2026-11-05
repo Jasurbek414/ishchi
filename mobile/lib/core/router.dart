@@ -29,6 +29,8 @@ import '../screens/worker/jobs_map_screen.dart';
 import '../screens/worker/my_applications_screen.dart';
 import '../screens/worker/worker_shell.dart';
 import '../state/auth_provider.dart';
+import 'navigator_key.dart';
+import 'push_notifications.dart';
 import 'router_refresh.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -41,6 +43,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       };
 
   return GoRouter(
+    navigatorKey: rootNavigatorKey,
     initialLocation: '/splash',
     refreshListenable: refreshNotifier,
     redirect: (context, state) {
@@ -59,6 +62,11 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // authenticated
       if (path == '/splash' || isPublic) {
+        final pending = PushNotifications.pendingRoute;
+        if (pending != null) {
+          PushNotifications.pendingRoute = null;
+          return pending;
+        }
         return homePathFor(auth.role!);
       }
       if (path.startsWith('/profile/') || path.startsWith('/notifications')) return null;
