@@ -40,13 +40,13 @@ class PromoRequestRepository {
           'image': await MultipartFile.fromFile(imagePath),
         }),
       );
-      return PromoRequestItem.fromJson(res as Map<String, dynamic>);
+      return PromoRequestItem.fromJson(res);
     } else {
       final res = await _client.postMultipart(
         '/promo-requests',
         () async => FormData.fromMap(map),
       );
-      return PromoRequestItem.fromJson(res as Map<String, dynamic>);
+      return PromoRequestItem.fromJson(res);
     }
   }
 

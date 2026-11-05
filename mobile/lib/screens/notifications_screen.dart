@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
-import '../core/design_tokens.dart';
 import '../models/in_app_notification.dart';
 import '../state/in_app_notification_provider.dart';
 

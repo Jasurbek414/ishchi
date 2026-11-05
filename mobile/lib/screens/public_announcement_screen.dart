@@ -7,7 +7,6 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../core/api_config.dart';
 import '../core/api_exception.dart';
-import '../core/design_tokens.dart';
 import '../models/promo_request.dart';
 import '../state/location_providers.dart';
 import '../state/promo_request_providers.dart';
@@ -484,7 +483,7 @@ class _PublicAnnouncementScreenState extends ConsumerState<PublicAnnouncementScr
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
-                        PhosphorIcons.megaphoneSlash(),
+                        PhosphorIcons.megaphone(),
                         size: 38,
                         color: cs.onSurfaceVariant.withValues(alpha: 0.6),
                       ),
@@ -541,7 +540,6 @@ class _PublicAnnouncementScreenState extends ConsumerState<PublicAnnouncementScr
                   statusIcon = Icons.cancel_outlined;
                   break;
                 case PromoRequestStatus.pending:
-                default:
                   statusBg = const Color(0xFFFEF3C7);
                   statusFg = const Color(0xFFB45309);
                   statusIcon = Icons.schedule;
