@@ -12,6 +12,8 @@ class PushNotifications {
 
   static final PushNotifications instance = PushNotifications._();
 
+  static void Function(RemoteMessage message)? onMessageReceived;
+
   static const _channel = AndroidNotificationChannel(
     'ishchi_default',
     'Bildirishnomalar',
@@ -50,6 +52,7 @@ class PushNotifications {
   }
 
   void _showForegroundNotification(RemoteMessage message) {
+    onMessageReceived?.call(message);
     final notification = message.notification;
     if (notification == null) return;
     _localNotifications.show(

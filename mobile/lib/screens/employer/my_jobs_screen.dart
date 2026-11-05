@@ -9,6 +9,7 @@ import '../../widgets/async_view.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/job_card.dart';
 import '../../widgets/app_bottom_nav.dart';
+import '../../widgets/notification_bell_button.dart';
 
 class MyJobsScreen extends ConsumerStatefulWidget {
   const MyJobsScreen({super.key});
@@ -49,6 +50,9 @@ class _MyJobsScreenState extends ConsumerState<MyJobsScreen> with SingleTickerPr
     return Scaffold(
       appBar: AppBar(
         title: Text(context.l10n.myJobsTitle),
+        actions: const [
+          NotificationBellButton(),
+        ],
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,

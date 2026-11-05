@@ -60,18 +60,13 @@ const _kThemeModeKey = 'theme_mode';
 // ─── Notifier ─────────────────────────────────────────────────────────────────
 
 class ThemeNotifier extends Notifier<AppThemeState> {
-  // Read straight out of the preferences opened in main() instead of awaiting them: the old
-  // async read returned the default first and only then swapped in the user's saved colour,
-  // which showed up as the app changing colour a moment after it opened.
   @override
   AppThemeState build() {
     final prefs = ref.read(sharedPreferencesProvider);
     final colorValue = prefs.getInt(_kSeedColorKey);
     final modeStr = prefs.getString(_kThemeModeKey);
 
-    // No local choice saved yet — a fresh install. Use whatever default the admin has configured
-    // server-side, rather than the hardcoded fallback, so a new user's very first impression is
-    // intentional.
+    // No local choice saved yet — only fetch once on fresh install
     if (colorValue == null && modeStr == null) {
       _loadServerDefaults();
       return const AppThemeState();
@@ -90,10 +85,20 @@ class ThemeNotifier extends Notifier<AppThemeState> {
   Future<void> _loadServerDefaults() async {
     try {
       final settings = await ref.read(appSettingsRepositoryProvider).get();
-      state = AppThemeState(
-        seedColor: _parseHexColor(settings.defaultSeedColor) ?? state.seedColor,
-        themeMode: _parseThemeMode(settings.defaultThemeMode),
-      );
+      final newColor = _parseHexColor(settings.defaultSeedColor) ?? state.seedColor;
+      final newMode = _parseThemeMode(settings.defaultThemeMode);
+
+      final prefs = ref.read(sharedPreferencesProvider);
+      await prefs.setInt(_kSeedColorKey, newColor.toARGB32());
+      await prefs.setString(_kThemeModeKey, switch (newMode) {
+        ThemeMode.light => 'light',
+        ThemeMode.dark => 'dark',
+        _ => 'system',
+      });
+
+      if (newColor != state.seedColor || newMode != state.themeMode) {
+        state = AppThemeState(seedColor: newColor, themeMode: newMode);
+      }
     } catch (_) {
       // Offline on first launch — keep the built-in AppThemeState() default.
     }
@@ -129,4 +134,6 @@ class ThemeNotifier extends Notifier<AppThemeState> {
 
 // ─── Provider ─────────────────────────────────────────────────────────────────
 
-final themeProvider = NotifierProvider<ThemeNotifier, AppThemeState>(ThemeNotifier.new);
+final themeProvider = NotifierProvider<ThemeNotifier, AppThemeState>(
+  ThemeNotifier.new,
+);

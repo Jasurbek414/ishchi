@@ -39,9 +39,16 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> _restore() async {
     final storage = _ref.read(tokenStorageProvider);
-    final token = await storage.accessToken;
-    final roleStr = await storage.role;
-    final userId = await storage.userId;
+    // Allow splash screen to display cleanly without harsh snap/flash
+    final results = await Future.wait([
+      storage.accessToken,
+      storage.role,
+      storage.userId,
+      Future.delayed(const Duration(milliseconds: 1000)),
+    ]);
+    final token = results[0] as String?;
+    final roleStr = results[1] as String?;
+    final userId = results[2] as int?;
     if (token != null && roleStr != null && userId != null) {
       state = AuthState(status: AuthStatus.authenticated, role: UserRole.fromApi(roleStr), userId: userId);
     } else {

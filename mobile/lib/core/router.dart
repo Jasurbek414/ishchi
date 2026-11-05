@@ -17,6 +17,7 @@ import '../screens/employer/job_manage_screen.dart';
 import '../screens/employer/worker_detail_screen.dart';
 import '../screens/employer/workers_map_screen.dart';
 import '../screens/language_settings_screen.dart';
+import '../screens/notifications_screen.dart';
 import '../screens/saved_searches_screen.dart';
 import '../screens/splash_screen.dart';
 import '../screens/theme_settings_screen.dart';
@@ -59,7 +60,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       if (path == '/splash' || isPublic) {
         return homePathFor(auth.role!);
       }
-      if (path.startsWith('/profile/')) return null;
+      if (path.startsWith('/profile/') || path.startsWith('/notifications')) return null;
 
       final home = homePathFor(auth.role!)!;
       if (!path.startsWith(home)) {
@@ -76,6 +77,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => OtpScreen(phone: state.uri.queryParameters['phone'] ?? ''),
       ),
       GoRoute(path: '/forgot-password', builder: (context, state) => const ForgotPasswordScreen()),
+      GoRoute(path: '/notifications', builder: (context, state) => const NotificationsScreen()),
       GoRoute(path: '/profile/edit', builder: (context, state) => const EditProfileScreen()),
       GoRoute(path: '/profile/wallet', builder: (context, state) => const WalletScreen()),
       GoRoute(path: '/profile/change-password', builder: (context, state) => const ChangePasswordScreen()),
@@ -94,8 +96,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: 'jobs-map',
-            // ?employerId=&name= narrows the map to one employer's jobs ("their jobs" on the
-            // employers map).
             builder: (context, state) => JobsMapScreen(
               employerId: int.tryParse(state.uri.queryParameters['employerId'] ?? ''),
               employerName: state.uri.queryParameters['name'],

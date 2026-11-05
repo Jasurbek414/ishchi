@@ -16,6 +16,7 @@ import '../../widgets/promo_banners.dart';
 import '../../widgets/promo_carousel.dart';
 import '../../widgets/app_bottom_nav.dart';
 import '../../widgets/unlock_job_sheet.dart';
+import '../../widgets/notification_bell_button.dart';
 
 class WorkerHomeScreen extends ConsumerStatefulWidget {
   const WorkerHomeScreen({super.key, this.onSeeAllJobs});
@@ -66,6 +67,7 @@ class _WorkerHomeScreenState extends ConsumerState<WorkerHomeScreen> {
       appBar: AppBar(
         title: const Text('Ishchi'),
         actions: [
+          const NotificationBellButton(),
           IconButton(
             icon: const Icon(Icons.map_outlined),
             tooltip: context.l10n.viewEmployersOnMapTooltip,
