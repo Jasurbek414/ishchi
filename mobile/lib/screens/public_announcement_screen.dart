@@ -166,12 +166,15 @@ class _PublicAnnouncementScreenState extends ConsumerState<PublicAnnouncementScr
           ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildFormTab(cs),
-          _buildHistoryTab(cs),
-        ],
+      body: SafeArea(
+        top: false,
+        child: TabBarView(
+          controller: _tabController,
+          children: [
+            _buildFormTab(cs),
+            _buildHistoryTab(cs),
+          ],
+        ),
       ),
     );
   }

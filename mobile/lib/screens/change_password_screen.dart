@@ -68,7 +68,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
       appBar: AppBar(title: Text(context.l10n.changePasswordMenu)),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.fromLTRB(24, 24, 24, 32 + MediaQuery.paddingOf(context).bottom),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

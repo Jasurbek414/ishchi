@@ -28,7 +28,11 @@ class ReportSheet extends ConsumerStatefulWidget {
     final sent = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       showDragHandle: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       builder: (_) => Padding(
         padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
         child: ReportSheet(jobId: jobId, reportedUserId: reportedUserId, subtitle: subtitle),
@@ -77,12 +81,14 @@ class _ReportSheetState extends ConsumerState<ReportSheet> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(20, 0, 20, 24 + MediaQuery.paddingOf(context).bottom),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
           Text(context.l10n.reportTitle,
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
           const SizedBox(height: 4),
@@ -115,6 +121,7 @@ class _ReportSheetState extends ConsumerState<ReportSheet> {
                 : Text(context.l10n.reportSubmitAction),
           ),
         ],
+      ),
       ),
     );
   }

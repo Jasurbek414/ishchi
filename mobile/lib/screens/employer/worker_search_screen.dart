@@ -136,7 +136,12 @@ class _WorkerSearchScreenState extends ConsumerState<WorkerSearchScreen> {
                 value: workersAsync,
                 onRetry: () => ref.invalidate(workersSearchProvider(filter)),
                 data: (page) {
-                  if (page.content.isEmpty) {
+                  final currentUserId = profileAsync.valueOrNull?.userId;
+                  final workers = currentUserId != null
+                      ? page.content.where((w) => w.userId != currentUserId).toList()
+                      : page.content;
+
+                  if (workers.isEmpty) {
                     return ListView(
                       children: [
                         const SizedBox(height: 60),
@@ -146,10 +151,10 @@ class _WorkerSearchScreenState extends ConsumerState<WorkerSearchScreen> {
                   }
                   return ListView.separated(
                     padding: EdgeInsets.fromLTRB(16, 0, 16, 16 + bottomNavClearance(context)),
-                    itemCount: page.content.length,
+                    itemCount: workers.length,
                     separatorBuilder: (_, __) => const SizedBox(height: 12),
                     itemBuilder: (context, i) {
-                      final worker = page.content[i];
+                      final worker = workers[i];
                       return WorkerCard(worker: worker, onTap: () => context.push('/employer/workers/${worker.id}'));
                     },
                   );

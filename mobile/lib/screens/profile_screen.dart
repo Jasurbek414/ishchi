@@ -131,6 +131,8 @@ class ProfileScreen extends ConsumerWidget {
                 _WalletCard(walletAsync: walletAsync!),
               ],
               const SizedBox(height: 20),
+              const _PublicAnnouncementBanner(),
+              const SizedBox(height: 20),
               _SectionCard(
                 children: [
                   _InfoTile(icon: PhosphorIcons.mapPin(), label: context.l10n.fieldRegion, value: '${profile.regionName}, ${profile.districtName}'),
@@ -200,6 +202,10 @@ class ProfileScreen extends ConsumerWidget {
                       onTap: () => showModalBottomSheet(
                         context: context,
                         isScrollControlled: true,
+                        useSafeArea: true,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                        ),
                         builder: (_) => RoleSwitchSheet(currentRole: profile.role),
                       ),
                     ),
@@ -550,6 +556,140 @@ class _LanguageMenuTile extends ConsumerWidget {
             const SizedBox(width: 4),
             Icon(PhosphorIcons.caretRight(), color: cs.onSurfaceVariant, size: 16),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+
+class _PublicAnnouncementBanner extends StatelessWidget {
+  const _PublicAnnouncementBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+        gradient: LinearGradient(
+          colors: isDark
+              ? const [
+                  Color(0xFF4338CA),
+                  Color(0xFF6D28D9),
+                  Color(0xFFBE185D),
+                ]
+              : const [
+                  Color(0xFF4F46E5),
+                  Color(0xFF7C3AED),
+                  Color(0xFFDB2777),
+                ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF6366F1).withValues(alpha: isDark ? 0.35 : 0.28),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(22),
+          onTap: () => context.push('/profile/public-announcement'),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+            child: Row(
+              children: [
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.35),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: const Center(
+                    child: Icon(
+                      Icons.campaign_rounded,
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Flexible(
+                            child: Text(
+                              "Ommaviy e'lon berish",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: -0.2,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFBBF24),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: const Text(
+                              "TOP",
+                              style: TextStyle(
+                                color: Color(0xFF78350F),
+                                fontSize: 10,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.4,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        "Bosh sahifada minglab odamlarga ko'rsating",
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.9),
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.all(7),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    color: Colors.white,
+                    size: 13,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

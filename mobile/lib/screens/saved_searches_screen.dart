@@ -55,7 +55,11 @@ class SavedSearchesScreen extends ConsumerWidget {
     final saved = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       showDragHandle: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       builder: (_) => Padding(
         padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
         child: _SavedSearchEditor(existing: existing),
@@ -204,13 +208,15 @@ class _SavedSearchEditorState extends ConsumerState<_SavedSearchEditor> {
     final professionsAsync = ref.watch(professionsProvider);
     final regionsAsync = ref.watch(regionsProvider);
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(20, 0, 20, 24 + MediaQuery.paddingOf(context).bottom),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
             Text(context.l10n.savedSearchesMenu,
                 style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
             const SizedBox(height: 14),
@@ -284,6 +290,7 @@ class _SavedSearchEditorState extends ConsumerState<_SavedSearchEditor> {
             ),
           ],
         ),
+      ),
       ),
     );
   }

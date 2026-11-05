@@ -25,6 +25,10 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
     final amount = await showModalBottomSheet<num>(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       builder: (_) => const _TopUpSheet(),
     );
     if (amount == null) return;
@@ -221,53 +225,60 @@ class _TopUpSheetState extends State<_TopUpSheet> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return Padding(
-      padding: EdgeInsets.only(
-        left: 20, right: 20, top: 20,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(context.l10n.walletTopUpAction, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-          const SizedBox(height: 6),
-          Text(
-            context.l10n.walletTopUpNotice,
-            style: TextStyle(fontSize: 12.5, color: cs.onSurfaceVariant, fontStyle: FontStyle.italic),
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _controller,
-            keyboardType: TextInputType.number,
-            decoration: InputDecoration(labelText: context.l10n.amountSomLabel),
-          ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: _presets.map((p) {
-              return ActionChip(
-                label: Text(Formatters.money(context, p)),
-                onPressed: () => setState(() => _controller.text = p.toString()),
-              );
-            }).toList(),
-          ),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: () {
-              final amount = num.tryParse(_controller.text.trim());
-              if (amount == null || amount < 1000) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(context.l10n.minAmountError)),
+    final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
+    final bottomPadding = MediaQuery.paddingOf(context).bottom;
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: 20,
+          right: 20,
+          top: 20,
+          bottom: bottomInset > 0 ? bottomInset + 12 : bottomPadding + 20,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(context.l10n.walletTopUpAction, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+            const SizedBox(height: 6),
+            Text(
+              context.l10n.walletTopUpNotice,
+              style: TextStyle(fontSize: 12.5, color: cs.onSurfaceVariant, fontStyle: FontStyle.italic),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _controller,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(labelText: context.l10n.amountSomLabel),
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: _presets.map((p) {
+                return ActionChip(
+                  label: Text(Formatters.money(context, p)),
+                  onPressed: () => setState(() => _controller.text = p.toString()),
                 );
-                return;
-              }
-              Navigator.of(context).pop(amount);
-            },
-            child: Text(context.l10n.walletConfirmTopUpAction),
-          ),
-        ],
+              }).toList(),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                final amount = num.tryParse(_controller.text.trim());
+                if (amount == null || amount < 1000) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(context.l10n.minAmountError)),
+                  );
+                  return;
+                }
+                Navigator.of(context).pop(amount);
+              },
+              child: Text(context.l10n.walletConfirmTopUpAction),
+            ),
+          ],
+        ),
       ),
     );
   }

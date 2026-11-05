@@ -30,12 +30,18 @@ class WorkersMapScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: Text(l10n.workersMapTitle)),
       body: ExploreMap<Worker>(
-        load: (q) => repository.mapSearch(
-          latitude: q.center?.latitude,
-          longitude: q.center?.longitude,
-          radiusDegrees: q.radiusDegrees,
-          professionId: q.professionId,
-        ),
+        load: (q) async {
+          final list = await repository.mapSearch(
+            latitude: q.center?.latitude,
+            longitude: q.center?.longitude,
+            radiusDegrees: q.radiusDegrees,
+            professionId: q.professionId,
+          );
+          if (profile != null) {
+            return list.where((w) => w.userId != profile.userId).toList();
+          }
+          return list;
+        },
         idOf: (w) => w.id,
         pointOf: (w) => LatLng(w.latitude!, w.longitude!),
         markerSize: AvatarMarker.size,

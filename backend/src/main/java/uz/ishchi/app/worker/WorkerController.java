@@ -2,10 +2,12 @@ package uz.ishchi.app.worker;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 import uz.ishchi.app.common.WorkPreference;
 import uz.ishchi.app.common.dto.PageResponse;
+import uz.ishchi.app.security.UserPrincipal;
 import uz.ishchi.app.worker.dto.WorkerResponse;
 
 /**
@@ -23,6 +25,7 @@ public class WorkerController {
 
     @GetMapping
     public PageResponse<WorkerResponse> search(
+            @AuthenticationPrincipal UserPrincipal principal,
             @RequestParam(required = false) Long regionId,
             @RequestParam(required = false) Long districtId,
             @RequestParam(required = false) Long professionId,
@@ -32,16 +35,20 @@ public class WorkerController {
             @RequestParam(required = false) Boolean availableToday,
             Pageable pageable
     ) {
-        return PageResponse.of(workerService.search(regionId, districtId, professionId, minExperience, search, workPreference, availableToday, pageable));
+        Long currentUserId = principal != null && principal.getUser() != null ? principal.getUser().getId() : null;
+        return PageResponse.of(workerService.search(regionId, districtId, professionId, minExperience, search, workPreference, availableToday, currentUserId, pageable));
     }
 
     @GetMapping("/map")
-    public java.util.List<WorkerResponse> mapSearch(@RequestParam(required = false) Long regionId,
-                                                      @RequestParam(required = false) Long professionId,
-                                                      @RequestParam(required = false) Double latitude,
-                                                      @RequestParam(required = false) Double longitude,
-                                                      @RequestParam(required = false) Double radiusDegrees) {
-        return workerService.mapSearch(regionId, professionId, latitude, longitude, radiusDegrees);
+    public java.util.List<WorkerResponse> mapSearch(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestParam(required = false) Long regionId,
+            @RequestParam(required = false) Long professionId,
+            @RequestParam(required = false) Double latitude,
+            @RequestParam(required = false) Double longitude,
+            @RequestParam(required = false) Double radiusDegrees) {
+        Long currentUserId = principal != null && principal.getUser() != null ? principal.getUser().getId() : null;
+        return workerService.mapSearch(regionId, professionId, latitude, longitude, radiusDegrees, currentUserId);
     }
 
     @GetMapping("/{id}")

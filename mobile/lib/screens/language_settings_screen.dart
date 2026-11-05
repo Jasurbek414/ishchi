@@ -16,8 +16,10 @@ class LanguageSettingsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(context.l10n.languageSettingsTitle)),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+      body: SafeArea(
+        top: false,
+        child: ListView(
+          padding: EdgeInsets.fromLTRB(20, 16, 20, 32 + MediaQuery.paddingOf(context).bottom),
         children: [
           Text(
             context.l10n.chooseLanguage,
@@ -33,6 +35,7 @@ class LanguageSettingsScreen extends ConsumerWidget {
             const SizedBox(height: 10),
           ],
         ],
+      ),
       ),
     );
   }

@@ -27,8 +27,9 @@ public class WorkerService {
     @Transactional(readOnly = true)
     public Page<WorkerResponse> search(Long regionId, Long districtId, Long professionId,
                                         Integer minExperience, String keyword, WorkPreference workPreference,
-                                        Boolean availableToday, Pageable pageable) {
+                                        Boolean availableToday, Long excludeUserId, Pageable pageable) {
         Specification<WorkerProfile> spec = Specification.where(WorkerSpecifications.activeUser())
+                .and(WorkerSpecifications.notUserId(excludeUserId))
                 .and(WorkerSpecifications.regionId(regionId))
                 .and(WorkerSpecifications.districtId(districtId))
                 .and(WorkerSpecifications.professionId(professionId))
@@ -46,8 +47,10 @@ public class WorkerService {
 
     @Transactional(readOnly = true)
     public java.util.List<WorkerResponse> mapSearch(Long regionId, Long professionId,
-                                                     Double latitude, Double longitude, Double radiusDegrees) {
+                                                     Double latitude, Double longitude, Double radiusDegrees,
+                                                     Long excludeUserId) {
         Specification<WorkerProfile> spec = Specification.where(WorkerSpecifications.activeUser())
+                .and(WorkerSpecifications.notUserId(excludeUserId))
                 .and(WorkerSpecifications.hasCoordinates())
                 .and(WorkerSpecifications.regionId(regionId))
                 .and(WorkerSpecifications.professionId(professionId))

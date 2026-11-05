@@ -16,6 +16,10 @@ public final class WorkerSpecifications {
         return (root, query, cb) -> cb.isTrue(root.get("user").get("active"));
     }
 
+    public static Specification<WorkerProfile> notUserId(Long userId) {
+        return (root, query, cb) -> userId == null ? null : cb.notEqual(root.get("user").get("id"), userId);
+    }
+
     public static Specification<WorkerProfile> regionId(Long regionId) {
         return (root, query, cb) -> regionId == null ? null : cb.equal(root.get("region").get("id"), regionId);
     }

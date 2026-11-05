@@ -15,8 +15,10 @@ class ThemeSettingsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(context.l10n.themeMenu)),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+      body: SafeArea(
+        top: false,
+        child: ListView(
+          padding: EdgeInsets.fromLTRB(20, 16, 20, 32 + MediaQuery.paddingOf(context).bottom),
         children: [
           // ─── Rejim tanlash ─────────────────────────────────────────────────
           _SectionTitle(title: context.l10n.appearanceModeSection),
@@ -86,6 +88,7 @@ class ThemeSettingsScreen extends ConsumerWidget {
           const SizedBox(height: 12),
           _PreviewCard(seedColor: themeState.seedColor),
         ],
+      ),
       ),
     );
   }
