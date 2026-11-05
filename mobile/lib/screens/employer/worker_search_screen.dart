@@ -14,6 +14,7 @@ import '../../widgets/promo_carousel.dart';
 import '../../widgets/app_bottom_nav.dart';
 import '../../widgets/worker_card.dart';
 import '../../widgets/worker_filter_sheet.dart';
+import '../../widgets/notification_bell_button.dart';
 
 class WorkerSearchScreen extends ConsumerStatefulWidget {
   const WorkerSearchScreen({super.key});
@@ -66,6 +67,7 @@ class _WorkerSearchScreenState extends ConsumerState<WorkerSearchScreen> {
       appBar: AppBar(
         title: Text(context.l10n.workerSearchTitle),
         actions: [
+          const NotificationBellButton(),
           IconButton(
             icon: const Icon(Icons.map_outlined),
             tooltip: context.l10n.viewOnMapTooltip,

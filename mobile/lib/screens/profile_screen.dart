@@ -20,6 +20,7 @@ import '../widgets/async_view.dart';
 import '../widgets/role_switch_sheet.dart';
 import '../widgets/user_avatar.dart';
 import '../widgets/app_bottom_nav.dart';
+import '../widgets/notification_bell_button.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -84,6 +85,7 @@ class ProfileScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(context.l10n.profileTitle),
         actions: [
+          const NotificationBellButton(),
           IconButton(
             icon: Icon(PhosphorIcons.pencilSimple()),
             onPressed: () => context.push('/profile/edit'),
@@ -187,6 +189,12 @@ class ProfileScreen extends ConsumerWidget {
               const SizedBox(height: 20),
               _SectionCard(
                 children: [
+                  _MenuTile(
+                    icon: PhosphorIcons.bell(),
+                    label: 'Bildirishnomalar',
+                    onTap: () => context.push('/notifications'),
+                  ),
+                  const Divider(height: 1),
                   _MenuTile(
                     icon: PhosphorIcons.userGear(),
                     label: context.l10n.editProfileMenu,

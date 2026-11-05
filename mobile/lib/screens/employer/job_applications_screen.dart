@@ -32,8 +32,10 @@ class JobApplicationsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(context.l10n.shortlistTitle)),
-      body: AsyncView(
-        value: applicationsAsync,
+      body: SafeArea(
+        top: false,
+        child: AsyncView(
+          value: applicationsAsync,
         onRetry: () => ref.invalidate(jobApplicationsProvider(jobId)),
         data: (applications) {
           if (applications.isEmpty) {
@@ -44,7 +46,7 @@ class JobApplicationsScreen extends ConsumerWidget {
           }
           final jobIsFinished = jobAsync.valueOrNull?.status == JobStatus.completed;
           return ListView.separated(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 36),
             itemCount: applications.length,
             separatorBuilder: (_, __) => const SizedBox(height: 12),
             itemBuilder: (_, index) => _ApplicationCard(
@@ -54,6 +56,7 @@ class JobApplicationsScreen extends ConsumerWidget {
             ),
           );
         },
+        ),
       ),
     );
   }

@@ -23,8 +23,10 @@ class MyApplicationsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(context.l10n.myResponsesMenu)),
-      body: AsyncView(
-        value: applicationsAsync,
+      body: SafeArea(
+        top: false,
+        child: AsyncView(
+          value: applicationsAsync,
         onRetry: () => ref.invalidate(myApplicationsProvider),
         data: (page) {
           if (page.content.isEmpty) {
@@ -34,7 +36,7 @@ class MyApplicationsScreen extends ConsumerWidget {
             );
           }
           return ListView.separated(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 36),
             itemCount: page.content.length,
             separatorBuilder: (_, __) => const SizedBox(height: 10),
             itemBuilder: (_, index) {
@@ -66,6 +68,7 @@ class MyApplicationsScreen extends ConsumerWidget {
             },
           );
         },
+        ),
       ),
     );
   }

@@ -91,8 +91,10 @@ class NotificationsScreen extends ConsumerWidget {
             ),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: () => ref.read(inAppNotificationsProvider.notifier).fetchFromBackend(),
+      body: SafeArea(
+        top: false,
+        child: RefreshIndicator(
+          onRefresh: () => ref.read(inAppNotificationsProvider.notifier).fetchFromBackend(),
         child: notifications.isEmpty
             ? ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -138,7 +140,7 @@ class NotificationsScreen extends ConsumerWidget {
               )
             : ListView.separated(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 36),
                 itemCount: notifications.length,
                 separatorBuilder: (context, index) => const SizedBox(height: 10),
                 itemBuilder: (context, index) {
@@ -258,6 +260,7 @@ class NotificationsScreen extends ConsumerWidget {
                   );
                 },
               ),
+        ),
       ),
     );
   }
