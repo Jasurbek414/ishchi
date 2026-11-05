@@ -266,15 +266,7 @@ class ProfileScreen extends ConsumerWidget {
                 label: Text(context.l10n.logoutAction, style: TextStyle(color: cs.error)),
                 style: OutlinedButton.styleFrom(side: BorderSide(color: cs.error)),
               ),
-              const SizedBox(height: 12),
-              TextButton.icon(
-                onPressed: () => _confirmDeleteAccount(context, ref),
-                icon: Icon(PhosphorIcons.trash(), color: cs.error.withValues(alpha: 0.8), size: 18),
-                label: Text(
-                  context.l10n.deleteAccountAction,
-                  style: TextStyle(color: cs.error.withValues(alpha: 0.8)),
-                ),
-              ),
+
             ],
           ),
         ),
