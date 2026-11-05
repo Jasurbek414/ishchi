@@ -220,6 +220,12 @@ class ProfileScreen extends ConsumerWidget {
                   ],
                   const Divider(height: 1),
                   _MenuTile(
+                    icon: PhosphorIcons.megaphone(),
+                    label: "Ommaviy e'lon",
+                    onTap: () => context.push('/profile/public-announcement'),
+                  ),
+                  const Divider(height: 1),
+                  _MenuTile(
                     icon: PhosphorIcons.lock(),
                     label: context.l10n.changePasswordMenu,
                     onTap: () => context.push('/profile/change-password'),

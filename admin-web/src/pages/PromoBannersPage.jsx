@@ -38,11 +38,15 @@ function toLocalInputValue(iso) {
 
 export default function PromoBannersPage() {
   const toast = useToast();
+  const [activeTab, setActiveTab] = useState('banners'); // 'banners' | 'requests'
   const [items, setItems] = useState(null);
+  const [requests, setRequests] = useState([]);
   const [regions, setRegions] = useState([]);
   const [error, setError] = useState(null);
   const [busyId, setBusyId] = useState(null);
   const [editing, setEditing] = useState(null); // null = closed, {} = new, {id,...} = edit
+  const [rejectingId, setRejectingId] = useState(null);
+  const [rejectReason, setRejectReason] = useState('');
   const [search, setSearch] = useState('');
   const [audienceFilter, setAudienceFilter] = useState('ALL');
   const [statusFilter, setStatusFilter] = useState('ALL');
@@ -56,10 +60,18 @@ export default function PromoBannersPage() {
     api.get('/api/admin/promo-banners')
       .then(setItems)
       .catch((e) => setError(e instanceof ApiError ? e.message : "Yuklab bo'lmadi"));
+
+    api.get('/api/admin/promo-requests')
+      .then(setRequests)
+      .catch(() => {});
   }, []);
 
   useEffect(() => { load(); }, [load]);
   useEffect(() => { api.get('/api/regions').then(setRegions).catch(() => {}); }, []);
+
+  const pendingRequestsCount = useMemo(() => {
+    return requests.filter((r) => r.status === 'PENDING').length;
+  }, [requests]);
 
   const filtersActive = search.trim() !== '' || audienceFilter !== 'ALL' || statusFilter !== 'ALL' || regionFilter !== 'ALL';
 
@@ -113,6 +125,35 @@ export default function PromoBannersPage() {
     }
   }
 
+  async function approveRequest(reqId) {
+    setBusyId(reqId);
+    try {
+      await api.post(`/api/admin/promo-requests/${reqId}/approve`);
+      toast.success("Ariza tasdiqlandi va reklama bosh sahifadagi karuselga joylandi!");
+      load();
+    } catch (e) {
+      toast.error(e instanceof ApiError ? e.message : "Tasdiqlashda xatolik yuz berdi");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function submitReject() {
+    if (!rejectingId) return;
+    setBusyId(rejectingId);
+    try {
+      await api.post(`/api/admin/promo-requests/${rejectingId}/reject`, { reason: rejectReason });
+      toast.success("Ariza rad etildi");
+      setRejectingId(null);
+      setRejectReason('');
+      load();
+    } catch (e) {
+      toast.error(e instanceof ApiError ? e.message : "Rad etishda xatolik");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
   function handleDragStart(id) {
     dragId.current = id;
   }
@@ -150,144 +191,297 @@ export default function PromoBannersPage() {
 
   return (
     <div>
-      <div className="flex flex-wrap items-end justify-between gap-3 mb-5">
+      <div className="flex flex-wrap items-end justify-between gap-3 mb-4">
         <div>
-          <h1 className="mb-1!">Reklama karuseli</h1>
+          <h1 className="mb-1!">Reklama va Ommaviy e'lonlar</h1>
           <p className="text-[13px] text-text-secondary m-0">
-            Mobil ilova bosh sahifasida aylanadigan reklama bannerlarini boshqaring.
+            Mobil ilova bosh sahifasidagi reklama karuseli va foydalanuvchilar e'lon arizalarini boshqaring.
           </p>
         </div>
-        <button className="btn btn-primary" onClick={() => setEditing({})}>+ Yangi reklama</button>
-      </div>
-
-      {stats && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
-          <StatTile label="Jami reklamalar" value={stats.total} />
-          <StatTile label="Hozir faol" value={stats.active} accent="text-emerald-600!" />
-          <StatTile label="Jami ko'rishlar" value={stats.views.toLocaleString('uz-UZ')} />
-          <StatTile label="Jami bosishlar" value={stats.clicks.toLocaleString('uz-UZ')} />
-        </div>
-      )}
-
-      <div className="flex flex-wrap gap-2 mb-4 items-center">
-        <div className="relative flex-1 min-w-[180px] max-w-xs">
-          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
-          <input
-            className="input w-full pl-9!"
-            placeholder="Sarlavha bo'yicha qidirish..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-        <select className="select" value={audienceFilter} onChange={(e) => setAudienceFilter(e.target.value)}>
-          <option value="ALL">Barcha auditoriya</option>
-          {Object.entries(AUDIENCE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-        </select>
-        <select className="select" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-          {STATUS_FILTERS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-        </select>
-        <select className="select" value={regionFilter} onChange={(e) => setRegionFilter(e.target.value)}>
-          <option value="ALL">Barcha hududlar</option>
-          {regions.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
-        </select>
-        {filtersActive && (
-          <button
-            className="text-[12.5px] font-semibold text-danger px-2"
-            onClick={() => { setSearch(''); setAudienceFilter('ALL'); setStatusFilter('ALL'); setRegionFilter('ALL'); }}
-          >
-            Tozalash
-          </button>
-        )}
-        {!filtersActive && (
-          <span className="text-[12px] text-text-secondary ml-auto flex items-center gap-1">
-            <DragIcon className="w-3.5 h-3.5" /> Kartani sudrab tartibni o'zgartiring
-          </span>
+        {activeTab === 'banners' && (
+          <button className="btn btn-primary" onClick={() => setEditing({})}>+ Yangi reklama</button>
         )}
       </div>
 
-      {error && <div className="error-text">{error}</div>}
+      {/* Tabs */}
+      <div className="flex border-b border-border mb-5 gap-1">
+        <button
+          className={`px-4 py-2.5 font-semibold text-sm border-b-2 transition-colors cursor-pointer ${
+            activeTab === 'banners'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-text-secondary hover:text-text-primary'
+          }`}
+          onClick={() => setActiveTab('banners')}
+        >
+          Faol reklamalar ({items?.length || 0})
+        </button>
+        <button
+          className={`px-4 py-2.5 font-semibold text-sm border-b-2 transition-colors cursor-pointer flex items-center gap-2 ${
+            activeTab === 'requests'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-text-secondary hover:text-text-primary'
+          }`}
+          onClick={() => setActiveTab('requests')}
+        >
+          <span>Foydalanuvchilar arizalari ({requests?.length || 0})</span>
+          {pendingRequestsCount > 0 && (
+            <span className="bg-amber-500 text-white text-[11px] px-2 py-0.5 rounded-full font-bold">
+              {pendingRequestsCount} yangi
+            </span>
+          )}
+        </button>
+      </div>
 
-      {visibleItems && visibleItems.length === 0 && (
-        <div className="empty-state">
-          {items.length === 0 ? 'Reklamalar topilmadi' : 'Filtrga mos reklama topilmadi'}
-        </div>
-      )}
-
-      <div className={`grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 ${reordering ? 'opacity-60 pointer-events-none' : ''}`}>
-        {visibleItems?.map((b) => {
-          const status = bannerStatus(b);
-          const draggable = !filtersActive;
-          return (
-            <div
-              key={b.id}
-              draggable={draggable}
-              onDragStart={() => handleDragStart(b.id)}
-              onDragOver={(e) => handleDragOver(e, b.id)}
-              onDrop={() => handleDrop(b.id)}
-              className={`card p-0! overflow-hidden flex flex-col transition-shadow ${dragOverId === b.id ? 'ring-2 ring-primary' : ''} ${draggable ? 'cursor-grab active:cursor-grabbing' : ''}`}
-            >
-              <BannerPreview banner={b} />
-              <div className="p-4 flex flex-col gap-3 flex-1">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <div className="font-bold text-[14.5px] truncate">{b.title}</div>
-                    {b.subtitle && <div className="text-[12.5px] text-text-secondary truncate">{b.subtitle}</div>}
-                  </div>
-                  <span className={`badge ${status.className} whitespace-nowrap`}>{status.label}</span>
-                </div>
-
-                <div className="flex flex-wrap gap-1.5 text-[11.5px]">
-                  <span className="px-2 py-0.5 rounded-full bg-bg text-text-secondary font-medium">{AUDIENCE_LABELS[b.audience] || b.audience}</span>
-                  <span className="px-2 py-0.5 rounded-full bg-bg text-text-secondary font-medium" title={b.regionNames?.join(', ')}>
-                    {!b.regionNames || b.regionNames.length === 0
-                      ? 'Barcha hududlar'
-                      : b.regionNames.length <= 2
-                        ? b.regionNames.join(', ')
-                        : `${b.regionNames[0]} +${b.regionNames.length - 1}`}
-                  </span>
-                  {draggable && <span className="px-2 py-0.5 rounded-full bg-bg text-text-secondary font-medium">#{b.sortOrder}</span>}
-                </div>
-
-                {(b.startAt || b.endAt) && (
-                  <div className="text-[11.5px] text-text-secondary flex items-center gap-1.5">
-                    <CalendarIcon className="w-3.5 h-3.5 shrink-0" />
-                    <span className="truncate">
-                      {b.startAt ? formatDate(b.startAt) : 'Hozir'} → {b.endAt ? formatDate(b.endAt) : 'Muddatsiz'}
-                    </span>
-                  </div>
-                )}
-
-                <div className="flex items-center gap-4 text-[12.5px] text-text-secondary">
-                  <span className="flex items-center gap-1"><EyeIcon className="w-4 h-4" /> {b.viewCount || 0}</span>
-                  <span className="flex items-center gap-1"><CursorIcon className="w-4 h-4" /> {b.clickCount || 0}</span>
-                  {b.linkUrl && (
-                    <span className="flex items-center gap-1 truncate">
-                      <LinkIcon className="w-3.5 h-3.5 shrink-0" />
-                      <span className="truncate">{b.linkUrl}</span>
-                    </span>
-                  )}
-                </div>
-
-                <div className="mt-auto pt-1 flex flex-wrap gap-2">
-                  <button className="btn btn-outline" onClick={() => setEditing(b)}>Tahrirlash</button>
-                  <button
-                    className={b.active ? 'btn btn-outline-danger' : 'btn btn-primary'}
-                    disabled={busyId === b.id}
-                    onClick={() => toggleActive(b)}
-                  >
-                    {b.active ? 'Faolsizlantirish' : 'Faollashtirish'}
-                  </button>
-                  <button className="btn btn-outline-danger px-2!" disabled={busyId === b.id} onClick={() => remove(b)} title="O'chirish">
-                    <TrashIcon className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
+      {activeTab === 'banners' ? (
+        <div>
+          {stats && (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+              <StatTile label="Jami reklamalar" value={stats.total} />
+              <StatTile label="Hozir faol" value={stats.active} accent="text-emerald-600!" />
+              <StatTile label="Jami ko'rishlar" value={stats.views.toLocaleString('uz-UZ')} />
+              <StatTile label="Jami bosishlar" value={stats.clicks.toLocaleString('uz-UZ')} />
             </div>
-          );
-        })}
-      </div>
+          )}
 
-      {editing !== null && (
+          <div className="flex flex-wrap gap-2 mb-4 items-center">
+            <div className="relative flex-1 min-w-[180px] max-w-xs">
+              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
+              <input
+                className="input w-full pl-9!"
+                placeholder="Sarlavha bo'yicha qidirish..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            <select className="select" value={audienceFilter} onChange={(e) => setAudienceFilter(e.target.value)}>
+              <option value="ALL">Barcha auditoriya</option>
+              {Object.entries(AUDIENCE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+            </select>
+            <select className="select" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+              {STATUS_FILTERS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+            </select>
+            <select className="select" value={regionFilter} onChange={(e) => setRegionFilter(e.target.value)}>
+              <option value="ALL">Barcha hududlar</option>
+              {regions.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
+            </select>
+            {filtersActive && (
+              <button
+                className="text-[12.5px] font-semibold text-danger px-2 cursor-pointer"
+                onClick={() => { setSearch(''); setAudienceFilter('ALL'); setStatusFilter('ALL'); setRegionFilter('ALL'); }}
+              >
+                Tozalash
+              </button>
+            )}
+          </div>
+
+          {error && <div className="card text-danger text-[13.5px] mb-4">{error}</div>}
+
+          {!items ? (
+            <div className="card text-center text-text-secondary py-12">Yuklanmoqda...</div>
+          ) : visibleItems.length === 0 ? (
+            <div className="card text-center text-text-secondary py-12">
+              {filtersActive ? "Mos keladigan reklama topilmadi." : "Hali hech qanday reklama qo'shilmagan."}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {visibleItems.map((b) => {
+                const status = bannerStatus(b);
+                const isOver = dragOverId === b.id;
+                const canDrag = !filtersActive && visibleItems.length > 1;
+                return (
+                  <div
+                    key={b.id}
+                    draggable={canDrag}
+                    onDragStart={() => handleDragStart(b.id)}
+                    onDragOver={(e) => handleDragOver(e, b.id)}
+                    onDrop={() => handleDrop(b.id)}
+                    className={`card p-4! transition-all flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between ${
+                      isOver ? 'border-primary ring-2 ring-primary/20' : ''
+                    } ${!b.active ? 'opacity-70' : ''}`}
+                  >
+                    <div className="flex gap-3 items-center min-w-0 flex-1">
+                      {canDrag && (
+                        <div className="text-text-secondary cursor-grab active:cursor-grabbing p-1 -ml-1">
+                          <DragIcon className="w-4 h-4" />
+                        </div>
+                      )}
+                      {b.imageUrl ? (
+                        <img
+                          src={b.imageUrl}
+                          alt={b.title}
+                          className="w-20 h-14 object-cover rounded-lg border border-border shrink-0 bg-surface-alt"
+                        />
+                      ) : (
+                        <div className="w-20 h-14 rounded-lg border border-dashed border-border flex items-center justify-center text-text-secondary text-[11px] shrink-0 bg-surface-alt">
+                          Rasmsiz
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2 mb-1">
+                          <span className="font-semibold text-sm truncate">{b.title}</span>
+                          <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${status.className}`}>
+                            {status.label}
+                          </span>
+                        </div>
+                        {b.subtitle && (
+                          <p className="text-[12.5px] text-text-secondary truncate m-0 mb-1">{b.subtitle}</p>
+                        )}
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px] text-text-secondary">
+                          <span>Auditoriya: <strong>{AUDIENCE_LABELS[b.audience] || b.audience}</strong></span>
+                          <span>•</span>
+                          <span>Hudud: <strong>{b.regionNames?.length ? b.regionNames.join(', ') : 'Barcha hududlar'}</strong></span>
+                          {b.linkUrl && (
+                            <>
+                              <span>•</span>
+                              <a href={b.linkUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-primary hover:underline">
+                                <LinkIcon className="w-3 h-3" /> Havola
+                              </a>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end border-t sm:border-t-0 pt-2 sm:pt-0 border-border">
+                      <button
+                        className={`btn btn-sm ${b.active ? 'btn-outline text-amber-600 border-amber-300' : 'btn-outline text-emerald-600 border-emerald-300'}`}
+                        disabled={busyId === b.id}
+                        onClick={() => toggleActive(b)}
+                      >
+                        {b.active ? "Nofaol qilish" : "Faollashtirish"}
+                      </button>
+                      <button className="btn btn-sm btn-outline" onClick={() => setEditing(b)}>
+                        Tahrirlash
+                      </button>
+                      <button
+                        className="btn btn-sm btn-outline text-danger border-danger/30 hover:bg-danger/10"
+                        disabled={busyId === b.id}
+                        onClick={() => remove(b)}
+                      >
+                        <TrashIcon className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      ) : (
+        /* Requests Tab */
+        <div>
+          {requests.length === 0 ? (
+            <div className="card text-center text-text-secondary py-12">
+              Hali foydalanuvchilardan hech qanday e'lon arizasi kelib tushmagan.
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {requests.map((r) => {
+                const isPending = r.status === 'PENDING';
+                const isApproved = r.status === 'APPROVED';
+                const isRejected = r.status === 'REJECTED';
+
+                return (
+                  <div key={r.id} className="card p-5!">
+                    <div className="flex flex-col md:flex-row gap-5 items-start justify-between">
+                      <div className="flex gap-4 items-start flex-1">
+                        {r.imageUrl ? (
+                          <img
+                            src={r.imageUrl}
+                            alt={r.title}
+                            className="w-28 h-20 object-cover rounded-xl border border-border shrink-0 bg-surface-alt shadow-sm"
+                          />
+                        ) : (
+                          <div className="w-28 h-20 rounded-xl border border-dashed border-border flex items-center justify-center text-text-secondary text-xs shrink-0 bg-surface-alt">
+                            Rasmsiz
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                            <span className="font-bold text-base">{r.title}</span>
+                            <span
+                              className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
+                                isPending
+                                  ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                                  : isApproved
+                                  ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                                  : isRejected
+                                  ? 'bg-red-100 text-red-800 border border-red-300'
+                                  : 'bg-zinc-100 text-zinc-600'
+                              }`}
+                            >
+                              {isPending ? '⏳ Kutilmoqda' : isApproved ? '✓ Tasdiqlangan' : isRejected ? '✕ Rad etilgan' : r.status}
+                            </span>
+                          </div>
+                          {r.subtitle && (
+                            <p className="text-[13px] text-text-secondary m-0 mb-2 leading-relaxed">
+                              {r.subtitle}
+                            </p>
+                          )}
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs text-text-secondary bg-surface-alt p-2.5 rounded-lg border border-border">
+                            <div>
+                              Arizachi: <strong className="text-text-primary">{r.userPhone || `#${r.userId}`}</strong>
+                            </div>
+                            <div>
+                              Muddat: <strong className="text-text-primary">{r.durationDays} kun</strong>
+                            </div>
+                            <div>
+                              Auditoriya: <strong className="text-text-primary">{AUDIENCE_LABELS[r.audience] || r.audience}</strong>
+                            </div>
+                            <div>
+                              Hudud: <strong className="text-text-primary">{r.regionName || 'Butun O\'zbekiston'}</strong>
+                            </div>
+                          </div>
+                          {r.linkUrl && (
+                            <div className="mt-2 text-xs flex items-center gap-1.5 text-primary">
+                              <LinkIcon className="w-3.5 h-3.5" />
+                              <span>Havola / Kontakt: <strong>{r.linkUrl}</strong></span>
+                            </div>
+                          )}
+                          {isRejected && r.rejectionReason && (
+                            <div className="mt-2 text-xs text-danger bg-danger/10 p-2 rounded border border-danger/20">
+                              Rad etish sababi: <strong>{r.rejectionReason}</strong>
+                            </div>
+                          )}
+                          <div className="mt-2 text-[11px] text-text-secondary">
+                            Yuborilgan sana: {formatDate(r.createdAt)}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Action buttons */}
+                      {isPending && (
+                        <div className="flex md:flex-col gap-2 w-full md:w-auto justify-end border-t md:border-t-0 pt-3 md:pt-0 border-border">
+                          <button
+                            className="btn btn-sm btn-primary bg-emerald-600! hover:bg-emerald-700! border-none text-white font-semibold flex-1 md:flex-initial"
+                            disabled={busyId === r.id}
+                            onClick={() => approveRequest(r.id)}
+                          >
+                            ✓ Tasdiqlash
+                          </button>
+                          <button
+                            className="btn btn-sm btn-outline text-danger border-danger/30 hover:bg-danger/10 flex-1 md:flex-initial"
+                            disabled={busyId === r.id}
+                            onClick={() => {
+                              setRejectingId(r.id);
+                              setRejectReason('');
+                            }}
+                          >
+                            ✕ Rad etish
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Edit Banner Modal */}
+      {editing && (
         <BannerModal
           banner={editing}
           regions={regions}
@@ -295,34 +489,42 @@ export default function PromoBannersPage() {
           onSaved={() => { setEditing(null); load(); }}
         />
       )}
+
+      {/* Reject Request Modal */}
+      {rejectingId && (
+        <Modal onClose={() => setRejectingId(null)} title="Arizani rad etish">
+          <div className="p-4">
+            <p className="text-sm text-text-secondary mb-3">
+              Ixtiyoriy: arizani nima sababdan rad etayotganingizni yozing (foydalanuvchiga ko'rinadi).
+            </p>
+            <textarea
+              className="input w-full min-h-[90px] mb-4"
+              placeholder="Masalan: Banner sifati talabga javob bermaydi..."
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+            />
+            <div className="flex justify-end gap-2">
+              <button className="btn btn-outline" onClick={() => setRejectingId(null)}>Bekor qilish</button>
+              <button
+                className="btn btn-primary bg-danger! border-none text-white"
+                disabled={busyId === rejectingId}
+                onClick={submitReject}
+              >
+                Rad etish
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }
 
 function StatTile({ label, value, accent }) {
   return (
-    <div className="stat-card">
-      <div className={`stat-value ${accent || ''}`}>{value}</div>
-      <div className="stat-label">{label}</div>
-    </div>
-  );
-}
-
-function BannerPreview({ banner, imagePreviewUrl }) {
-  const imageUrl = imagePreviewUrl || banner.imageUrl;
-  return (
-    <div className="relative h-28 w-full bg-gradient-to-br from-primary-light to-primary overflow-hidden shrink-0">
-      {imageUrl && (
-        <img src={imageUrl} alt="" className="absolute inset-0 w-full h-full object-cover opacity-55 mix-blend-multiply" />
-      )}
-      <div className="relative h-full flex flex-col justify-center px-4">
-        <div className="text-white font-extrabold text-[15px] leading-tight truncate drop-shadow-sm">
-          {banner.title || 'Sarlavha'}
-        </div>
-        {banner.subtitle && (
-          <div className="text-white/90 text-[12px] leading-snug line-clamp-2 mt-1">{banner.subtitle}</div>
-        )}
-      </div>
+    <div className="card p-3!">
+      <div className="text-[11.5px] text-text-secondary mb-1">{label}</div>
+      <div className={`text-xl font-bold ${accent || 'text-text-primary'}`}>{value}</div>
     </div>
   );
 }
@@ -333,27 +535,24 @@ function BannerModal({ banner, regions, onClose, onSaved }) {
   const [subtitle, setSubtitle] = useState(banner.subtitle || '');
   const [linkUrl, setLinkUrl] = useState(banner.linkUrl || '');
   const [audience, setAudience] = useState(banner.audience || 'ALL');
-  const [regionIds, setRegionIds] = useState(banner.regionIds ? banner.regionIds.map(String) : []);
+  const [regionIds, setRegionIds] = useState(banner.regionIds || []);
   const [sortOrder, setSortOrder] = useState(banner.sortOrder ?? 0);
   const [active, setActive] = useState(banner.active ?? true);
   const [startAt, setStartAt] = useState(toLocalInputValue(banner.startAt));
   const [endAt, setEndAt] = useState(toLocalInputValue(banner.endAt));
   const [image, setImage] = useState(null);
-  const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
-  const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState(null);
+  const toast = useToast();
 
-  useEffect(() => {
-    if (!image) { setImagePreviewUrl(null); return; }
-    const url = URL.createObjectURL(image);
-    setImagePreviewUrl(url);
-    return () => URL.revokeObjectURL(url);
-  }, [image]);
+  function toggleRegion(id) {
+    setRegionIds((prev) => prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id]);
+  }
 
   async function submit(e) {
     e.preventDefault();
     if (!title.trim()) {
-      setError('Sarlavhani kiriting');
+      setError("Sarlavha kiritilishi shart");
       return;
     }
     setBusy(true);
@@ -361,96 +560,70 @@ function BannerModal({ banner, regions, onClose, onSaved }) {
     try {
       const formData = new FormData();
       formData.append('title', title.trim());
-      if (subtitle.trim()) formData.append('subtitle', subtitle.trim());
-      if (linkUrl.trim()) formData.append('linkUrl', linkUrl.trim());
+      formData.append('subtitle', subtitle.trim());
+      formData.append('linkUrl', linkUrl.trim());
       formData.append('audience', audience);
-      formData.append('sortOrder', String(sortOrder || 0));
-      formData.append('active', String(active));
-      if (image) formData.append('image', image);
-
-      if (startAt) formData.append('startAt', new Date(startAt).toISOString());
-      if (endAt) formData.append('endAt', new Date(endAt).toISOString());
-
+      formData.append('regionsProvided', 'true');
       regionIds.forEach((id) => formData.append('regionIds', id));
+      formData.append('sortOrder', sortOrder);
+      formData.append('active', active);
+      if (startAt) formData.append('startAt', new Date(startAt).toISOString());
+      else formData.append('clearStartAt', 'true');
+      if (endAt) formData.append('endAt', new Date(endAt).toISOString());
+      else formData.append('clearEndAt', 'true');
+      if (image) formData.append('image', image);
 
       if (isNew) {
         await api.postForm('/api/admin/promo-banners', formData);
+        toast.success("Reklama yaratildi");
       } else {
-        formData.append('regionsProvided', 'true');
-        if (!startAt && banner.startAt) formData.append('clearStartAt', 'true');
-        if (!endAt && banner.endAt) formData.append('clearEndAt', 'true');
         await api.patchForm(`/api/admin/promo-banners/${banner.id}`, formData);
+        toast.success("Reklama yangilandi");
       }
       onSaved();
-    } catch (e) {
-      setError(e instanceof ApiError ? e.message : "Saqlab bo'lmadi");
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Saqlab bo'lmadi");
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <Modal onClose={onClose} ariaLabel="Bannerni tahrirlash" panelClassName="max-w-2xl! p-0! overflow-hidden">
-      <BannerPreview banner={{ title, subtitle, imageUrl: banner.imageUrl }} imagePreviewUrl={imagePreviewUrl} />
-      <div className="p-6">
-        <h3>{isNew ? 'Yangi reklama' : 'Reklamani tahrirlash'}</h3>
+    <Modal onClose={onClose} title={isNew ? "Yangi reklama" : "Reklamani tahrirlash"}>
+      <div className="p-4 max-h-[80vh] overflow-y-auto">
         <form onSubmit={submit}>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
             <div className="field sm:col-span-2">
-              <label>Sarlavha</label>
-              <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="masalan: Har kuni yangi ishlar" />
+              <label>Sarlavha *</label>
+              <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required />
             </div>
             <div className="field sm:col-span-2">
-              <label>Qo'shimcha matn (ixtiyoriy)</label>
-              <textarea value={subtitle} onChange={(e) => setSubtitle(e.target.value)} placeholder="Qisqa tavsif" />
+              <label>Qisqa tavsif</label>
+              <input type="text" value={subtitle} onChange={(e) => setSubtitle(e.target.value)} />
+            </div>
+            <div className="field sm:col-span-2">
+              <label>Havola URL (bosganda ochiladigan sayt yoki havola)</label>
+              <input type="text" value={linkUrl} onChange={(e) => setLinkUrl(e.target.value)} placeholder="https://..." />
             </div>
             <div className="field">
-              <label>Qayerda ko'rinsin</label>
+              <label>Mo'ljallangan auditoriya</label>
               <select value={audience} onChange={(e) => setAudience(e.target.value)}>
-                <option value="ALL">Hammaga (ikkala karusel ham)</option>
-                <option value="WORKER">Faqat ishchilar (bosh sahifa)</option>
-                <option value="EMPLOYER">Faqat ish beruvchilar (qidiruv)</option>
+                {Object.entries(AUDIENCE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
               </select>
             </div>
-            <div className="field sm:col-span-2">
-              <label>Hududlar (ixtiyoriy — hech biri belgilanmasa, barcha hududlarga ko'rinadi)</label>
-              <div className="border border-line rounded-xl p-2.5 max-h-[160px] overflow-y-auto grid grid-cols-2 sm:grid-cols-3 gap-1.5">
-                {regions.map((r) => {
-                  const idStr = String(r.id);
-                  const checked = regionIds.includes(idStr);
-                  return (
-                    <label key={r.id} className="flex items-center gap-1.5 text-[13px] cursor-pointer">
-                      <input
-                        type="checkbox"
-                        className="w-auto"
-                        checked={checked}
-                        onChange={(e) => {
-                          setRegionIds((prev) => e.target.checked ? [...prev, idStr] : prev.filter((x) => x !== idStr));
-                        }}
-                      />
-                      {r.name}
-                    </label>
-                  );
-                })}
-              </div>
-            </div>
-            <div className="field sm:col-span-2">
-              <label>Bosilganda ochiladigan havola (ixtiyoriy)</label>
-              <input type="text" value={linkUrl} onChange={(e) => setLinkUrl(e.target.value)} placeholder="https://... yoki bo'sh qoldiring" />
-            </div>
             <div className="field">
-              <label>Boshlanish vaqti (ixtiyoriy)</label>
-              <input type="datetime-local" value={startAt} onChange={(e) => setStartAt(e.target.value)} />
-            </div>
-            <div className="field">
-              <label>Tugash vaqti (ixtiyoriy)</label>
-              <input type="datetime-local" value={endAt} onChange={(e) => setEndAt(e.target.value)} />
-            </div>
-            <div className="field">
-              <label>Tartib raqami (kichigi birinchi ko'rinadi)</label>
+              <label>Tartib raqami</label>
               <input type="number" value={sortOrder} onChange={(e) => setSortOrder(e.target.value)} />
             </div>
             <div className="field">
+              <label>Boshlanish vaqti</label>
+              <input type="datetime-local" value={startAt} onChange={(e) => setStartAt(e.target.value)} />
+            </div>
+            <div className="field">
+              <label>Tugash vaqti</label>
+              <input type="datetime-local" value={endAt} onChange={(e) => setEndAt(e.target.value)} />
+            </div>
+            <div className="field sm:col-span-2">
               <label>Rasm {isNew ? '(ixtiyoriy)' : '(yangilash uchun tanlang)'}</label>
               <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => setImage(e.target.files?.[0] || null)} />
             </div>
@@ -459,13 +632,7 @@ function BannerModal({ banner, regions, onClose, onSaved }) {
               <label htmlFor="banner-active" className="m-0">Faol (mobil ilovada ko'rinadi)</label>
             </div>
           </div>
-          {!isNew && (
-            <div className="flex items-center gap-4 text-[12.5px] text-text-secondary mb-3">
-              <span className="flex items-center gap-1"><EyeIcon className="w-4 h-4" /> {banner.viewCount || 0} ko'rish</span>
-              <span className="flex items-center gap-1"><CursorIcon className="w-4 h-4" /> {banner.clickCount || 0} bosish</span>
-            </div>
-          )}
-          {error && <div className="error-text">{error}</div>}
+          {error && <div className="error-text mb-3">{error}</div>}
           <div className="modal-actions">
             <button type="button" className="btn btn-outline" onClick={onClose}>Bekor qilish</button>
             <button type="submit" className="btn btn-primary" disabled={busy}>Saqlash</button>

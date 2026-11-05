@@ -18,6 +18,7 @@ import '../screens/employer/worker_detail_screen.dart';
 import '../screens/employer/workers_map_screen.dart';
 import '../screens/language_settings_screen.dart';
 import '../screens/notifications_screen.dart';
+import '../screens/public_announcement_screen.dart';
 import '../screens/saved_searches_screen.dart';
 import '../screens/splash_screen.dart';
 import '../screens/theme_settings_screen.dart';
@@ -80,6 +81,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/notifications', builder: (context, state) => const NotificationsScreen()),
       GoRoute(path: '/profile/edit', builder: (context, state) => const EditProfileScreen()),
       GoRoute(path: '/profile/wallet', builder: (context, state) => const WalletScreen()),
+      GoRoute(path: '/profile/public-announcement', builder: (context, state) => const PublicAnnouncementScreen()),
       GoRoute(path: '/profile/change-password', builder: (context, state) => const ChangePasswordScreen()),
       GoRoute(path: '/profile/about', builder: (context, state) => const AboutScreen()),
       GoRoute(path: '/profile/theme', builder: (context, state) => const ThemeSettingsScreen()),
