@@ -39,8 +39,8 @@ class InAppNotificationNotifier extends StateNotifier<List<InAppNotification>> {
   }
 
   Future<void> fetchFromBackend() async {
-    final authState = _ref.read(authProvider);
-    if (!authState.isAuthenticated) return;
+    final authState = _ref.read(authNotifierProvider);
+    if (authState.status != AuthStatus.authenticated) return;
 
     _isLoading = true;
     try {

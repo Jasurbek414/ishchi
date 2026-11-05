@@ -7,30 +7,34 @@ class NotificationRepository {
   final ApiClient _client;
 
   Future<void> registerToken(String token, {String platform = 'ANDROID'}) async {
-    await _client.post('/notifications/device-token', {
-      'token': token,
-      'platform': platform,
-    });
+    await _client.post(
+      '/notifications/device-token',
+      data: {
+        'token': token,
+        'platform': platform,
+      },
+    );
   }
 
   Future<List<InAppNotification>> getNotifications({int page = 0, int size = 50}) async {
-    final res = await _client.get('/notifications?page=$page&size=$size');
-    final list = res as List<dynamic>;
+    final list = await _client.getList(
+      '/notifications',
+      query: {'page': page, 'size': size},
+    );
     return list.map((item) => InAppNotification.fromMap(item as Map<String, dynamic>)).toList();
   }
 
   Future<int> getUnreadCount() async {
-    final res = await _client.get('/notifications/unread-count');
-    final map = res as Map<String, dynamic>;
+    final map = await _client.get('/notifications/unread-count');
     return (map['unreadCount'] as num?)?.toInt() ?? 0;
   }
 
   Future<void> markAsRead(String id) async {
-    await _client.post('/notifications/$id/read', {});
+    await _client.post('/notifications/$id/read');
   }
 
   Future<void> markAllAsRead() async {
-    await _client.post('/notifications/read-all', {});
+    await _client.post('/notifications/read-all');
   }
 
   Future<void> deleteNotification(String id) async {
