@@ -1,5 +1,6 @@
 package uz.ishchi.app.common;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import uz.ishchi.app.common.exception.ApiException;
@@ -14,6 +15,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.Set;
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class FileStorageService {
 
@@ -35,6 +37,31 @@ public class FileStorageService {
 
     public String storePromoBannerImage(MultipartFile file) {
         return storeImage(file, "promo-banners");
+    }
+
+    /**
+     * Best-effort removal of a file previously returned by one of the {@code store*} methods.
+     * Only touches avatars and job images, and refuses anything that resolves outside those
+     * folders, so a bad or tampered URL can never remove an arbitrary file. Never throws:
+     * a missing file or an I/O error is logged and ignored.
+     */
+    public void removeQuietly(String url) {
+        if (url == null || !url.startsWith("/uploads/")) {
+            return;
+        }
+        try {
+            Path root = uploadRoot.toAbsolutePath().normalize();
+            Path target = root.resolve(url.substring("/uploads/".length())).normalize();
+            boolean allowed = target.startsWith(root.resolve("avatars"))
+                    || target.startsWith(root.resolve("job-images"));
+            if (!allowed || Files.isDirectory(target)) {
+                log.warn("Refusing to remove file outside avatars/job-images: {}", url);
+                return;
+            }
+            Files.deleteIfExists(target);
+        } catch (IOException | RuntimeException e) {
+            log.warn("Could not remove uploaded file {}: {}", url, e.toString());
+        }
     }
 
     /** For photos downloaded from the Telegram bot API, which always serves them as JPEG. */

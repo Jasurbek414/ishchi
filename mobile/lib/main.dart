@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app.dart';
 import 'core/push_notifications.dart';
+import 'state/core_providers.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,5 +32,12 @@ void main() async {
     // the app must still run fine without push notifications.
     debugPrint('Firebase init skipped: $e');
   }
-  runApp(const ProviderScope(child: IshchiApp()));
+  // Opened before the first frame so the saved theme colour, language and jobs filter are
+  // available synchronously - otherwise the app paints with the defaults and then visibly
+  // repaints in the user's real choice a moment later.
+  final prefs = await SharedPreferences.getInstance();
+  runApp(ProviderScope(
+    overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+    child: const IshchiApp(),
+  ));
 }

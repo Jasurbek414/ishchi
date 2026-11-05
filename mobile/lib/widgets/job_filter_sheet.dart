@@ -21,6 +21,7 @@ class _JobFilterSheetState extends State<JobFilterSheet> {
   late int? _professionId = widget.initial.professionId;
   late JobType? _jobType = widget.initial.jobType;
   late String _sort = widget.initial.sort;
+  late bool _urgentOnly = widget.initial.urgent ?? false;
   final _minController = TextEditingController();
   final _maxController = TextEditingController();
 
@@ -59,6 +60,7 @@ class _JobFilterSheetState extends State<JobFilterSheet> {
                     _professionId = null;
                     _jobType = null;
                     _sort = 'newest';
+                    _urgentOnly = false;
                     _minController.clear();
                     _maxController.clear();
                   }),
@@ -123,7 +125,14 @@ class _JobFilterSheetState extends State<JobFilterSheet> {
               ],
               onChanged: (v) => setState(() => _sort = v ?? 'newest'),
             ),
-            const SizedBox(height: 20),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              value: _urgentOnly,
+              onChanged: (value) => setState(() => _urgentOnly = value),
+              title: Text(context.l10n.urgentOnlyFilter, style: const TextStyle(fontSize: 14.5)),
+              secondary: const Icon(Icons.bolt_rounded),
+            ),
+            const SizedBox(height: 12),
             ElevatedButton(
               onPressed: () {
                 final filter = (
@@ -137,6 +146,7 @@ class _JobFilterSheetState extends State<JobFilterSheet> {
                   sort: _sort,
                   nearRegionId: null,
                   nearDistrictId: null,
+                  urgent: _urgentOnly ? true : null,
                 );
                 Navigator.of(context).pop(filter);
               },

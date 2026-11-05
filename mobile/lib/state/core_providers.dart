@@ -1,10 +1,16 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../core/api_client.dart';
 import '../core/token_storage.dart';
 import '../data/auth_repository.dart';
 import '../data/employer_repository.dart';
+import '../data/job_application_repository.dart';
+import '../data/geo_repository.dart';
 import '../data/job_repository.dart';
+import '../data/rating_repository.dart';
+import '../data/report_repository.dart';
+import '../data/saved_search_repository.dart';
 import '../data/notification_repository.dart';
 import '../data/location_repository.dart';
 import '../data/profession_repository.dart';
@@ -13,6 +19,14 @@ import '../data/profile_repository.dart';
 import '../data/promo_banner_repository.dart';
 import '../data/wallet_repository.dart';
 import '../data/worker_repository.dart';
+
+/// Overridden in `main()` with an instance opened before `runApp`, so providers that restore a
+/// saved setting can read it synchronously on their first build. Reading it asynchronously made
+/// the app paint its first frames with the default colour/language and then visibly switch once
+/// the stored value arrived.
+final sharedPreferencesProvider = Provider<SharedPreferences>(
+  (ref) => throw UnimplementedError('sharedPreferencesProvider must be overridden in main()'),
+);
 
 final tokenStorageProvider = Provider<TokenStorage>((ref) => TokenStorage());
 
@@ -50,3 +64,17 @@ final employerRepositoryProvider =
 
 final notificationRepositoryProvider =
     Provider<NotificationRepository>((ref) => NotificationRepository(ref.watch(apiClientProvider)));
+
+final jobApplicationRepositoryProvider =
+    Provider<JobApplicationRepository>((ref) => JobApplicationRepository(ref.watch(apiClientProvider)));
+
+final ratingRepositoryProvider =
+    Provider<RatingRepository>((ref) => RatingRepository(ref.watch(apiClientProvider)));
+
+final savedSearchRepositoryProvider =
+    Provider<SavedSearchRepository>((ref) => SavedSearchRepository(ref.watch(apiClientProvider)));
+
+final reportRepositoryProvider =
+    Provider<ReportRepository>((ref) => ReportRepository(ref.watch(apiClientProvider)));
+
+final geoRepositoryProvider = Provider<GeoRepository>((ref) => GeoRepository(ref.watch(apiClientProvider)));

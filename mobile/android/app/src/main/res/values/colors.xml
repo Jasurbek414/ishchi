@@ -2,4 +2,8 @@
 <resources>
     <color name="ic_launcher_background">#FFFFFF</color>
     <color name="notification_color">#E8541F</color>
+    <!-- Launch/splash background. Kept identical in light and dark so the native
+         splash, the Android 12+ splash and the in-app splash all share one colour
+         and the logo never sits on a visible plate. -->
+    <color name="splash_background">#FFFFFF</color>
 </resources>

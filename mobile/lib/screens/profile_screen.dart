@@ -3,10 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
+import '../core/api_exception.dart';
 import '../core/formatters.dart';
+import '../core/theme.dart';
 import '../l10n/l10n_x.dart';
 import '../models/enums.dart';
+import '../models/profile.dart';
 import '../state/app_settings_provider.dart';
+import '../state/core_providers.dart';
 import '../state/auth_provider.dart';
 import '../state/locale_provider.dart';
 import '../state/profile_provider.dart';
@@ -41,6 +45,34 @@ class ProfileScreen extends ConsumerWidget {
     }
   }
 
+  Future<void> _confirmDeleteAccount(BuildContext context, WidgetRef ref) async {
+    final cs = Theme.of(context).colorScheme;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(context.l10n.deleteAccountConfirmTitle),
+        content: Text(context.l10n.deleteAccountConfirmMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(context.l10n.commonCancel),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: cs.error),
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(context.l10n.deleteAccountAction),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.deleteAccountSuccess)),
+      );
+      await ref.read(authNotifierProvider.notifier).deleteAccount();
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cs = Theme.of(context).colorScheme;
@@ -69,7 +101,7 @@ class ProfileScreen extends ConsumerWidget {
           value: profileAsync,
           onRetry: () => ref.invalidate(profileProvider),
           data: (profile) => ListView(
-            padding: EdgeInsets.fromLTRB(20, 12, 20, 32 + bottomNavClearance(context)),
+            padding: EdgeInsets.fromLTRB(20, 12, 20, 48 + bottomNavClearance(context)),
             children: [
               Center(
                 child: Column(
@@ -146,6 +178,10 @@ class ProfileScreen extends ConsumerWidget {
                   ],
                 ),
               ],
+              if (profile.role == UserRole.worker) ...[
+                const SizedBox(height: 20),
+                _AvailableTodayCard(profile: profile),
+              ],
               const SizedBox(height: 20),
               _SectionCard(
                 children: [
@@ -168,6 +204,20 @@ class ProfileScreen extends ConsumerWidget {
                       ),
                     ),
                   ],
+                  if (profile.role == UserRole.worker) ...[
+                    const Divider(height: 1),
+                    _MenuTile(
+                      icon: PhosphorIcons.checkCircle(),
+                      label: context.l10n.myResponsesMenu,
+                      onTap: () => context.push('/worker/my-applications'),
+                    ),
+                    const Divider(height: 1),
+                    _MenuTile(
+                      icon: PhosphorIcons.bellRinging(),
+                      label: context.l10n.savedSearchesMenu,
+                      onTap: () => context.push('/profile/saved-searches'),
+                    ),
+                  ],
                   const Divider(height: 1),
                   _MenuTile(
                     icon: PhosphorIcons.lock(),
@@ -188,6 +238,13 @@ class ProfileScreen extends ConsumerWidget {
                     label: context.l10n.aboutAppMenu,
                     onTap: () => context.push('/profile/about'),
                   ),
+                  const Divider(height: 1),
+                  _MenuTile(
+                    icon: PhosphorIcons.trash(),
+                    label: context.l10n.deleteAccountAction,
+                    color: cs.error,
+                    onTap: () => _confirmDeleteAccount(context, ref),
+                  ),
                 ],
               ),
               const SizedBox(height: 20),
@@ -196,6 +253,15 @@ class ProfileScreen extends ConsumerWidget {
                 icon: Icon(PhosphorIcons.signOut(), color: cs.error, size: 18),
                 label: Text(context.l10n.logoutAction, style: TextStyle(color: cs.error)),
                 style: OutlinedButton.styleFrom(side: BorderSide(color: cs.error)),
+              ),
+              const SizedBox(height: 12),
+              TextButton.icon(
+                onPressed: () => _confirmDeleteAccount(context, ref),
+                icon: Icon(PhosphorIcons.trash(), color: cs.error.withValues(alpha: 0.8), size: 18),
+                label: Text(
+                  context.l10n.deleteAccountAction,
+                  style: TextStyle(color: cs.error.withValues(alpha: 0.8)),
+                ),
               ),
             ],
           ),
@@ -311,26 +377,83 @@ class _InfoTile extends StatelessWidget {
   }
 }
 
-class _MenuTile extends StatelessWidget {
-  const _MenuTile({required this.icon, required this.label, required this.onTap});
+/// "Bugun bo'shman" — the same-day availability signal, with its own expiry.
+///
+/// The standing `available` flag is a preference a worker sets once and forgets; day labour is
+/// decided the same morning, so this is the one that tells an employer somebody can be called today.
+/// The server expires it at midnight in Tashkent, so nobody has to remember to turn it off.
+class _AvailableTodayCard extends ConsumerStatefulWidget {
+  const _AvailableTodayCard({required this.profile});
 
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
+  final Profile profile;
+
+  @override
+  ConsumerState<_AvailableTodayCard> createState() => _AvailableTodayCardState();
+}
+
+class _AvailableTodayCardState extends ConsumerState<_AvailableTodayCard> {
+  bool _busy = false;
+
+  bool get _isOn {
+    final until = widget.profile.availableUntil;
+    return until != null && until.isAfter(DateTime.now());
+  }
+
+  Future<void> _toggle(bool value) async {
+    setState(() => _busy = true);
+    try {
+      await ref.read(profileRepositoryProvider).updateProfile(availableToday: value);
+      ref.invalidate(profileProvider);
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    return _SectionCard(
+      children: [
+        SwitchListTile(
+          value: _isOn,
+          onChanged: _busy ? null : _toggle,
+          title: Text(context.l10n.availableTodayToggle,
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14.5)),
+          subtitle: Text(context.l10n.availableTodayHint,
+              style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12.5)),
+          secondary: Icon(PhosphorIcons.calendarCheck(),
+              color: _isOn ? context.themeSuccess : cs.onSurfaceVariant),
+        ),
+      ],
+    );
+  }
+}
+
+class _MenuTile extends StatelessWidget {
+  const _MenuTile({required this.icon, required this.label, required this.onTap, this.color});
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final itemColor = color ?? cs.onSurface;
     return InkWell(
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Row(
           children: [
-            Icon(icon, color: cs.onSurface, size: 20),
+            Icon(icon, color: itemColor, size: 20),
             const SizedBox(width: 14),
-            Expanded(child: Text(label, style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w500))),
-            Icon(PhosphorIcons.caretRight(), color: cs.onSurfaceVariant, size: 16),
+            Expanded(child: Text(label, style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w500, color: itemColor))),
+            Icon(PhosphorIcons.caretRight(), color: color ?? cs.onSurfaceVariant, size: 16),
           ],
         ),
       ),

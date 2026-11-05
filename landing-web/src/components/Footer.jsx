@@ -21,6 +21,9 @@ export default function Footer({ settings, botUrl }) {
             <a href={botUrl} className="block w-fit text-sm transition-colors hover:text-white">
               Telegram bot
             </a>
+            <a href="/privacy.html" className="mt-2.5 block w-fit text-sm transition-colors hover:text-white">
+              Maxfiylik siyosati
+            </a>
           </div>
 
           <div>

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
+import 'core_providers.dart';
 
 /// The 4 languages the app ships UI translations for. Uzbek Latin and Uzbek
 /// Cyrillic are the same language with different scripts (BCP-47 script
@@ -36,21 +37,16 @@ enum AppLanguage {
 const _kLocaleKey = 'app_language';
 
 class LocaleNotifier extends Notifier<AppLanguage> {
+  // Read synchronously from the preferences opened in main(), so a Russian- or English-speaking
+  // user never sees a frame of Uzbek before it switches over.
   @override
   AppLanguage build() {
-    _loadFromPrefs();
-    return AppLanguage.uzLatin;
-  }
-
-  Future<void> _loadFromPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-    state = AppLanguage.fromPrefsValue(prefs.getString(_kLocaleKey));
+    return AppLanguage.fromPrefsValue(ref.read(sharedPreferencesProvider).getString(_kLocaleKey));
   }
 
   Future<void> setLanguage(AppLanguage language) async {
     state = language;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_kLocaleKey, language.name);
+    await ref.read(sharedPreferencesProvider).setString(_kLocaleKey, language.name);
   }
 }
 

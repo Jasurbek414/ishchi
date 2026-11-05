@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../core/formatters.dart';
 import '../models/job.dart';
+import '../core/theme.dart';
+import '../l10n/l10n_x.dart';
 import 'status_badge.dart';
+import 'trust_badges.dart';
 
 class JobCard extends StatelessWidget {
   const JobCard({super.key, required this.job, required this.onTap});
@@ -33,6 +36,28 @@ class JobCard extends StatelessWidget {
                   StatusBadge(status: job.status),
                 ],
               ),
+              if (job.urgent || job.hasResponded || (job.applicationCount ?? 0) > 0) ...[
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: [
+                    if (job.urgent) const UrgentBadge(),
+                    if (job.hasResponded)
+                      SignalBadge(
+                        icon: Icons.check_circle_outline,
+                        label: context.l10n.respondedLabel,
+                        color: context.themeSuccess,
+                      ),
+                    if (!job.hasResponded && (job.applicationCount ?? 0) > 0)
+                      SignalBadge(
+                        icon: Icons.people_outline,
+                        label: context.l10n.responsesCount(job.applicationCount!),
+                        color: cs.onSurfaceVariant,
+                      ),
+                  ],
+                ),
+              ],
               const SizedBox(height: 6),
               Row(
                 children: [

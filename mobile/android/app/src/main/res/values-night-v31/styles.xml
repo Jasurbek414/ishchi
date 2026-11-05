@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Android 12+ draws its own splash from the launcher icon unless these are set.
+         The launcher icon is an adaptive icon with an opaque white background, which
+         is what made the logo show up as a filled rectangle/plate. Pointing the
+         splash at a transparent-background logo drawable removes that plate. -->
+    <style name="LaunchTheme" parent="@android:style/Theme.Light.NoTitleBar">
+        <item name="android:windowBackground">@drawable/launch_background</item>
+        <item name="android:windowSplashScreenBackground">@color/splash_background</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_logo</item>
+    </style>
+</resources>

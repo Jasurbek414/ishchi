@@ -18,7 +18,8 @@ import '../../state/core_providers.dart';
 import '../../state/job_providers.dart';
 import '../../widgets/profession_dropdown.dart';
 import '../../widgets/region_district_selector.dart';
-import '../location_picker_screen.dart';
+import '../../widgets/price_guidance_hint.dart';
+import '../../widgets/map/location_preview.dart';
 
 class JobFormScreen extends ConsumerStatefulWidget {
   const JobFormScreen({super.key, this.jobId});
@@ -45,6 +46,7 @@ class _JobFormScreenState extends ConsumerState<JobFormScreen> {
   DurationUnit _durationUnit = DurationUnit.day;
   DateTime? _startDate;
   LatLng? _location;
+  bool _urgent = false;
 
   bool _loaded = false;
   bool _saving = false;
@@ -78,6 +80,7 @@ class _JobFormScreenState extends ConsumerState<JobFormScreen> {
       _regionId = job.regionId;
       _districtId = job.districtId;
       _paymentType = job.paymentType;
+      _urgent = job.urgent;
       _jobType = job.jobType;
       _startDate = job.startDate;
       _durationValueController.text = job.durationValue?.toString() ?? '';
@@ -127,13 +130,6 @@ class _JobFormScreenState extends ConsumerState<JobFormScreen> {
     }
   }
 
-  Future<void> _pickLocation() async {
-    final picked = await Navigator.push<LatLng>(
-      context,
-      MaterialPageRoute(builder: (_) => LocationPickerScreen(initial: _location)),
-    );
-    if (picked != null) setState(() => _location = picked);
-  }
 
   Future<void> _pickStartDate() async {
     final picked = await showDatePicker(
@@ -173,6 +169,7 @@ class _JobFormScreenState extends ConsumerState<JobFormScreen> {
           districtId: _districtId,
           payment: payment,
           paymentType: _paymentType,
+          urgent: _urgent,
           jobType: _jobType,
           workersNeeded: workersNeeded,
           startDate: _startDate,
@@ -190,6 +187,7 @@ class _JobFormScreenState extends ConsumerState<JobFormScreen> {
           districtId: _districtId!,
           payment: payment,
           paymentType: _paymentType,
+          urgent: _urgent,
           jobType: _jobType,
           workersNeeded: workersNeeded,
           startDate: _startDate,
@@ -284,25 +282,10 @@ class _JobFormScreenState extends ConsumerState<JobFormScreen> {
                 }),
               ),
               const SizedBox(height: 14),
-              InkWell(
-                onTap: _pickLocation,
-                child: InputDecorator(
-                  decoration: InputDecoration(labelText: context.l10n.workLocationOnMapLabel),
-                  child: Row(
-                    children: [
-                      Icon(Icons.map_outlined, size: 18, color: cs.primary),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          _location == null
-                              ? context.l10n.pickOnMapAction
-                              : "${_location!.latitude.toStringAsFixed(5)}, ${_location!.longitude.toStringAsFixed(5)}",
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+              LocationField(
+                label: context.l10n.workLocationOnMapLabel,
+                value: _location,
+                onChanged: (point) => setState(() => _location = point),
               ),
               const SizedBox(height: 14),
               Row(
@@ -329,6 +312,12 @@ class _JobFormScreenState extends ConsumerState<JobFormScreen> {
                   ),
                 ],
               ),
+              // Shown right under the payment field, where the number is being decided.
+              PriceGuidanceHint(
+                professionId: _professionId,
+                regionId: _regionId,
+                paymentType: _paymentType,
+              ),
               const SizedBox(height: 14),
               DropdownButtonFormField<JobType>(
                 value: _jobType,
@@ -337,7 +326,15 @@ class _JobFormScreenState extends ConsumerState<JobFormScreen> {
                 items: JobType.values.map((t) => DropdownMenuItem(value: t, child: Text(t.label(context)))).toList(),
                 onChanged: (v) => setState(() => _jobType = v ?? _jobType),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 4),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                value: _urgent,
+                onChanged: (value) => setState(() => _urgent = value),
+                title: Text(context.l10n.urgentFieldLabel, style: const TextStyle(fontSize: 14.5)),
+                secondary: const Icon(Icons.bolt_rounded),
+              ),
+              const SizedBox(height: 10),
               TextFormField(
                 controller: _workersNeededController,
                 keyboardType: TextInputType.number,

@@ -1,0 +1,227 @@
+[
+  {
+    "employee_code": "1",
+    "full_name": "Sultonmurod master",
+    "photo_path": null
+  },
+  {
+    "employee_code": "2",
+    "full_name": "Oybek Rasulov",
+    "photo_path": null
+  },
+  {
+    "employee_code": "3",
+    "full_name": "Yunusov Muzaffar",
+    "photo_path": null
+  },
+  {
+    "employee_code": "4",
+    "full_name": "Dilnoza Abdurazaqova",
+    "photo_path": null
+  },
+  {
+    "employee_code": "5",
+    "full_name": "Mallaboyeva Dilbar",
+    "photo_path": null
+  },
+  {
+    "employee_code": "6",
+    "full_name": "Tojiboyeva Muhabbat",
+    "photo_path": null
+  },
+  {
+    "employee_code": "7",
+    "full_name": "Ahmadaliyev Shuxrat",
+    "photo_path": null
+  },
+  {
+    "employee_code": "8",
+    "full_name": "Murodjon",
+    "photo_path": null
+  },
+  {
+    "employee_code": "9",
+    "full_name": "Yuldasheva Barno",
+    "photo_path": null
+  },
+  {
+    "employee_code": "10",
+    "full_name": "Qayumova Surayyo",
+    "photo_path": null
+  },
+  {
+    "employee_code": "11",
+    "full_name": "Ismanova Feruza",
+    "photo_path": null
+  },
+  {
+    "employee_code": "12",
+    "full_name": "Boltabayev Shavkat",
+    "photo_path": null
+  },
+  {
+    "employee_code": "13",
+    "full_name": "Turdiyev Sarvar",
+    "photo_path": null
+  },
+  {
+    "employee_code": "14",
+    "full_name": "Zuxurova Sojira",
+    "photo_path": null
+  },
+  {
+    "employee_code": "15",
+    "full_name": "Fazlitdinova Nargiza",
+    "photo_path": null
+  },
+  {
+    "employee_code": "16",
+    "full_name": "Sanjarov Bahodir",
+    "photo_path": null
+  },
+  {
+    "employee_code": "17",
+    "full_name": "Sanjarov Qobiljon",
+    "photo_path": null
+  },
+  {
+    "employee_code": "18",
+    "full_name": "Turg'unov Salohiddin",
+    "photo_path": null
+  },
+  {
+    "employee_code": "20",
+    "full_name": "Malikova Munavvar",
+    "photo_path": null
+  },
+  {
+    "employee_code": "19",
+    "full_name": "Rahimova Munojat",
+    "photo_path": null
+  },
+  {
+    "employee_code": "22",
+    "full_name": "Mirzaabdullayeva Ranoxon",
+    "photo_path": null
+  },
+  {
+    "employee_code": "23",
+    "full_name": "Sanjarova Muslima",
+    "photo_path": null
+  },
+  {
+    "employee_code": "24",
+    "full_name": "Yo'ldasheva Xakima",
+    "photo_path": null
+  },
+  {
+    "employee_code": "25",
+    "full_name": "Xudoyberganov Ibrohim",
+    "photo_path": null
+  },
+  {
+    "employee_code": "26",
+    "full_name": "Boltabayeva Zulfiya",
+    "photo_path": null
+  },
+  {
+    "employee_code": "27",
+    "full_name": "Gaffarova Yodgora",
+    "photo_path": null
+  },
+  {
+    "employee_code": "28",
+    "full_name": "Rasulova Feruza",
+    "photo_path": null
+  },
+  {
+    "employee_code": "29",
+    "full_name": "Habibullayeva Madina",
+    "photo_path": null
+  },
+  {
+    "employee_code": "30",
+    "full_name": "Qirg'izova Gulnora",
+    "photo_path": null
+  },
+  {
+    "employee_code": "31",
+    "full_name": "Qayumova Mohira",
+    "photo_path": null
+  },
+  {
+    "employee_code": "32",
+    "full_name": "To'xtaraliyeva Kumish",
+    "photo_path": null
+  },
+  {
+    "employee_code": "33",
+    "full_name": "Muhiddinova Madina",
+    "photo_path": null
+  },
+  {
+    "employee_code": "34",
+    "full_name": "Mamasiddiqov Muhammadamin",
+    "photo_path": null
+  },
+  {
+    "employee_code": "36",
+    "full_name": "Zuxirov Olimjon",
+    "photo_path": null
+  },
+  {
+    "employee_code": "37",
+    "full_name": "Soliyeva Gulirano",
+    "photo_path": null
+  },
+  {
+    "employee_code": "38",
+    "full_name": "Eminova Umida",
+    "photo_path": null
+  },
+  {
+    "employee_code": "39",
+    "full_name": "Bayxanova Dilfuza",
+    "photo_path": null
+  },
+  {
+    "employee_code": "40",
+    "full_name": "Nuriddinova Dildora",
+    "photo_path": null
+  },
+  {
+    "employee_code": "41",
+    "full_name": "Nuriddinova Nasiba",
+    "photo_path": null
+  },
+  {
+    "employee_code": "42",
+    "full_name": "Abdulhayev Fayzullo",
+    "photo_path": null
+  },
+  {
+    "employee_code": "43",
+    "full_name": "Najmiddinova Dildora",
+    "photo_path": null
+  },
+  {
+    "employee_code": "44",
+    "full_name": "Jumaboyeva Mohira",
+    "photo_path": null
+  },
+  {
+    "employee_code": "45",
+    "full_name": "Mahmudova Mahzuma",
+    "photo_path": null
+  },
+  {
+    "employee_code": "21",
+    "full_name": "Yusupova Shaxnoza",
+    "photo_path": null
+  },
+  {
+    "employee_code": "5311460102",
+    "full_name": "Manager",
+    "photo_path": null
+  }
+]

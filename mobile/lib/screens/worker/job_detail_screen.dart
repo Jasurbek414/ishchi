@@ -2,18 +2,23 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/api_config.dart';
 import '../../core/api_exception.dart';
 import '../../core/formatters.dart';
 import '../../l10n/l10n_x.dart';
+import '../../models/enums.dart';
 import '../../models/job.dart';
 import '../../state/app_settings_provider.dart';
 import '../../state/core_providers.dart';
 import '../../state/job_providers.dart';
 import '../../widgets/async_view.dart';
+import '../../widgets/map/location_preview.dart';
+import '../../widgets/report_sheet.dart';
 import '../../widgets/status_badge.dart';
+import '../../widgets/trust_badges.dart';
 import '../../widgets/user_avatar.dart';
 
 class JobDetailScreen extends ConsumerWidget {
@@ -63,14 +68,149 @@ class JobDetailScreen extends ConsumerWidget {
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
                 boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 20, offset: const Offset(0, -6))],
               ),
-              child: job.unlocked && job.employerPhone != null
-                  ? ElevatedButton.icon(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Responding comes first and is free: it is what lets the employer call this
+                  // worker back, instead of the worker paying to call into the dark.
+                  _RespondButton(job: job),
+                  const SizedBox(height: 10),
+                  if (job.unlocked && job.employerPhone != null)
+                    OutlinedButton.icon(
                       onPressed: () => _call(context, job.employerPhone!),
-                      icon: const Icon(Icons.call, color: Colors.white),
+                      icon: const Icon(Icons.call),
                       label: Text(context.l10n.contactPhoneValue(job.employerPhone!)),
                     )
-                  : _UnlockContactCard(jobId: jobId),
+                  else
+                    _UnlockContactCard(jobId: jobId),
+                ],
+              ),
             ),
+    );
+  }
+}
+
+/// "Javob berdim", and the way back out of it.
+///
+/// A response is the platform's only record that these two came into contact, so it is the primary
+/// action here — ratings and the employer's completion record are built on it.
+class _RespondButton extends ConsumerStatefulWidget {
+  const _RespondButton({required this.job});
+
+  final Job job;
+
+  @override
+  ConsumerState<_RespondButton> createState() => _RespondButtonState();
+}
+
+class _RespondButtonState extends ConsumerState<_RespondButton> {
+  bool _busy = false;
+
+  Future<void> _run(Future<void> Function() action, String successMessage) async {
+    setState(() => _busy = true);
+    try {
+      await action();
+      ref.invalidate(jobDetailProvider(widget.job.id));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(successMessage)));
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final repository = ref.read(jobApplicationRepositoryProvider);
+    final status = widget.job.myApplicationStatus;
+
+    if (status != null) {
+      // Once the employer has picked them, withdrawing is no longer theirs to do.
+      if (status == ApplicationStatus.hired) {
+        return FilledButton.icon(
+          onPressed: null,
+          icon: const Icon(Icons.verified_outlined),
+          label: Text(status.label(context)),
+        );
+      }
+
+      return OutlinedButton.icon(
+        onPressed: _busy
+            ? null
+            : () => _run(() => repository.withdraw(widget.job.id),
+                context.l10n.responseWithdrawnSuccess),
+        icon: _busy
+            ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2))
+            : const Icon(Icons.undo),
+        label: Text(context.l10n.withdrawResponseAction),
+      );
+    }
+
+    return ElevatedButton.icon(
+      onPressed: _busy
+          ? null
+          : () => _run(() => repository.apply(widget.job.id), context.l10n.responseSentSuccess),
+      icon: _busy
+          ? const SizedBox(
+              height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+          : const Icon(Icons.how_to_reg_outlined, color: Colors.white),
+      label: Text(context.l10n.respondAction),
+    );
+  }
+}
+
+/// The employer's track record. A worker previously had no way at all to judge whether a posting was
+/// real before spending a phone call on it.
+class _EmployerRecord extends StatelessWidget {
+  const _EmployerRecord({required this.job});
+
+  final Job job;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final posted = job.employerJobsPosted;
+    if (posted == null) return const SizedBox.shrink();
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(context.l10n.employerRecordTitle,
+                style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 8),
+            Text(context.l10n.employerJobsPosted(posted),
+                style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13)),
+            if (job.employerJobsCompleted != null)
+              Text(context.l10n.employerJobsCompleted(job.employerJobsCompleted!),
+                  style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13)),
+            const SizedBox(height: 8),
+            if ((job.employerRatingCount ?? 0) > 0)
+              RatingBadge(average: job.employerRatingAverage, count: job.employerRatingCount!)
+            else
+              Text(context.l10n.noRatingsYet,
+                  style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12.5)),
+            const SizedBox(height: 10),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: () => ReportSheet.show(context, jobId: job.id, subtitle: job.title).then((sent) {
+                  if (sent && context.mounted) {
+                    ScaffoldMessenger.of(context)
+                        .showSnackBar(SnackBar(content: Text(context.l10n.reportSentSuccess)));
+                  }
+                }),
+                icon: Icon(Icons.flag_outlined, size: 18, color: cs.error),
+                label: Text(context.l10n.reportAction, style: TextStyle(color: cs.error)),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -111,6 +251,10 @@ class _JobDetailBody extends StatelessWidget {
                   _InfoRow(icon: Icons.badge_outlined, text: job.professionName),
                 ],
               ),
+              if (job.latitude != null && job.longitude != null) ...[
+                const SizedBox(height: 16),
+                _JobPlace(job: job),
+              ],
               const SizedBox(height: 22),
               _PriceCard(job: job),
               const SizedBox(height: 14),
@@ -184,6 +328,8 @@ class _JobDetailBody extends StatelessWidget {
                   ],
                 ),
               ),
+              const SizedBox(height: 14),
+              _EmployerRecord(job: job),
             ],
           ),
         ),
@@ -492,6 +638,46 @@ class _StatColumn extends StatelessWidget {
         const SizedBox(height: 2),
         Text(label, textAlign: TextAlign.center, style: TextStyle(color: cs.onSurfaceVariant, fontSize: 11)),
       ],
+    );
+  }
+}
+
+/// Where the work is: a small map, the address, and directions in the phone's maps app.
+class _JobPlace extends StatelessWidget {
+  const _JobPlace({required this.job});
+
+  final Job job;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final l10n = context.l10n;
+    final point = LatLng(job.latitude!, job.longitude!);
+    return Card(
+      margin: EdgeInsets.zero,
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          LocationPreview(point: point, height: 150, onTap: () => openDirections(point, label: job.title)),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 12, 10, 12),
+            child: Row(
+              children: [
+                Icon(Icons.place_outlined, color: cs.primary),
+                const SizedBox(width: 10),
+                Expanded(child: PlaceText(point: point, fallback: job.location)),
+                const SizedBox(width: 8),
+                FilledButton.tonalIcon(
+                  onPressed: () => openDirections(point, label: job.title),
+                  icon: const Icon(Icons.directions, size: 18),
+                  label: Text(l10n.directionsAction),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

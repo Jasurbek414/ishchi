@@ -7,6 +7,9 @@ import '../../core/theme.dart';
 import '../../l10n/l10n_x.dart';
 import '../../state/worker_providers.dart';
 import '../../widgets/async_view.dart';
+import '../../state/rating_providers.dart';
+import '../../widgets/report_sheet.dart';
+import '../../widgets/trust_badges.dart';
 import '../../widgets/user_avatar.dart';
 
 class WorkerDetailScreen extends ConsumerWidget {
@@ -70,6 +73,19 @@ class WorkerDetailScreen extends ConsumerWidget {
                     '${worker.regionName}, ${worker.districtName}',
                     style: TextStyle(fontSize: 13, color: Colors.white.withValues(alpha: 0.85)),
                   ),
+                  if (worker.verified || worker.ratingCount > 0 || worker.availableToday) ...[
+                    const SizedBox(height: 10),
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: [
+                        if (worker.verified) const VerifiedBadge(),
+                        RatingBadge(average: worker.ratingAverage, count: worker.ratingCount),
+                        if (worker.availableToday) const AvailableTodayBadge(),
+                      ],
+                    ),
+                  ],
                   const SizedBox(height: 12),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -139,6 +155,29 @@ class WorkerDetailScreen extends ConsumerWidget {
                               : context.l10n.driverLicenseYes,
                         ),
                     ],
+                  ),
+                  const SizedBox(height: 20),
+                  Text(context.l10n.ratingsTitle,
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: cs.onSurfaceVariant)),
+                  const SizedBox(height: 8),
+                  _WorkerRatings(userId: worker.userId),
+                  const SizedBox(height: 12),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton.icon(
+                      onPressed: () => ReportSheet.show(
+                        context,
+                        reportedUserId: worker.userId,
+                        subtitle: worker.fullName,
+                      ).then((sent) {
+                        if (sent && context.mounted) {
+                          ScaffoldMessenger.of(context)
+                              .showSnackBar(SnackBar(content: Text(context.l10n.reportSentSuccess)));
+                        }
+                      }),
+                      icon: Icon(PhosphorIcons.flag(), size: 18, color: cs.error),
+                      label: Text(context.l10n.reportAction, style: TextStyle(color: cs.error)),
+                    ),
                   ),
                   if (worker.about != null && worker.about!.isNotEmpty) ...[
                     const SizedBox(height: 22),
@@ -216,7 +255,7 @@ class WorkerDetailScreen extends ConsumerWidget {
                   onPressed: () => _call(context, workerAsync.value!.phone),
                   style: ElevatedButton.styleFrom(
                     minimumSize: const Size.fromHeight(52),
-                    backgroundColor: AppColors.success,
+                    backgroundColor: context.themeSuccess,
                     foregroundColor: Colors.white,
                   ),
                   icon: const Icon(Icons.call, color: Colors.white),
@@ -234,6 +273,70 @@ class _InfoRowData {
   final IconData icon;
   final String label;
   final String value;
+}
+
+/// What other employers said about this worker.
+///
+/// Read-only here: a rating can only be left from a job the two actually did together, so the entry
+/// point for writing one lives on that job's shortlist rather than on a profile.
+class _WorkerRatings extends ConsumerWidget {
+  const _WorkerRatings({required this.userId});
+
+  final int userId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final cs = Theme.of(context).colorScheme;
+    final ratingsAsync = ref.watch(userRatingsProvider(userId));
+
+    return ratingsAsync.maybeWhen(
+      data: (page) {
+        if (page.content.isEmpty) {
+          return Text(context.l10n.noRatingsYet,
+              style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13));
+        }
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (final rating in page.content.take(5))
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        for (var star = 1; star <= 5; star++)
+                          Icon(
+                            star <= rating.score ? Icons.star_rounded : Icons.star_outline_rounded,
+                            size: 15,
+                            color: star <= rating.score ? cs.primary : cs.onSurfaceVariant,
+                          ),
+                      ],
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(rating.jobTitle,
+                              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                          if (rating.comment != null && rating.comment!.isNotEmpty)
+                            Text(rating.comment!,
+                                style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12.5)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        );
+      },
+      // A profile is still worth reading when the ratings fail to load.
+      orElse: () => const SizedBox.shrink(),
+    );
+  }
 }
 
 class _InfoCard extends StatelessWidget {

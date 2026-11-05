@@ -42,6 +42,44 @@ class _JobManageScreenState extends ConsumerState<JobManageScreen> {
     }
   }
 
+  /// Posts the same job again as a fresh listing. Confirmed first, because it costs the posting fee
+  /// where that is switched on.
+  Future<void> _repost() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(dialogContext.l10n.repostAction),
+        content: Text(dialogContext.l10n.repostConfirmBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(dialogContext.l10n.commonCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(dialogContext.l10n.repostAction),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    setState(() => _busy = true);
+    try {
+      final created = await ref.read(jobRepositoryProvider).repost(widget.jobId);
+      _invalidateAll();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(context.l10n.repostedSuccess)));
+      context.push('/employer/jobs/${created.id}/manage');
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
   Future<void> _delete() async {
     final cs = Theme.of(context).colorScheme;
     final confirmed = await showDialog<bool>(
@@ -104,10 +142,24 @@ class _JobManageScreenState extends ConsumerState<JobManageScreen> {
               spacing: 10,
               runSpacing: 10,
               children: [
+                // First, because the shortlist is the point of the posting — everything else here is
+                // housekeeping around it.
+                FilledButton.icon(
+                  onPressed: _busy ? null : () => context.push('/employer/jobs/${job.id}/applications'),
+                  icon: const Icon(Icons.people_outline),
+                  label: Text((job.applicationCount ?? 0) > 0
+                      ? '${context.l10n.shortlistTitle} · ${job.applicationCount}'
+                      : context.l10n.shortlistTitle),
+                ),
                 OutlinedButton.icon(
                   onPressed: _busy ? null : () => context.push('/employer/jobs/${job.id}/edit'),
                   icon: const Icon(Icons.edit_outlined),
                   label: Text(context.l10n.editAction),
+                ),
+                OutlinedButton.icon(
+                  onPressed: _busy ? null : _repost,
+                  icon: const Icon(Icons.copy_all_outlined),
+                  label: Text(context.l10n.repostAction),
                 ),
                 if (job.status == JobStatus.active) ...[
                   FilledButton.tonalIcon(

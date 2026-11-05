@@ -59,6 +59,10 @@ class AuthRepository {
     await _client.post('/auth/logout', data: {'refreshToken': refreshToken});
   }
 
+  Future<void> deleteAccount() async {
+    await _client.delete('/profile');
+  }
+
   Future<OtpDispatchResult> forgotPassword(String phone) async {
     final res = await _client.post('/auth/forgot-password', data: {'phone': phone});
     return OtpDispatchResult.fromJson(res);
@@ -72,6 +76,19 @@ class AuthRepository {
     final res = await _client.post('/auth/reset-password', data: {
       'phone': phone,
       'code': code,
+      'newPassword': newPassword,
+    });
+    return res['message'] as String;
+  }
+
+  /// Changes the password of the signed-in account by proving the current one, rather than going
+  /// through the public forgot-password flow. Every other session is signed out server-side.
+  Future<String> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final res = await _client.post('/profile/change-password', data: {
+      'currentPassword': currentPassword,
       'newPassword': newPassword,
     });
     return res['message'] as String;

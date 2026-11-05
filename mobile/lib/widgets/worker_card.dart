@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../l10n/l10n_x.dart';
 import '../models/worker.dart';
+import 'trust_badges.dart';
 import 'user_avatar.dart';
 
 class WorkerCard extends StatelessWidget {
@@ -42,8 +43,20 @@ class WorkerCard extends StatelessWidget {
                           ),
                       ],
                     ),
+                    if (worker.verified || worker.ratingCount > 0 || worker.availableToday) ...[
+                      const SizedBox(height: 6),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: [
+                          if (worker.verified) const VerifiedBadge(),
+                          RatingBadge(average: worker.ratingAverage, count: worker.ratingCount),
+                          if (worker.availableToday) const AvailableTodayBadge(),
+                        ],
+                      ),
+                    ],
                     if (professionNames.isNotEmpty) ...[
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 6),
                       Text(professionNames,
                           style: TextStyle(color: cs.primary, fontSize: 13, fontWeight: FontWeight.w600)),
                     ],

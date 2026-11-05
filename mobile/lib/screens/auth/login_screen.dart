@@ -7,6 +7,8 @@ import '../../core/api_exception.dart';
 import '../../l10n/l10n_x.dart';
 import '../../state/app_settings_provider.dart';
 import '../../state/auth_provider.dart';
+import '../../widgets/language_switcher.dart';
+import '../../widgets/password_field.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -140,7 +142,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 24),
+                const Align(alignment: Alignment.centerRight, child: LanguageSwitcher()),
+                const SizedBox(height: 8),
                 Text(context.l10n.welcomeTitle, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800)),
                 const SizedBox(height: 6),
                 Text(context.l10n.loginSubtitle,
@@ -155,10 +158,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       : context.l10n.phoneFormatError,
                 ),
                 const SizedBox(height: 14),
-                TextFormField(
+                PasswordField(
                   controller: _passwordController,
-                  obscureText: true,
-                  decoration: InputDecoration(labelText: context.l10n.passwordFieldLabel),
+                  labelText: context.l10n.passwordFieldLabel,
+                  textInputAction: TextInputAction.done,
+                  onFieldSubmitted: (_) => _loading ? null : _submit(),
                   validator: (v) => (v == null || v.length < 6) ? context.l10n.passwordMinLengthError : null,
                 ),
                 const SizedBox(height: 10),

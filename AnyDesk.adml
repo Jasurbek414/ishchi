@@ -1,0 +1,2090 @@
+<?xml version="1.0"?>
+<policyDefinitionResources revision="1.0" schemaVersion="1.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<displayName></displayName>
+	<description></description>
+	<resources>
+		<stringTable>
+			<string id="Sup_Platform">Microsoft Windows Server 2008 and greater</string>
+			<string id="Cat_Root">AnyDesk</string>
+			<string id="Cat_Root_Help"></string>
+			<string id="Cat_Root_adMsi">adMsi</string>
+			<string id="Cat_Root_adMsi_Help">Your custom client (MSI version)</string>
+			<string id="Cat_Root_adMsi_Defaults">Defaults</string>
+			<string id="Cat_Root_adMsi_Defaults_Help">The default options for this client</string>
+			<string id="Cat_Root_adMsi_Overrides">Overrides</string>
+			<string id="Cat_Root_adMsi_Overrides_Help">Override options for this client.
+
+Please note if you specify the same option in Defaults, the value you set here will always be used</string>
+			<string id="Cat_Root_ad">ad</string>
+			<string id="Cat_Root_ad_Help">Your custom client (.exe version)</string>
+			<string id="Cat_Root_ad_Defaults">Defaults</string>
+			<string id="Cat_Root_ad_Defaults_Help">The default options for this client</string>
+			<string id="Cat_Root_ad_Overrides">Overrides</string>
+			<string id="Cat_Root_ad_Overrides_Help">Override options for this client.
+
+Please note if you specify the same option in Defaults, the value you set here will always be used</string>
+			<string id="Cat_Root_AdMsi">AdMsi</string>
+			<string id="Cat_Root_AdMsi_Help">Standard MSI client from our website</string>
+			<string id="Cat_Root_AdMsi_Defaults">Defaults</string>
+			<string id="Cat_Root_AdMsi_Defaults_Help">The default options for this client</string>
+			<string id="Cat_Root_AdMsi_Overrides">Overrides</string>
+			<string id="Cat_Root_AdMsi_Overrides_Help">Override options for this client.
+
+Please note if you specify the same option in Defaults, the value you set here will always be used</string>
+			<string id="Cat_Root_Defaults">Defaults</string>
+			<string id="Cat_Root_Defaults_Help">The Default options for the standard client (.exe version) of the AnyDesk website</string>
+			<string id="Cat_Root_Overrides">Overrides</string>
+			<string id="Cat_Root_Overrides_Help">The Override options for the standard client (.exe version) of the AnyDesk website
+
+Please note if you specify the same option in Defaults, the value you set here will always be used</string>
+			<string id="Pol_UiCfgEnabled">Ui.CfgEnabled</string>
+			<string id="Pol_UiCfgEnabled_Help">Enable/disable (show/hide) the Settings entry in the general menu within the main window.
+
+Default value:
+ - Enabled</string>
+			<string id="Pol_UiCfgEnableInterface">Ui.CfgEnableInterface</string>
+			<string id="Pol_UiCfgEnableInterface_Help">Enable/disable (show/hide) the User Interface entry within the Settings window.
+
+Default value:
+ - Enabled</string>
+			<string id="Pol_UiCfgEnableSecurity">Ui.CfgEnableSecurity</string>
+			<string id="Pol_UiCfgEnableSecurity_Help">Enable/disable (show/hide) the User Security entry within the Settings window.
+
+Default value:
+ - Enabled</string>
+			<string id="Pol_UiCfgEnablePrivacy">Ui.CfgEnablePrivacy</string>
+			<string id="Pol_UiCfgEnablePrivacy_Help">Enable/disable (show/hide) the Privacy entry within the Settings window.
+
+Default value:
+ - Enabled</string>
+			<string id="Pol_UiCfgEnableVideo">Ui.CfgEnableVideo</string>
+			<string id="Pol_UiCfgEnableVideo_Help">Enable/disable (show/hide) the Display entry within the Settings window.
+
+Default value:
+ - Enabled</string>
+			<string id="Pol_UiCfgEnableAudio">Ui.CfgEnableAudio</string>
+			<string id="Pol_UiCfgEnableAudio_Help">Enable/disable (show/hide) the Audio entry within the Settings window.
+
+Default value:
+ - Enabled</string>
+			<string id="Pol_UiCfgEnableConnection">Ui.CfgEnableConnection</string>
+			<string id="Pol_UiCfgEnableConnection_Help">Enable/disable (show/hide) the Connection entry within the Settings window.
+
+Default value:
+ - Enabled</string>
+			<string id="Pol_UiCfgEnableFiletransfer">Ui.CfgEnableFiletransfer</string>
+			<string id="Pol_UiCfgEnableFiletransfer_Help">Enable/disable (show/hide) the File Transfer entry within the Settings window.
+
+Default value:
+ - Enabled</string>
+			<string id="Pol_UiCfgEnableRecording">Ui.CfgEnableRecording</string>
+			<string id="Pol_UiCfgEnableRecording_Help">Enable/disable (show/hide) the Recording entry within the Settings window.
+
+Default value:
+ - Enabled</string>
+			<string id="Pol_FeaturesRegisterAlias">Features.RegisterAlias</string>
+			<string id="Pol_FeaturesRegisterAlias_Help"></string>
+			<string id="Pol_FeaturesConnect">Features.Connect</string>
+			<string id="Pol_FeaturesConnect_Help">Enable/Disable outgoing connections</string>
+			<string id="Pol_FeaturesAccept">Features.Accept</string>
+			<string id="Pol_FeaturesAccept_Help">Enable/Disable incoming connections</string>
+			<string id="Pol_FeaturesInstall">Features.Install</string>
+			<string id="Pol_FeaturesInstall_Help">Enable/disable the installation of the client.	
+
+Default value:
+ - Enabled</string>
+			<string id="Pol_FeaturesAutoUac">Features.AutoUAC</string>
+			<string id="Pol_FeaturesAutoUac_Help"></string>
+			<string id="Pol_FeaturesAddressBook">Features.AddressBook</string>
+			<string id="Pol_FeaturesAddressBook_Help">Enable/disable the Address Book.
+
+Default value:
+ - Enabled</string>
+			<string id="Pol_FeaturesSessPlayback">Features.SessPlayback</string>
+			<string id="Pol_FeaturesSessPlayback_Help">Enable/Disable the ability to play session recordings</string>
+			<string id="Pol_FeaturesSessRecord">Features.SessRecord</string>
+			<string id="Pol_FeaturesSessRecord_Help">Enable/Disable the ability to record sessions</string>
+			<string id="Pol_FeaturesUnattended">Features.Unattended</string>
+			<string id="Pol_FeaturesUnattended_Help">Enable/Disable the ability to establish incoming sessions via passwords</string>
+			<string id="Pol_FeaturesFileManager">Features.FileManager</string>
+			<string id="Pol_FeaturesFileManager_Help">Enable/Disable the file manager feature</string>
+			<string id="Pol_FeaturesSessionInvitationSend">Features.SessionInvitation.Send</string>
+			<string id="Pol_FeaturesSessionInvitationSend_Help">Enable/Disable the ability to send out direct session invitations</string>
+			<string id="Pol_FeaturesSessionInvitationReceive">Features.SessionInvitation.Receive</string>
+			<string id="Pol_FeaturesSessionInvitationReceive_Help">Enable/Disable the ability to receive direct session invitations</string>
+			<string id="Pol_FeaturesScreenFrame">Features.ScreenFrame</string>
+			<string id="Pol_FeaturesScreenFrame_Help">Enable/Disable the Screen Frame feature</string>
+			<string id="Pol_FeaturesRecentOut">Features.RecentOut</string>
+			<string id="Pol_FeaturesRecentOut_Help">Enable/Disable the recent session feature</string>
+			<string id="Pol_FeaturesFavorites">Features.Favorites</string>
+			<string id="Pol_FeaturesFavorites_Help">Enable/Disable the ability to manage favorite AnyDesk addresses</string>
+			<string id="Pol_ABookViewType_0">Thumbnail</string>
+			<string id="Pol_ABookViewType_1">List</string>
+			<string id="Pol_ABookViewType">Abook.ViewType</string>
+			<string id="Pol_ABookViewType_Help">Choose the view type of the Address Book entries.
+
+Available view types:
+ - Thumbnail
+ - List</string>
+			<string id="Pol_UiLang_13">Japanese</string>
+			<string id="Pol_UiLang_9">German</string>
+			<string id="Pol_UiLang_14">Korean</string>
+			<string id="Pol_UiLang_4">Dutch</string>
+			<string id="Pol_UiLang_8">French</string>
+			<string id="Pol_UiLang_19">Romanian</string>
+			<string id="Pol_UiLang_20">Russian</string>
+			<string id="Pol_UiLang_26">Turkish</string>
+			<string id="Pol_UiLang_1">Croatian</string>
+			<string id="Pol_UiLang_11">Hungaria</string>
+			<string id="Pol_UiLang_15">Norwegian</string>
+			<string id="Pol_UiLang_10">Greek</string>
+			<string id="Pol_UiLang_2">Czech</string>
+			<string id="Pol_UiLang_6">Estonian</string>
+			<string id="Pol_UiLang_3">Danish</string>
+			<string id="Pol_UiLang_18">Portuguese (Brazil)</string>
+			<string id="Pol_UiLang_27">Ukrainian</string>
+			<string id="Pol_UiLang_25">Traditional Chinese</string>
+			<string id="Pol_UiLang_5">English</string>
+			<string id="Pol_UiLang_0">Bulgarian</string>
+			<string id="Pol_UiLang_23">Spanish</string>
+			<string id="Pol_UiLang_16">Polish</string>
+			<string id="Pol_UiLang_24">Swedish</string>
+			<string id="Pol_UiLang_7">Finnish</string>
+			<string id="Pol_UiLang_22">Slovak</string>
+			<string id="Pol_UiLang_21">Simplified Chinese</string>
+			<string id="Pol_UiLang_17">Portuguese</string>
+			<string id="Pol_UiLang_12">Italian</string>
+			<string id="Pol_UiLang">Ui.Lang</string>
+			<string id="Pol_UiLang_Help">Set the application's language.
+AnyDesk supports the following language:
+
+ - Bulgarian
+ - Croatian
+ - Czech
+ - Danish
+ - Dutch
+ - English
+ - Estonian
+ - Finnish
+ - French
+ - German
+ - Greek
+ - Hungaria
+ - Italian
+ - Japanese
+ - Korean
+ - Norwegian
+ - Polish
+ - Portuguese
+ - Portuguese (Brazil)
+ - Romanian
+ - Russian
+ - Simplified Chinese
+ - Slovak
+ - Spanish
+ - Swedish
+ - Traditional Chinese
+ - Turkish
+ - Ukrainian</string>
+			<string id="Pol_UiLangAuto">Ui.Lang.Auto</string>
+			<string id="Pol_UiLangAuto_Help">Enable/disable auto detection and selection of the operating system's language.
+
+Default value:
+ - Enabled</string>
+			<string id="Pol_UiAliasOrId">Ui.AliasOrId</string>
+			<string id="Pol_UiAliasOrId_Help">Choose between showing the AnyDesk ID or the assigned Alias.
+
+Default:
+ - AnyDesk ID</string>
+			<string id="Pol_UiMaximizeType">Ui.MaximizeType</string>
+			<string id="Pol_UiMaximizeType_Help">Hide the task bar if the AnyDesk window is maximized.
+
+Default value:
+ - False</string>
+			<string id="Pol_UiCommentSession">Ui.CommentSession</string>
+			<string id="Pol_UiCommentSession_Help">Enable/disable the comment function after a session has ended.
+
+Default value:
+ - Enabled</string>
+			<string id="Pol_RosterAdvView">Roster.AdvView</string>
+			<string id="Pol_RosterAdvView_Help"></string>
+			<string id="Pol_SecurityInteractiveAccess_0">Disabled</string>
+			<string id="Pol_SecurityInteractiveAccess_1">Only if window is open</string>
+			<string id="Pol_SecurityInteractiveAccess_2">Allow always</string>
+			<string id="Pol_SecurityInteractiveAccess">Security.InteractiveAccess</string>
+			<string id="Pol_SecurityInteractiveAccess_Help"></string>
+			<string id="Pol_SecurityAclEnabled">Security.AclEnabled</string>
+			<string id="Pol_SecurityAclEnabled_Help">Enabled the ACL (Access Control List).</string>
+			<string id="Pol_SecurityAclList">Security.AclList</string>
+			<string id="Pol_SecurityAclList_Help">Enter ID/Alias to limit accessability.
+To separate multiple IDs/Aliases use ; as a delimiter.
+
+Example:
+MyAnyDeskAlias@ad:true;123456789:true;</string>
+			<string id="Pol_DiscoveryDefaultBehavior">Discovery.DefaultBehavior</string>
+			<string id="Pol_DiscoveryDefaultBehavior_Help">Disable or enable the discovery settings completely.</string>
+			<string id="Pol_DiscoveryEnabled">Discovery.Enabled</string>
+			<string id="Pol_DiscoveryEnabled_Help">Enable/Disable the search of ther clients within the local network.</string>
+			<string id="Pol_DiscoveryHidden">Discovery.Hidden</string>
+			<string id="Pol_DiscoveryHidden_Help">Exclude the client from the discovery search within his local network.</string>
+			<string id="Pol_PrivacyNameShow_0">Account username</string>
+			<string id="Pol_PrivacyNameShow_1">Custom</string>
+			<string id="Pol_PrivacyNameShow">Privacy.Name.Show</string>
+			<string id="Pol_PrivacyNameShow_Help"></string>
+			<string id="Pol_PrivacyName">Privacy.Name</string>
+			<string id="Pol_PrivacyName_Help">Enter a custom username that will be visible:
+
+On the client side:
+ - The discovery list
+
+On the remote side:
+ - The cursor label
+ - The connection window
+
+Note, that you need to enable a custom username with the option "Privacy.Name.Show" set to "Custom".</string>
+			<string id="Pol_PrivacyImageShow_0">Hide</string>
+			<string id="Pol_PrivacyImageShow_1">Account image</string>
+			<string id="Pol_PrivacyImageShow">Privacy.Image.Show</string>
+			<string id="Pol_PrivacyImageShow_Help"></string>
+			<string id="Pol_PrivacyBkgndShow_0">Deactivated</string>
+			<string id="Pol_PrivacyBkgndShow_1">Account's desktop wallpaper</string>
+			<string id="Pol_PrivacyBkgndShow_2">Screenshot</string>
+			<string id="Pol_PrivacyBkgndShow">Privacy.Bkgnd.Show</string>
+			<string id="Pol_PrivacyBkgndShow_Help"></string>
+			<string id="Pol_PrivacyScrshotPathCfg_0">Automatically</string>
+			<string id="Pol_PrivacyScrshotPathCfg_1">Custom</string>
+			<string id="Pol_PrivacyScrshotPathCfg">Privacy.Scrshot.PathCfg</string>
+			<string id="Pol_PrivacyScrshotPathCfg_Help"></string>
+			<string id="Pol_PrivacyScrshotPath">Privacy.Scrshot.Path</string>
+			<string id="Pol_PrivacyScrshotPath_Help"></string>
+			<string id="Pol_PrivacyChatPathCfg_0">Disabled</string>
+			<string id="Pol_PrivacyChatPathCfg_1">Default path</string>
+			<string id="Pol_PrivacyChatPathCfg_2">Custom path</string>
+			<string id="Pol_PrivacyChatPathCfg">Privacy.Chat.PathCfg</string>
+			<string id="Pol_PrivacyChatPathCfg_Help"></string>
+			<string id="Pol_PrivacyScreenFrameMode_0">Disabled</string>
+			<string id="Pol_PrivacyScreenFrameMode_1">Enabled</string>
+			<string id="Pol_PrivacyScreenFrameMode">Privacy.ScreenFrame.Mode</string>
+			<string id="Pol_PrivacyScreenFrameMode_Help"></string>
+			<string id="Pol_PrivacyScreenFrameColorDefault">Privacy.ScreenFrame.Color.Default</string>
+			<string id="Pol_PrivacyScreenFrameColorDefault_Help">Set screen frame default color.
+Note: the color string must be in hexadecimal RGB or RGBA format (e.g. #DEC0DE/#DEADBEEF).</string>
+			<string id="Pol_PrivacyScreenFrameColorWatched">Privacy.ScreenFrame.Color.Watched</string>
+			<string id="Pol_PrivacyScreenFrameColorWatched_Help">Set screen frame watched color (the frame on active session monitor).
+Note: the color string must be in hexadecimal RGB or RGBA format (e.g. #DEC0DE/#DEADBEEF).</string>
+			<string id="Pol_PrivacyScreenFrameWidth">Privacy.ScreenFrame.Width</string>
+			<string id="Pol_PrivacyScreenFrameWidth_Help"></string>
+			<string id="Pol_ImageQualityPreset_0">Best Quality</string>
+			<string id="Pol_ImageQualityPreset_1">Balanced</string>
+			<string id="Pol_ImageQualityPreset_2">Responsive</string>
+			<string id="Pol_ImageQualityPreset">Image.QualityPreset</string>
+			<string id="Pol_ImageQualityPreset_Help">Set the image quality during a session.</string>
+			<string id="Pol_ImageShowRemoteCursor">Image.ShowRemoteCursor</string>
+			<string id="Pol_ImageShowRemoteCursor_Help">Show/Hide the remote user's cursor.</string>
+			<string id="Pol_ImageMoveSizeHlp">Image.MoveSizeHlp</string>
+			<string id="Pol_ImageMoveSizeHlp_Help"></string>
+			<string id="Pol_ImageSuppressKeys">Image.SuppressKeys</string>
+			<string id="Pol_ImageSuppressKeys_Help"></string>
+			<string id="Pol_ImageViewmode_0">Original size</string>
+			<string id="Pol_ImageViewmode_1">Optimize display (shrink)</string>
+			<string id="Pol_ImageViewmode_2">Optimize monitor usage (stretch)</string>
+			<string id="Pol_ImageViewmode">Image.Viewmode</string>
+			<string id="Pol_ImageViewmode_Help">Choose the screen's view mode during a connection.</string>
+			<string id="Pol_ImageInstaFullscreen">Image.InstaFullscreen</string>
+			<string id="Pol_ImageInstaFullscreen_Help">Enable/Disable the fullscreen mode on session start.</string>
+			<string id="Pol_ImageEdgeScroll">Image.EdgeScroll</string>
+			<string id="Pol_ImageEdgeScroll_Help"></string>
+			<string id="Pol_ImageRendermode_0">Disable</string>
+			<string id="Pol_ImageRendermode_1">DirectDraw</string>
+			<string id="Pol_ImageRendermode_2">Direct3D</string>
+			<string id="Pol_ImageRendermode_3">OpenGL</string>
+			<string id="Pol_ImageRendermode">Image.Rendermode</string>
+			<string id="Pol_ImageRendermode_Help">Choose from the available renderer.</string>
+			<string id="Pol_SessionRememberSettings">Session.RememberSettings</string>
+			<string id="Pol_SessionRememberSettings_Help"></string>
+			<string id="Pol_AudioTransmitMode_0">Disable</string>
+			<string id="Pol_AudioTransmitMode_1">Standard</string>
+			<string id="Pol_AudioTransmitMode_2">Transmit audio output</string>
+			<string id="Pol_AudioTransmitMode_3">Specify</string>
+			<string id="Pol_AudioTransmitMode">Audio.TransmitMode</string>
+			<string id="Pol_AudioTransmitMode_Help">Choose from the available audio transmission modes.</string>
+			<string id="Pol_AudioPlaybackMode_0">Disable</string>
+			<string id="Pol_AudioPlaybackMode_1">Standard</string>
+			<string id="Pol_AudioPlaybackMode_2">Specify</string>
+			<string id="Pol_AudioPlaybackMode">Audio.PlaybackMode</string>
+			<string id="Pol_AudioPlaybackMode_Help">Choose an audio playback mode.</string>
+			<string id="Pol_AudioExclusive">Audio.Exclusive</string>
+			<string id="Pol_AudioExclusive_Help"></string>
+			<string id="Pol_AnynetDirect">Anynet.Direct</string>
+			<string id="Pol_AnynetDirect_Help">Enable/Disable direct connections between clients.</string>
+			<string id="Pol_AnynetListenPort">Anynet.ListenPort</string>
+			<string id="Pol_AnynetListenPort_Help">Specify the port for direct connections (default 7070).</string>
+			<string id="Pol_RecordingAutoStartIncomingAdmin">Recording.AutoStart.Incoming.Admin</string>
+			<string id="Pol_RecordingAutoStartIncomingAdmin_Help">Enable/Disable automatic recording on incoming session start (If no Windows-User is logged in).</string>
+			<string id="Pol_RecordingAutoStartIncoming">Recording.AutoStart.Incoming</string>
+			<string id="Pol_RecordingAutoStartIncoming_Help">Enable/Disable automatic recording on incoming session start (While a Windows-User is logged in).</string>
+			<string id="Pol_RecordingAutoStartOutgoing">Recording.AutoStart.Outgoing</string>
+			<string id="Pol_RecordingAutoStartOutgoing_Help">Enable/Disable automatic recording on outgoing session start.</string>
+			<string id="Pol_RecordingPathCfg_0">Default path</string>
+			<string id="Pol_RecordingPathCfg_1">Custom path</string>
+			<string id="Pol_RecordingPathCfg">Recording.PathCfg</string>
+			<string id="Pol_RecordingPathCfg_Help">Note, to set a custom path for the recordings, please select "Custom path" from the dropdown list on the left side.</string>
+			<string id="Pol_UiMainWinMax">Ui.MainWin.Max</string>
+			<string id="Pol_UiMainWinMax_Help">Start AnyDesk with the window being maximized.</string>
+			<string id="Pol_UiMainWinX">Ui.MainWin.X</string>
+			<string id="Pol_UiMainWinX_Help">Set the windows's X position.</string>
+			<string id="Pol_UiMainWinY">Ui.MainWin.Y</string>
+			<string id="Pol_UiMainWinY_Help">Set the windows's Y position.</string>
+			<string id="Pol_UiMainWinWidth">Ui.MainWin.Width</string>
+			<string id="Pol_UiMainWinWidth_Help">Set the window width.</string>
+			<string id="Pol_UiMainWinHeight">Ui.MainWin.Height</string>
+			<string id="Pol_UiMainWinHeight_Help">Set the window height.</string>
+			<string id="Pol_UiDisclaimerTitle">Ui.Disclaimer.Title</string>
+			<string id="Pol_UiDisclaimerTitle_Help">Specify a title for the disclamer window.</string>
+			<string id="Pol_UiDisclaimerText">Ui.Disclaimer.Text</string>
+			<string id="Pol_UiDisclaimerText_Help">Specify a text for the disclamer window.</string>
+			<string id="Pol_UiDisclaimerAccept">Ui.Disclaimer.Accept</string>
+			<string id="Pol_UiDisclaimerAccept_Help">Specify a text for the disclamer's accept button.</string>
+			<string id="Pol_UiDisclaimerCancel">Ui.Disclaimer.Cancel</string>
+			<string id="Pol_UiDisclaimerCancel_Help">Specify a text for the disclamer's cancel button.</string>
+			<string id="Pol_UiDisclaimerTextColor">Ui.Disclaimer.Text.Color</string>
+			<string id="Pol_UiDisclaimerTextColor_Help"></string>
+			<string id="Pol_UiDisclaimerBgColor">Ui.Disclaimer.Bg.Color</string>
+			<string id="Pol_UiDisclaimerBgColor_Help"></string>
+			<string id="Pol_UiWindowTitle">Ui.WindowTitle</string>
+			<string id="Pol_UiWindowTitle_Help">Set the window title.</string>
+			<string id="Pol_UiIdGroupColor">Ui.IdGroup.Color</string>
+			<string id="Pol_UiIdGroupColor_Help"></string>
+			<string id="Pol_UiIdGroupTitle">Ui.IdGroup.Title</string>
+			<string id="Pol_UiIdGroupTitle_Help"></string>
+			<string id="Pol_UiIdGroupText">Ui.IdGroup.Text</string>
+			<string id="Pol_UiIdGroupText_Help"></string>
+			<string id="Pol_UiConnectGroupColor">Ui.ConnectGroup.Color</string>
+			<string id="Pol_UiConnectGroupColor_Help"></string>
+			<string id="Pol_UiConnectGroupTitle">Ui.ConnectGroup.Title</string>
+			<string id="Pol_UiConnectGroupTitle_Help"></string>
+			<string id="Pol_UiConnectGroupText">Ui.ConnectGroup.Text</string>
+			<string id="Pol_UiConnectGroupText_Help"></string>
+			<string id="Pol_UiInstallGroupColor">Ui.InstallGroup.Color</string>
+			<string id="Pol_UiInstallGroupColor_Help"></string>
+			<string id="Pol_UiVersionGroupColor">Ui.VersionGroup.Color</string>
+			<string id="Pol_UiVersionGroupColor_Help"></string>
+			<string id="Pol_UiSupportGroupColor">Ui.SupportGroup.Color</string>
+			<string id="Pol_UiSupportGroupColor_Help"></string>
+			<string id="Pol_SecurityPasswordsPermissions">Security.PasswordsPermissions</string>
+			<string id="Pol_SecurityPasswordsPermissions_Help">Set the permissions for each additional password you have specified.
+
+Following an example how you must specify the permissions for a particular ID:
+hash1:perm_a,perm_b,perm_c;hash2:perm_b;hash3:perm_d,perm_e;</string>
+			<string id="Pol_SecurityPermissionProfilesEnablePreviousSession">Security.PermissionProfiles.EnablePreviousSession</string>
+			<string id="Pol_SecurityPermissionProfilesEnablePreviousSession_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesCanCreate">Security.PermissionProfiles.CanCreate</string>
+			<string id="Pol_SecurityPermissionProfilesCanCreate_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesCanSwitchProfile">Security.PermissionProfiles.CanSwitchProfile</string>
+			<string id="Pol_SecurityPermissionProfilesCanSwitchProfile_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesShowInAcceptWindow">Security.PermissionProfiles.ShowInAcceptWindow</string>
+			<string id="Pol_SecurityPermissionProfilesShowInAcceptWindow_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesPermissionsAudio">Security.PermissionProfiles.Permissions.Audio</string>
+			<string id="Pol_SecurityPermissionProfilesPermissionsAudio_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesPermissionsInput">Security.PermissionProfiles.Permissions.Input</string>
+			<string id="Pol_SecurityPermissionProfilesPermissionsInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesPermissionsClipboard">Security.PermissionProfiles.Permissions.Clipboard</string>
+			<string id="Pol_SecurityPermissionProfilesPermissionsClipboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesPermissionsClipboardFiles">Security.PermissionProfiles.Permissions.ClipboardFiles</string>
+			<string id="Pol_SecurityPermissionProfilesPermissionsClipboardFiles_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesPermissionsBlockInput">Security.PermissionProfiles.Permissions.BlockInput</string>
+			<string id="Pol_SecurityPermissionProfilesPermissionsBlockInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesPermissionsSas">Security.PermissionProfiles.Permissions.Sas</string>
+			<string id="Pol_SecurityPermissionProfilesPermissionsSas_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesPermissionsRestart">Security.PermissionProfiles.Permissions.Restart</string>
+			<string id="Pol_SecurityPermissionProfilesPermissionsRestart_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesPermissionsFileManager">Security.PermissionProfiles.Permissions.FileManager</string>
+			<string id="Pol_SecurityPermissionProfilesPermissionsFileManager_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesPermissionsLockDesk">Security.PermissionProfiles.Permissions.LockDesk</string>
+			<string id="Pol_SecurityPermissionProfilesPermissionsLockDesk_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesPermissionsSysinfo">Security.PermissionProfiles.Permissions.Sysinfo</string>
+			<string id="Pol_SecurityPermissionProfilesPermissionsSysinfo_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesPermissionsWhiteboard">Security.PermissionProfiles.Permissions.Whiteboard</string>
+			<string id="Pol_SecurityPermissionProfilesPermissionsWhiteboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesPermissionsTcpTunnel">Security.PermissionProfiles.Permissions.TcpTunnel</string>
+			<string id="Pol_SecurityPermissionProfilesPermissionsTcpTunnel_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesPermissionsVpn">Security.PermissionProfiles.Permissions.Vpn</string>
+			<string id="Pol_SecurityPermissionProfilesPermissionsVpn_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesPermissionsUserPointer">Security.PermissionProfiles.Permissions.UserPointer</string>
+			<string id="Pol_SecurityPermissionProfilesPermissionsUserPointer_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesPermissionsPrivacyFeature">Security.PermissionProfiles.Permissions.PrivacyFeature</string>
+			<string id="Pol_SecurityPermissionProfilesPermissionsPrivacyFeature_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesPermissionsRecordSession">Security.PermissionProfiles.Permissions.RecordSession</string>
+			<string id="Pol_SecurityPermissionProfilesPermissionsRecordSession_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesChangeableInAcceptWindowAudio">Security.PermissionProfiles.ChangeableInAcceptWindow.Audio</string>
+			<string id="Pol_SecurityPermissionProfilesChangeableInAcceptWindowAudio_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesChangeableInAcceptWindowInput">Security.PermissionProfiles.ChangeableInAcceptWindow.Input</string>
+			<string id="Pol_SecurityPermissionProfilesChangeableInAcceptWindowInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesChangeableInAcceptWindowClipboard">Security.PermissionProfiles.ChangeableInAcceptWindow.Clipboard</string>
+			<string id="Pol_SecurityPermissionProfilesChangeableInAcceptWindowClipboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesChangeableInAcceptWindowClipboardFiles">Security.PermissionProfiles.ChangeableInAcceptWindow.ClipboardFiles</string>
+			<string id="Pol_SecurityPermissionProfilesChangeableInAcceptWindowClipboardFiles_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesChangeableInAcceptWindowBlockInput">Security.PermissionProfiles.ChangeableInAcceptWindow.BlockInput</string>
+			<string id="Pol_SecurityPermissionProfilesChangeableInAcceptWindowBlockInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesChangeableInAcceptWindowSas">Security.PermissionProfiles.ChangeableInAcceptWindow.Sas</string>
+			<string id="Pol_SecurityPermissionProfilesChangeableInAcceptWindowSas_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesChangeableInAcceptWindowRestart">Security.PermissionProfiles.ChangeableInAcceptWindow.Restart</string>
+			<string id="Pol_SecurityPermissionProfilesChangeableInAcceptWindowRestart_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesChangeableInAcceptWindowFileManager">Security.PermissionProfiles.ChangeableInAcceptWindow.FileManager</string>
+			<string id="Pol_SecurityPermissionProfilesChangeableInAcceptWindowFileManager_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesChangeableInAcceptWindowLockDesk">Security.PermissionProfiles.ChangeableInAcceptWindow.LockDesk</string>
+			<string id="Pol_SecurityPermissionProfilesChangeableInAcceptWindowLockDesk_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesChangeableInAcceptWindowSysinfo">Security.PermissionProfiles.ChangeableInAcceptWindow.Sysinfo</string>
+			<string id="Pol_SecurityPermissionProfilesChangeableInAcceptWindowSysinfo_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesChangeableInAcceptWindowWhiteboard">Security.PermissionProfiles.ChangeableInAcceptWindow.Whiteboard</string>
+			<string id="Pol_SecurityPermissionProfilesChangeableInAcceptWindowWhiteboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesChangeableInAcceptWindowTcpTunnel">Security.PermissionProfiles.ChangeableInAcceptWindow.TcpTunnel</string>
+			<string id="Pol_SecurityPermissionProfilesChangeableInAcceptWindowTcpTunnel_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesChangeableInAcceptWindowVpn">Security.PermissionProfiles.ChangeableInAcceptWindow.Vpn</string>
+			<string id="Pol_SecurityPermissionProfilesChangeableInAcceptWindowVpn_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesChangeableInAcceptWindowUserPointer">Security.PermissionProfiles.ChangeableInAcceptWindow.UserPointer</string>
+			<string id="Pol_SecurityPermissionProfilesChangeableInAcceptWindowUserPointer_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesChangeableInAcceptWindowPrivacyFeature">Security.PermissionProfiles.ChangeableInAcceptWindow.PrivacyFeature</string>
+			<string id="Pol_SecurityPermissionProfilesChangeableInAcceptWindowPrivacyFeature_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesChangeableInAcceptWindowRecordSession">Security.PermissionProfiles.ChangeableInAcceptWindow.RecordSession</string>
+			<string id="Pol_SecurityPermissionProfilesChangeableInAcceptWindowRecordSession_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile1Removed">Security.PermissionProfiles.Profile1.Removed</string>
+			<string id="Pol_SecurityPermissionProfilesProfile1Removed_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile2Removed">Security.PermissionProfiles.Profile2.Removed</string>
+			<string id="Pol_SecurityPermissionProfilesProfile2Removed_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile3Removed">Security.PermissionProfiles.Profile3.Removed</string>
+			<string id="Pol_SecurityPermissionProfilesProfile3Removed_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile4Removed">Security.PermissionProfiles.Profile4.Removed</string>
+			<string id="Pol_SecurityPermissionProfilesProfile4Removed_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile5Removed">Security.PermissionProfiles.Profile5.Removed</string>
+			<string id="Pol_SecurityPermissionProfilesProfile5Removed_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile6Removed">Security.PermissionProfiles.Profile6.Removed</string>
+			<string id="Pol_SecurityPermissionProfilesProfile6Removed_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile7Removed">Security.PermissionProfiles.Profile7.Removed</string>
+			<string id="Pol_SecurityPermissionProfilesProfile7Removed_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile8Removed">Security.PermissionProfiles.Profile8.Removed</string>
+			<string id="Pol_SecurityPermissionProfilesProfile8Removed_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile9Removed">Security.PermissionProfiles.Profile9.Removed</string>
+			<string id="Pol_SecurityPermissionProfilesProfile9Removed_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile10Removed">Security.PermissionProfiles.Profile10.Removed</string>
+			<string id="Pol_SecurityPermissionProfilesProfile10Removed_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultRemoved">Security.PermissionProfiles._Default.Removed</string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultRemoved_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessRemoved">Security.PermissionProfiles._FullAccess.Removed</string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessRemoved_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingRemoved">Security.PermissionProfiles._ScreenSharing.Removed</string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingRemoved_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessRemoved">Security.PermissionProfiles._UnattendedAccess.Removed</string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessRemoved_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile1ShowInAcceptWindow">Security.PermissionProfiles.Profile1.ShowInAcceptWindow</string>
+			<string id="Pol_SecurityPermissionProfilesProfile1ShowInAcceptWindow_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile2ShowInAcceptWindow">Security.PermissionProfiles.Profile2.ShowInAcceptWindow</string>
+			<string id="Pol_SecurityPermissionProfilesProfile2ShowInAcceptWindow_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile3ShowInAcceptWindow">Security.PermissionProfiles.Profile3.ShowInAcceptWindow</string>
+			<string id="Pol_SecurityPermissionProfilesProfile3ShowInAcceptWindow_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile4ShowInAcceptWindow">Security.PermissionProfiles.Profile4.ShowInAcceptWindow</string>
+			<string id="Pol_SecurityPermissionProfilesProfile4ShowInAcceptWindow_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile5ShowInAcceptWindow">Security.PermissionProfiles.Profile5.ShowInAcceptWindow</string>
+			<string id="Pol_SecurityPermissionProfilesProfile5ShowInAcceptWindow_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile6ShowInAcceptWindow">Security.PermissionProfiles.Profile6.ShowInAcceptWindow</string>
+			<string id="Pol_SecurityPermissionProfilesProfile6ShowInAcceptWindow_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile7ShowInAcceptWindow">Security.PermissionProfiles.Profile7.ShowInAcceptWindow</string>
+			<string id="Pol_SecurityPermissionProfilesProfile7ShowInAcceptWindow_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile8ShowInAcceptWindow">Security.PermissionProfiles.Profile8.ShowInAcceptWindow</string>
+			<string id="Pol_SecurityPermissionProfilesProfile8ShowInAcceptWindow_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile9ShowInAcceptWindow">Security.PermissionProfiles.Profile9.ShowInAcceptWindow</string>
+			<string id="Pol_SecurityPermissionProfilesProfile9ShowInAcceptWindow_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile10ShowInAcceptWindow">Security.PermissionProfiles.Profile10.ShowInAcceptWindow</string>
+			<string id="Pol_SecurityPermissionProfilesProfile10ShowInAcceptWindow_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultShowInAcceptWindow">Security.PermissionProfiles._Default.ShowInAcceptWindow</string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultShowInAcceptWindow_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessShowInAcceptWindow">Security.PermissionProfiles._FullAccess.ShowInAcceptWindow</string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessShowInAcceptWindow_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingShowInAcceptWindow">Security.PermissionProfiles._ScreenSharing.ShowInAcceptWindow</string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingShowInAcceptWindow_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessShowInAcceptWindow">Security.PermissionProfiles._UnattendedAccess.ShowInAcceptWindow</string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessShowInAcceptWindow_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile1CanSwitchProfile">Security.PermissionProfiles.Profile1.CanSwitchProfile</string>
+			<string id="Pol_SecurityPermissionProfilesProfile1CanSwitchProfile_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile2CanSwitchProfile">Security.PermissionProfiles.Profile2.CanSwitchProfile</string>
+			<string id="Pol_SecurityPermissionProfilesProfile2CanSwitchProfile_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile3CanSwitchProfile">Security.PermissionProfiles.Profile3.CanSwitchProfile</string>
+			<string id="Pol_SecurityPermissionProfilesProfile3CanSwitchProfile_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile4CanSwitchProfile">Security.PermissionProfiles.Profile4.CanSwitchProfile</string>
+			<string id="Pol_SecurityPermissionProfilesProfile4CanSwitchProfile_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile5CanSwitchProfile">Security.PermissionProfiles.Profile5.CanSwitchProfile</string>
+			<string id="Pol_SecurityPermissionProfilesProfile5CanSwitchProfile_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile6CanSwitchProfile">Security.PermissionProfiles.Profile6.CanSwitchProfile</string>
+			<string id="Pol_SecurityPermissionProfilesProfile6CanSwitchProfile_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile7CanSwitchProfile">Security.PermissionProfiles.Profile7.CanSwitchProfile</string>
+			<string id="Pol_SecurityPermissionProfilesProfile7CanSwitchProfile_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile8CanSwitchProfile">Security.PermissionProfiles.Profile8.CanSwitchProfile</string>
+			<string id="Pol_SecurityPermissionProfilesProfile8CanSwitchProfile_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile9CanSwitchProfile">Security.PermissionProfiles.Profile9.CanSwitchProfile</string>
+			<string id="Pol_SecurityPermissionProfilesProfile9CanSwitchProfile_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile10CanSwitchProfile">Security.PermissionProfiles.Profile10.CanSwitchProfile</string>
+			<string id="Pol_SecurityPermissionProfilesProfile10CanSwitchProfile_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultCanSwitchProfile">Security.PermissionProfiles._Default.CanSwitchProfile</string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultCanSwitchProfile_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessCanSwitchProfile">Security.PermissionProfiles._FullAccess.CanSwitchProfile</string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessCanSwitchProfile_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingCanSwitchProfile">Security.PermissionProfiles._ScreenSharing.CanSwitchProfile</string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingCanSwitchProfile_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessCanSwitchProfile">Security.PermissionProfiles._UnattendedAccess.CanSwitchProfile</string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessCanSwitchProfile_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile1PermissionsAudio">Security.PermissionProfiles.Profile1.Permissions.Audio</string>
+			<string id="Pol_SecurityPermissionProfilesProfile1PermissionsAudio_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile1PermissionsInput">Security.PermissionProfiles.Profile1.Permissions.Input</string>
+			<string id="Pol_SecurityPermissionProfilesProfile1PermissionsInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile1PermissionsClipboard">Security.PermissionProfiles.Profile1.Permissions.Clipboard</string>
+			<string id="Pol_SecurityPermissionProfilesProfile1PermissionsClipboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile1PermissionsClipboardFiles">Security.PermissionProfiles.Profile1.Permissions.ClipboardFiles</string>
+			<string id="Pol_SecurityPermissionProfilesProfile1PermissionsClipboardFiles_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile1PermissionsBlockInput">Security.PermissionProfiles.Profile1.Permissions.BlockInput</string>
+			<string id="Pol_SecurityPermissionProfilesProfile1PermissionsBlockInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile1PermissionsSas">Security.PermissionProfiles.Profile1.Permissions.Sas</string>
+			<string id="Pol_SecurityPermissionProfilesProfile1PermissionsSas_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile1PermissionsRestart">Security.PermissionProfiles.Profile1.Permissions.Restart</string>
+			<string id="Pol_SecurityPermissionProfilesProfile1PermissionsRestart_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile1PermissionsFileManager">Security.PermissionProfiles.Profile1.Permissions.FileManager</string>
+			<string id="Pol_SecurityPermissionProfilesProfile1PermissionsFileManager_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile1PermissionsLockDesk">Security.PermissionProfiles.Profile1.Permissions.LockDesk</string>
+			<string id="Pol_SecurityPermissionProfilesProfile1PermissionsLockDesk_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile1PermissionsSysinfo">Security.PermissionProfiles.Profile1.Permissions.Sysinfo</string>
+			<string id="Pol_SecurityPermissionProfilesProfile1PermissionsSysinfo_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile1PermissionsWhiteboard">Security.PermissionProfiles.Profile1.Permissions.Whiteboard</string>
+			<string id="Pol_SecurityPermissionProfilesProfile1PermissionsWhiteboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile1PermissionsTcpTunnel">Security.PermissionProfiles.Profile1.Permissions.TcpTunnel</string>
+			<string id="Pol_SecurityPermissionProfilesProfile1PermissionsTcpTunnel_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile1PermissionsVpn">Security.PermissionProfiles.Profile1.Permissions.Vpn</string>
+			<string id="Pol_SecurityPermissionProfilesProfile1PermissionsVpn_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile1PermissionsUserPointer">Security.PermissionProfiles.Profile1.Permissions.UserPointer</string>
+			<string id="Pol_SecurityPermissionProfilesProfile1PermissionsUserPointer_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile1PermissionsPrivacyFeature">Security.PermissionProfiles.Profile1.Permissions.PrivacyFeature</string>
+			<string id="Pol_SecurityPermissionProfilesProfile1PermissionsPrivacyFeature_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile1PermissionsRecordSession">Security.PermissionProfiles.Profile1.Permissions.RecordSession</string>
+			<string id="Pol_SecurityPermissionProfilesProfile1PermissionsRecordSession_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile2PermissionsAudio">Security.PermissionProfiles.Profile2.Permissions.Audio</string>
+			<string id="Pol_SecurityPermissionProfilesProfile2PermissionsAudio_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile2PermissionsInput">Security.PermissionProfiles.Profile2.Permissions.Input</string>
+			<string id="Pol_SecurityPermissionProfilesProfile2PermissionsInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile2PermissionsClipboard">Security.PermissionProfiles.Profile2.Permissions.Clipboard</string>
+			<string id="Pol_SecurityPermissionProfilesProfile2PermissionsClipboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile2PermissionsClipboardFiles">Security.PermissionProfiles.Profile2.Permissions.ClipboardFiles</string>
+			<string id="Pol_SecurityPermissionProfilesProfile2PermissionsClipboardFiles_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile2PermissionsBlockInput">Security.PermissionProfiles.Profile2.Permissions.BlockInput</string>
+			<string id="Pol_SecurityPermissionProfilesProfile2PermissionsBlockInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile2PermissionsSas">Security.PermissionProfiles.Profile2.Permissions.Sas</string>
+			<string id="Pol_SecurityPermissionProfilesProfile2PermissionsSas_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile2PermissionsRestart">Security.PermissionProfiles.Profile2.Permissions.Restart</string>
+			<string id="Pol_SecurityPermissionProfilesProfile2PermissionsRestart_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile2PermissionsFileManager">Security.PermissionProfiles.Profile2.Permissions.FileManager</string>
+			<string id="Pol_SecurityPermissionProfilesProfile2PermissionsFileManager_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile2PermissionsLockDesk">Security.PermissionProfiles.Profile2.Permissions.LockDesk</string>
+			<string id="Pol_SecurityPermissionProfilesProfile2PermissionsLockDesk_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile2PermissionsSysinfo">Security.PermissionProfiles.Profile2.Permissions.Sysinfo</string>
+			<string id="Pol_SecurityPermissionProfilesProfile2PermissionsSysinfo_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile2PermissionsWhiteboard">Security.PermissionProfiles.Profile2.Permissions.Whiteboard</string>
+			<string id="Pol_SecurityPermissionProfilesProfile2PermissionsWhiteboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile2PermissionsTcpTunnel">Security.PermissionProfiles.Profile2.Permissions.TcpTunnel</string>
+			<string id="Pol_SecurityPermissionProfilesProfile2PermissionsTcpTunnel_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile2PermissionsVpn">Security.PermissionProfiles.Profile2.Permissions.Vpn</string>
+			<string id="Pol_SecurityPermissionProfilesProfile2PermissionsVpn_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile2PermissionsUserPointer">Security.PermissionProfiles.Profile2.Permissions.UserPointer</string>
+			<string id="Pol_SecurityPermissionProfilesProfile2PermissionsUserPointer_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile2PermissionsPrivacyFeature">Security.PermissionProfiles.Profile2.Permissions.PrivacyFeature</string>
+			<string id="Pol_SecurityPermissionProfilesProfile2PermissionsPrivacyFeature_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile2PermissionsRecordSession">Security.PermissionProfiles.Profile2.Permissions.RecordSession</string>
+			<string id="Pol_SecurityPermissionProfilesProfile2PermissionsRecordSession_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile3PermissionsAudio">Security.PermissionProfiles.Profile3.Permissions.Audio</string>
+			<string id="Pol_SecurityPermissionProfilesProfile3PermissionsAudio_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile3PermissionsInput">Security.PermissionProfiles.Profile3.Permissions.Input</string>
+			<string id="Pol_SecurityPermissionProfilesProfile3PermissionsInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile3PermissionsClipboard">Security.PermissionProfiles.Profile3.Permissions.Clipboard</string>
+			<string id="Pol_SecurityPermissionProfilesProfile3PermissionsClipboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile3PermissionsClipboardFiles">Security.PermissionProfiles.Profile3.Permissions.ClipboardFiles</string>
+			<string id="Pol_SecurityPermissionProfilesProfile3PermissionsClipboardFiles_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile3PermissionsBlockInput">Security.PermissionProfiles.Profile3.Permissions.BlockInput</string>
+			<string id="Pol_SecurityPermissionProfilesProfile3PermissionsBlockInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile3PermissionsSas">Security.PermissionProfiles.Profile3.Permissions.Sas</string>
+			<string id="Pol_SecurityPermissionProfilesProfile3PermissionsSas_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile3PermissionsRestart">Security.PermissionProfiles.Profile3.Permissions.Restart</string>
+			<string id="Pol_SecurityPermissionProfilesProfile3PermissionsRestart_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile3PermissionsFileManager">Security.PermissionProfiles.Profile3.Permissions.FileManager</string>
+			<string id="Pol_SecurityPermissionProfilesProfile3PermissionsFileManager_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile3PermissionsLockDesk">Security.PermissionProfiles.Profile3.Permissions.LockDesk</string>
+			<string id="Pol_SecurityPermissionProfilesProfile3PermissionsLockDesk_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile3PermissionsSysinfo">Security.PermissionProfiles.Profile3.Permissions.Sysinfo</string>
+			<string id="Pol_SecurityPermissionProfilesProfile3PermissionsSysinfo_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile3PermissionsWhiteboard">Security.PermissionProfiles.Profile3.Permissions.Whiteboard</string>
+			<string id="Pol_SecurityPermissionProfilesProfile3PermissionsWhiteboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile3PermissionsTcpTunnel">Security.PermissionProfiles.Profile3.Permissions.TcpTunnel</string>
+			<string id="Pol_SecurityPermissionProfilesProfile3PermissionsTcpTunnel_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile3PermissionsVpn">Security.PermissionProfiles.Profile3.Permissions.Vpn</string>
+			<string id="Pol_SecurityPermissionProfilesProfile3PermissionsVpn_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile3PermissionsUserPointer">Security.PermissionProfiles.Profile3.Permissions.UserPointer</string>
+			<string id="Pol_SecurityPermissionProfilesProfile3PermissionsUserPointer_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile3PermissionsPrivacyFeature">Security.PermissionProfiles.Profile3.Permissions.PrivacyFeature</string>
+			<string id="Pol_SecurityPermissionProfilesProfile3PermissionsPrivacyFeature_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile3PermissionsRecordSession">Security.PermissionProfiles.Profile3.Permissions.RecordSession</string>
+			<string id="Pol_SecurityPermissionProfilesProfile3PermissionsRecordSession_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile4PermissionsAudio">Security.PermissionProfiles.Profile4.Permissions.Audio</string>
+			<string id="Pol_SecurityPermissionProfilesProfile4PermissionsAudio_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile4PermissionsInput">Security.PermissionProfiles.Profile4.Permissions.Input</string>
+			<string id="Pol_SecurityPermissionProfilesProfile4PermissionsInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile4PermissionsClipboard">Security.PermissionProfiles.Profile4.Permissions.Clipboard</string>
+			<string id="Pol_SecurityPermissionProfilesProfile4PermissionsClipboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile4PermissionsClipboardFiles">Security.PermissionProfiles.Profile4.Permissions.ClipboardFiles</string>
+			<string id="Pol_SecurityPermissionProfilesProfile4PermissionsClipboardFiles_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile4PermissionsBlockInput">Security.PermissionProfiles.Profile4.Permissions.BlockInput</string>
+			<string id="Pol_SecurityPermissionProfilesProfile4PermissionsBlockInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile4PermissionsSas">Security.PermissionProfiles.Profile4.Permissions.Sas</string>
+			<string id="Pol_SecurityPermissionProfilesProfile4PermissionsSas_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile4PermissionsRestart">Security.PermissionProfiles.Profile4.Permissions.Restart</string>
+			<string id="Pol_SecurityPermissionProfilesProfile4PermissionsRestart_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile4PermissionsFileManager">Security.PermissionProfiles.Profile4.Permissions.FileManager</string>
+			<string id="Pol_SecurityPermissionProfilesProfile4PermissionsFileManager_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile4PermissionsLockDesk">Security.PermissionProfiles.Profile4.Permissions.LockDesk</string>
+			<string id="Pol_SecurityPermissionProfilesProfile4PermissionsLockDesk_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile4PermissionsSysinfo">Security.PermissionProfiles.Profile4.Permissions.Sysinfo</string>
+			<string id="Pol_SecurityPermissionProfilesProfile4PermissionsSysinfo_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile4PermissionsWhiteboard">Security.PermissionProfiles.Profile4.Permissions.Whiteboard</string>
+			<string id="Pol_SecurityPermissionProfilesProfile4PermissionsWhiteboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile4PermissionsTcpTunnel">Security.PermissionProfiles.Profile4.Permissions.TcpTunnel</string>
+			<string id="Pol_SecurityPermissionProfilesProfile4PermissionsTcpTunnel_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile4PermissionsVpn">Security.PermissionProfiles.Profile4.Permissions.Vpn</string>
+			<string id="Pol_SecurityPermissionProfilesProfile4PermissionsVpn_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile4PermissionsUserPointer">Security.PermissionProfiles.Profile4.Permissions.UserPointer</string>
+			<string id="Pol_SecurityPermissionProfilesProfile4PermissionsUserPointer_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile4PermissionsPrivacyFeature">Security.PermissionProfiles.Profile4.Permissions.PrivacyFeature</string>
+			<string id="Pol_SecurityPermissionProfilesProfile4PermissionsPrivacyFeature_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile4PermissionsRecordSession">Security.PermissionProfiles.Profile4.Permissions.RecordSession</string>
+			<string id="Pol_SecurityPermissionProfilesProfile4PermissionsRecordSession_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile5PermissionsAudio">Security.PermissionProfiles.Profile5.Permissions.Audio</string>
+			<string id="Pol_SecurityPermissionProfilesProfile5PermissionsAudio_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile5PermissionsInput">Security.PermissionProfiles.Profile5.Permissions.Input</string>
+			<string id="Pol_SecurityPermissionProfilesProfile5PermissionsInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile5PermissionsClipboard">Security.PermissionProfiles.Profile5.Permissions.Clipboard</string>
+			<string id="Pol_SecurityPermissionProfilesProfile5PermissionsClipboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile5PermissionsClipboardFiles">Security.PermissionProfiles.Profile5.Permissions.ClipboardFiles</string>
+			<string id="Pol_SecurityPermissionProfilesProfile5PermissionsClipboardFiles_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile5PermissionsBlockInput">Security.PermissionProfiles.Profile5.Permissions.BlockInput</string>
+			<string id="Pol_SecurityPermissionProfilesProfile5PermissionsBlockInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile5PermissionsSas">Security.PermissionProfiles.Profile5.Permissions.Sas</string>
+			<string id="Pol_SecurityPermissionProfilesProfile5PermissionsSas_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile5PermissionsRestart">Security.PermissionProfiles.Profile5.Permissions.Restart</string>
+			<string id="Pol_SecurityPermissionProfilesProfile5PermissionsRestart_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile5PermissionsFileManager">Security.PermissionProfiles.Profile5.Permissions.FileManager</string>
+			<string id="Pol_SecurityPermissionProfilesProfile5PermissionsFileManager_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile5PermissionsLockDesk">Security.PermissionProfiles.Profile5.Permissions.LockDesk</string>
+			<string id="Pol_SecurityPermissionProfilesProfile5PermissionsLockDesk_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile5PermissionsSysinfo">Security.PermissionProfiles.Profile5.Permissions.Sysinfo</string>
+			<string id="Pol_SecurityPermissionProfilesProfile5PermissionsSysinfo_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile5PermissionsWhiteboard">Security.PermissionProfiles.Profile5.Permissions.Whiteboard</string>
+			<string id="Pol_SecurityPermissionProfilesProfile5PermissionsWhiteboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile5PermissionsTcpTunnel">Security.PermissionProfiles.Profile5.Permissions.TcpTunnel</string>
+			<string id="Pol_SecurityPermissionProfilesProfile5PermissionsTcpTunnel_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile5PermissionsVpn">Security.PermissionProfiles.Profile5.Permissions.Vpn</string>
+			<string id="Pol_SecurityPermissionProfilesProfile5PermissionsVpn_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile5PermissionsUserPointer">Security.PermissionProfiles.Profile5.Permissions.UserPointer</string>
+			<string id="Pol_SecurityPermissionProfilesProfile5PermissionsUserPointer_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile5PermissionsPrivacyFeature">Security.PermissionProfiles.Profile5.Permissions.PrivacyFeature</string>
+			<string id="Pol_SecurityPermissionProfilesProfile5PermissionsPrivacyFeature_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile5PermissionsRecordSession">Security.PermissionProfiles.Profile5.Permissions.RecordSession</string>
+			<string id="Pol_SecurityPermissionProfilesProfile5PermissionsRecordSession_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile6PermissionsAudio">Security.PermissionProfiles.Profile6.Permissions.Audio</string>
+			<string id="Pol_SecurityPermissionProfilesProfile6PermissionsAudio_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile6PermissionsInput">Security.PermissionProfiles.Profile6.Permissions.Input</string>
+			<string id="Pol_SecurityPermissionProfilesProfile6PermissionsInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile6PermissionsClipboard">Security.PermissionProfiles.Profile6.Permissions.Clipboard</string>
+			<string id="Pol_SecurityPermissionProfilesProfile6PermissionsClipboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile6PermissionsClipboardFiles">Security.PermissionProfiles.Profile6.Permissions.ClipboardFiles</string>
+			<string id="Pol_SecurityPermissionProfilesProfile6PermissionsClipboardFiles_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile6PermissionsBlockInput">Security.PermissionProfiles.Profile6.Permissions.BlockInput</string>
+			<string id="Pol_SecurityPermissionProfilesProfile6PermissionsBlockInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile6PermissionsSas">Security.PermissionProfiles.Profile6.Permissions.Sas</string>
+			<string id="Pol_SecurityPermissionProfilesProfile6PermissionsSas_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile6PermissionsRestart">Security.PermissionProfiles.Profile6.Permissions.Restart</string>
+			<string id="Pol_SecurityPermissionProfilesProfile6PermissionsRestart_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile6PermissionsFileManager">Security.PermissionProfiles.Profile6.Permissions.FileManager</string>
+			<string id="Pol_SecurityPermissionProfilesProfile6PermissionsFileManager_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile6PermissionsLockDesk">Security.PermissionProfiles.Profile6.Permissions.LockDesk</string>
+			<string id="Pol_SecurityPermissionProfilesProfile6PermissionsLockDesk_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile6PermissionsSysinfo">Security.PermissionProfiles.Profile6.Permissions.Sysinfo</string>
+			<string id="Pol_SecurityPermissionProfilesProfile6PermissionsSysinfo_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile6PermissionsWhiteboard">Security.PermissionProfiles.Profile6.Permissions.Whiteboard</string>
+			<string id="Pol_SecurityPermissionProfilesProfile6PermissionsWhiteboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile6PermissionsTcpTunnel">Security.PermissionProfiles.Profile6.Permissions.TcpTunnel</string>
+			<string id="Pol_SecurityPermissionProfilesProfile6PermissionsTcpTunnel_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile6PermissionsVpn">Security.PermissionProfiles.Profile6.Permissions.Vpn</string>
+			<string id="Pol_SecurityPermissionProfilesProfile6PermissionsVpn_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile6PermissionsUserPointer">Security.PermissionProfiles.Profile6.Permissions.UserPointer</string>
+			<string id="Pol_SecurityPermissionProfilesProfile6PermissionsUserPointer_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile6PermissionsPrivacyFeature">Security.PermissionProfiles.Profile6.Permissions.PrivacyFeature</string>
+			<string id="Pol_SecurityPermissionProfilesProfile6PermissionsPrivacyFeature_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile6PermissionsRecordSession">Security.PermissionProfiles.Profile6.Permissions.RecordSession</string>
+			<string id="Pol_SecurityPermissionProfilesProfile6PermissionsRecordSession_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile7PermissionsAudio">Security.PermissionProfiles.Profile7.Permissions.Audio</string>
+			<string id="Pol_SecurityPermissionProfilesProfile7PermissionsAudio_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile7PermissionsInput">Security.PermissionProfiles.Profile7.Permissions.Input</string>
+			<string id="Pol_SecurityPermissionProfilesProfile7PermissionsInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile7PermissionsClipboard">Security.PermissionProfiles.Profile7.Permissions.Clipboard</string>
+			<string id="Pol_SecurityPermissionProfilesProfile7PermissionsClipboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile7PermissionsClipboardFiles">Security.PermissionProfiles.Profile7.Permissions.ClipboardFiles</string>
+			<string id="Pol_SecurityPermissionProfilesProfile7PermissionsClipboardFiles_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile7PermissionsBlockInput">Security.PermissionProfiles.Profile7.Permissions.BlockInput</string>
+			<string id="Pol_SecurityPermissionProfilesProfile7PermissionsBlockInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile7PermissionsSas">Security.PermissionProfiles.Profile7.Permissions.Sas</string>
+			<string id="Pol_SecurityPermissionProfilesProfile7PermissionsSas_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile7PermissionsRestart">Security.PermissionProfiles.Profile7.Permissions.Restart</string>
+			<string id="Pol_SecurityPermissionProfilesProfile7PermissionsRestart_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile7PermissionsFileManager">Security.PermissionProfiles.Profile7.Permissions.FileManager</string>
+			<string id="Pol_SecurityPermissionProfilesProfile7PermissionsFileManager_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile7PermissionsLockDesk">Security.PermissionProfiles.Profile7.Permissions.LockDesk</string>
+			<string id="Pol_SecurityPermissionProfilesProfile7PermissionsLockDesk_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile7PermissionsSysinfo">Security.PermissionProfiles.Profile7.Permissions.Sysinfo</string>
+			<string id="Pol_SecurityPermissionProfilesProfile7PermissionsSysinfo_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile7PermissionsWhiteboard">Security.PermissionProfiles.Profile7.Permissions.Whiteboard</string>
+			<string id="Pol_SecurityPermissionProfilesProfile7PermissionsWhiteboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile7PermissionsTcpTunnel">Security.PermissionProfiles.Profile7.Permissions.TcpTunnel</string>
+			<string id="Pol_SecurityPermissionProfilesProfile7PermissionsTcpTunnel_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile7PermissionsVpn">Security.PermissionProfiles.Profile7.Permissions.Vpn</string>
+			<string id="Pol_SecurityPermissionProfilesProfile7PermissionsVpn_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile7PermissionsUserPointer">Security.PermissionProfiles.Profile7.Permissions.UserPointer</string>
+			<string id="Pol_SecurityPermissionProfilesProfile7PermissionsUserPointer_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile7PermissionsPrivacyFeature">Security.PermissionProfiles.Profile7.Permissions.PrivacyFeature</string>
+			<string id="Pol_SecurityPermissionProfilesProfile7PermissionsPrivacyFeature_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile7PermissionsRecordSession">Security.PermissionProfiles.Profile7.Permissions.RecordSession</string>
+			<string id="Pol_SecurityPermissionProfilesProfile7PermissionsRecordSession_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile8PermissionsAudio">Security.PermissionProfiles.Profile8.Permissions.Audio</string>
+			<string id="Pol_SecurityPermissionProfilesProfile8PermissionsAudio_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile8PermissionsInput">Security.PermissionProfiles.Profile8.Permissions.Input</string>
+			<string id="Pol_SecurityPermissionProfilesProfile8PermissionsInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile8PermissionsClipboard">Security.PermissionProfiles.Profile8.Permissions.Clipboard</string>
+			<string id="Pol_SecurityPermissionProfilesProfile8PermissionsClipboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile8PermissionsClipboardFiles">Security.PermissionProfiles.Profile8.Permissions.ClipboardFiles</string>
+			<string id="Pol_SecurityPermissionProfilesProfile8PermissionsClipboardFiles_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile8PermissionsBlockInput">Security.PermissionProfiles.Profile8.Permissions.BlockInput</string>
+			<string id="Pol_SecurityPermissionProfilesProfile8PermissionsBlockInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile8PermissionsSas">Security.PermissionProfiles.Profile8.Permissions.Sas</string>
+			<string id="Pol_SecurityPermissionProfilesProfile8PermissionsSas_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile8PermissionsRestart">Security.PermissionProfiles.Profile8.Permissions.Restart</string>
+			<string id="Pol_SecurityPermissionProfilesProfile8PermissionsRestart_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile8PermissionsFileManager">Security.PermissionProfiles.Profile8.Permissions.FileManager</string>
+			<string id="Pol_SecurityPermissionProfilesProfile8PermissionsFileManager_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile8PermissionsLockDesk">Security.PermissionProfiles.Profile8.Permissions.LockDesk</string>
+			<string id="Pol_SecurityPermissionProfilesProfile8PermissionsLockDesk_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile8PermissionsSysinfo">Security.PermissionProfiles.Profile8.Permissions.Sysinfo</string>
+			<string id="Pol_SecurityPermissionProfilesProfile8PermissionsSysinfo_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile8PermissionsWhiteboard">Security.PermissionProfiles.Profile8.Permissions.Whiteboard</string>
+			<string id="Pol_SecurityPermissionProfilesProfile8PermissionsWhiteboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile8PermissionsTcpTunnel">Security.PermissionProfiles.Profile8.Permissions.TcpTunnel</string>
+			<string id="Pol_SecurityPermissionProfilesProfile8PermissionsTcpTunnel_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile8PermissionsVpn">Security.PermissionProfiles.Profile8.Permissions.Vpn</string>
+			<string id="Pol_SecurityPermissionProfilesProfile8PermissionsVpn_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile8PermissionsUserPointer">Security.PermissionProfiles.Profile8.Permissions.UserPointer</string>
+			<string id="Pol_SecurityPermissionProfilesProfile8PermissionsUserPointer_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile8PermissionsPrivacyFeature">Security.PermissionProfiles.Profile8.Permissions.PrivacyFeature</string>
+			<string id="Pol_SecurityPermissionProfilesProfile8PermissionsPrivacyFeature_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile8PermissionsRecordSession">Security.PermissionProfiles.Profile8.Permissions.RecordSession</string>
+			<string id="Pol_SecurityPermissionProfilesProfile8PermissionsRecordSession_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile9PermissionsAudio">Security.PermissionProfiles.Profile9.Permissions.Audio</string>
+			<string id="Pol_SecurityPermissionProfilesProfile9PermissionsAudio_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile9PermissionsInput">Security.PermissionProfiles.Profile9.Permissions.Input</string>
+			<string id="Pol_SecurityPermissionProfilesProfile9PermissionsInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile9PermissionsClipboard">Security.PermissionProfiles.Profile9.Permissions.Clipboard</string>
+			<string id="Pol_SecurityPermissionProfilesProfile9PermissionsClipboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile9PermissionsClipboardFiles">Security.PermissionProfiles.Profile9.Permissions.ClipboardFiles</string>
+			<string id="Pol_SecurityPermissionProfilesProfile9PermissionsClipboardFiles_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile9PermissionsBlockInput">Security.PermissionProfiles.Profile9.Permissions.BlockInput</string>
+			<string id="Pol_SecurityPermissionProfilesProfile9PermissionsBlockInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile9PermissionsSas">Security.PermissionProfiles.Profile9.Permissions.Sas</string>
+			<string id="Pol_SecurityPermissionProfilesProfile9PermissionsSas_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile9PermissionsRestart">Security.PermissionProfiles.Profile9.Permissions.Restart</string>
+			<string id="Pol_SecurityPermissionProfilesProfile9PermissionsRestart_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile9PermissionsFileManager">Security.PermissionProfiles.Profile9.Permissions.FileManager</string>
+			<string id="Pol_SecurityPermissionProfilesProfile9PermissionsFileManager_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile9PermissionsLockDesk">Security.PermissionProfiles.Profile9.Permissions.LockDesk</string>
+			<string id="Pol_SecurityPermissionProfilesProfile9PermissionsLockDesk_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile9PermissionsSysinfo">Security.PermissionProfiles.Profile9.Permissions.Sysinfo</string>
+			<string id="Pol_SecurityPermissionProfilesProfile9PermissionsSysinfo_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile9PermissionsWhiteboard">Security.PermissionProfiles.Profile9.Permissions.Whiteboard</string>
+			<string id="Pol_SecurityPermissionProfilesProfile9PermissionsWhiteboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile9PermissionsTcpTunnel">Security.PermissionProfiles.Profile9.Permissions.TcpTunnel</string>
+			<string id="Pol_SecurityPermissionProfilesProfile9PermissionsTcpTunnel_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile9PermissionsVpn">Security.PermissionProfiles.Profile9.Permissions.Vpn</string>
+			<string id="Pol_SecurityPermissionProfilesProfile9PermissionsVpn_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile9PermissionsUserPointer">Security.PermissionProfiles.Profile9.Permissions.UserPointer</string>
+			<string id="Pol_SecurityPermissionProfilesProfile9PermissionsUserPointer_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile9PermissionsPrivacyFeature">Security.PermissionProfiles.Profile9.Permissions.PrivacyFeature</string>
+			<string id="Pol_SecurityPermissionProfilesProfile9PermissionsPrivacyFeature_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile9PermissionsRecordSession">Security.PermissionProfiles.Profile9.Permissions.RecordSession</string>
+			<string id="Pol_SecurityPermissionProfilesProfile9PermissionsRecordSession_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile10PermissionsAudio">Security.PermissionProfiles.Profile10.Permissions.Audio</string>
+			<string id="Pol_SecurityPermissionProfilesProfile10PermissionsAudio_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile10PermissionsInput">Security.PermissionProfiles.Profile10.Permissions.Input</string>
+			<string id="Pol_SecurityPermissionProfilesProfile10PermissionsInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile10PermissionsClipboard">Security.PermissionProfiles.Profile10.Permissions.Clipboard</string>
+			<string id="Pol_SecurityPermissionProfilesProfile10PermissionsClipboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile10PermissionsClipboardFiles">Security.PermissionProfiles.Profile10.Permissions.ClipboardFiles</string>
+			<string id="Pol_SecurityPermissionProfilesProfile10PermissionsClipboardFiles_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile10PermissionsBlockInput">Security.PermissionProfiles.Profile10.Permissions.BlockInput</string>
+			<string id="Pol_SecurityPermissionProfilesProfile10PermissionsBlockInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile10PermissionsSas">Security.PermissionProfiles.Profile10.Permissions.Sas</string>
+			<string id="Pol_SecurityPermissionProfilesProfile10PermissionsSas_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile10PermissionsRestart">Security.PermissionProfiles.Profile10.Permissions.Restart</string>
+			<string id="Pol_SecurityPermissionProfilesProfile10PermissionsRestart_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile10PermissionsFileManager">Security.PermissionProfiles.Profile10.Permissions.FileManager</string>
+			<string id="Pol_SecurityPermissionProfilesProfile10PermissionsFileManager_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile10PermissionsLockDesk">Security.PermissionProfiles.Profile10.Permissions.LockDesk</string>
+			<string id="Pol_SecurityPermissionProfilesProfile10PermissionsLockDesk_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile10PermissionsSysinfo">Security.PermissionProfiles.Profile10.Permissions.Sysinfo</string>
+			<string id="Pol_SecurityPermissionProfilesProfile10PermissionsSysinfo_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile10PermissionsWhiteboard">Security.PermissionProfiles.Profile10.Permissions.Whiteboard</string>
+			<string id="Pol_SecurityPermissionProfilesProfile10PermissionsWhiteboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile10PermissionsTcpTunnel">Security.PermissionProfiles.Profile10.Permissions.TcpTunnel</string>
+			<string id="Pol_SecurityPermissionProfilesProfile10PermissionsTcpTunnel_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile10PermissionsVpn">Security.PermissionProfiles.Profile10.Permissions.Vpn</string>
+			<string id="Pol_SecurityPermissionProfilesProfile10PermissionsVpn_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile10PermissionsUserPointer">Security.PermissionProfiles.Profile10.Permissions.UserPointer</string>
+			<string id="Pol_SecurityPermissionProfilesProfile10PermissionsUserPointer_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile10PermissionsPrivacyFeature">Security.PermissionProfiles.Profile10.Permissions.PrivacyFeature</string>
+			<string id="Pol_SecurityPermissionProfilesProfile10PermissionsPrivacyFeature_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile10PermissionsRecordSession">Security.PermissionProfiles.Profile10.Permissions.RecordSession</string>
+			<string id="Pol_SecurityPermissionProfilesProfile10PermissionsRecordSession_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultPermissionsAudio">Security.PermissionProfiles._Default.Permissions.Audio</string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultPermissionsAudio_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultPermissionsInput">Security.PermissionProfiles._Default.Permissions.Input</string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultPermissionsInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultPermissionsClipboard">Security.PermissionProfiles._Default.Permissions.Clipboard</string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultPermissionsClipboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultPermissionsClipboardFiles">Security.PermissionProfiles._Default.Permissions.ClipboardFiles</string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultPermissionsClipboardFiles_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultPermissionsBlockInput">Security.PermissionProfiles._Default.Permissions.BlockInput</string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultPermissionsBlockInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultPermissionsSas">Security.PermissionProfiles._Default.Permissions.Sas</string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultPermissionsSas_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultPermissionsRestart">Security.PermissionProfiles._Default.Permissions.Restart</string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultPermissionsRestart_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultPermissionsFileManager">Security.PermissionProfiles._Default.Permissions.FileManager</string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultPermissionsFileManager_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultPermissionsLockDesk">Security.PermissionProfiles._Default.Permissions.LockDesk</string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultPermissionsLockDesk_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultPermissionsSysinfo">Security.PermissionProfiles._Default.Permissions.Sysinfo</string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultPermissionsSysinfo_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultPermissionsWhiteboard">Security.PermissionProfiles._Default.Permissions.Whiteboard</string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultPermissionsWhiteboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultPermissionsTcpTunnel">Security.PermissionProfiles._Default.Permissions.TcpTunnel</string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultPermissionsTcpTunnel_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultPermissionsVpn">Security.PermissionProfiles._Default.Permissions.Vpn</string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultPermissionsVpn_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultPermissionsUserPointer">Security.PermissionProfiles._Default.Permissions.UserPointer</string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultPermissionsUserPointer_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultPermissionsPrivacyFeature">Security.PermissionProfiles._Default.Permissions.PrivacyFeature</string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultPermissionsPrivacyFeature_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultPermissionsRecordSession">Security.PermissionProfiles._Default.Permissions.RecordSession</string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultPermissionsRecordSession_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingPermissionsAudio">Security.PermissionProfiles._ScreenSharing.Permissions.Audio</string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingPermissionsAudio_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingPermissionsInput">Security.PermissionProfiles._ScreenSharing.Permissions.Input</string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingPermissionsInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingPermissionsClipboard">Security.PermissionProfiles._ScreenSharing.Permissions.Clipboard</string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingPermissionsClipboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingPermissionsClipboardFiles">Security.PermissionProfiles._ScreenSharing.Permissions.ClipboardFiles</string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingPermissionsClipboardFiles_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingPermissionsBlockInput">Security.PermissionProfiles._ScreenSharing.Permissions.BlockInput</string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingPermissionsBlockInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingPermissionsSas">Security.PermissionProfiles._ScreenSharing.Permissions.Sas</string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingPermissionsSas_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingPermissionsRestart">Security.PermissionProfiles._ScreenSharing.Permissions.Restart</string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingPermissionsRestart_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingPermissionsFileManager">Security.PermissionProfiles._ScreenSharing.Permissions.FileManager</string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingPermissionsFileManager_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingPermissionsLockDesk">Security.PermissionProfiles._ScreenSharing.Permissions.LockDesk</string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingPermissionsLockDesk_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingPermissionsSysinfo">Security.PermissionProfiles._ScreenSharing.Permissions.Sysinfo</string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingPermissionsSysinfo_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingPermissionsWhiteboard">Security.PermissionProfiles._ScreenSharing.Permissions.Whiteboard</string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingPermissionsWhiteboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingPermissionsTcpTunnel">Security.PermissionProfiles._ScreenSharing.Permissions.TcpTunnel</string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingPermissionsTcpTunnel_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingPermissionsVpn">Security.PermissionProfiles._ScreenSharing.Permissions.Vpn</string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingPermissionsVpn_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingPermissionsUserPointer">Security.PermissionProfiles._ScreenSharing.Permissions.UserPointer</string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingPermissionsUserPointer_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingPermissionsPrivacyFeature">Security.PermissionProfiles._ScreenSharing.Permissions.PrivacyFeature</string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingPermissionsPrivacyFeature_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingPermissionsRecordSession">Security.PermissionProfiles._ScreenSharing.Permissions.RecordSession</string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingPermissionsRecordSession_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessPermissionsAudio">Security.PermissionProfiles._FullAccess.Permissions.Audio</string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessPermissionsAudio_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessPermissionsInput">Security.PermissionProfiles._FullAccess.Permissions.Input</string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessPermissionsInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessPermissionsClipboard">Security.PermissionProfiles._FullAccess.Permissions.Clipboard</string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessPermissionsClipboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessPermissionsClipboardFiles">Security.PermissionProfiles._FullAccess.Permissions.ClipboardFiles</string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessPermissionsClipboardFiles_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessPermissionsBlockInput">Security.PermissionProfiles._FullAccess.Permissions.BlockInput</string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessPermissionsBlockInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessPermissionsSas">Security.PermissionProfiles._FullAccess.Permissions.Sas</string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessPermissionsSas_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessPermissionsRestart">Security.PermissionProfiles._FullAccess.Permissions.Restart</string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessPermissionsRestart_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessPermissionsFileManager">Security.PermissionProfiles._FullAccess.Permissions.FileManager</string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessPermissionsFileManager_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessPermissionsLockDesk">Security.PermissionProfiles._FullAccess.Permissions.LockDesk</string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessPermissionsLockDesk_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessPermissionsSysinfo">Security.PermissionProfiles._FullAccess.Permissions.Sysinfo</string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessPermissionsSysinfo_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessPermissionsWhiteboard">Security.PermissionProfiles._FullAccess.Permissions.Whiteboard</string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessPermissionsWhiteboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessPermissionsTcpTunnel">Security.PermissionProfiles._FullAccess.Permissions.TcpTunnel</string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessPermissionsTcpTunnel_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessPermissionsVpn">Security.PermissionProfiles._FullAccess.Permissions.Vpn</string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessPermissionsVpn_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessPermissionsUserPointer">Security.PermissionProfiles._FullAccess.Permissions.UserPointer</string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessPermissionsUserPointer_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessPermissionsPrivacyFeature">Security.PermissionProfiles._FullAccess.Permissions.PrivacyFeature</string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessPermissionsPrivacyFeature_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessPermissionsRecordSession">Security.PermissionProfiles._FullAccess.Permissions.RecordSession</string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessPermissionsRecordSession_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessPermissionsAudio">Security.PermissionProfiles._UnattendedAccess.Permissions.Audio</string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessPermissionsAudio_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessPermissionsInput">Security.PermissionProfiles._UnattendedAccess.Permissions.Input</string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessPermissionsInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessPermissionsClipboard">Security.PermissionProfiles._UnattendedAccess.Permissions.Clipboard</string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessPermissionsClipboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessPermissionsClipboardFiles">Security.PermissionProfiles._UnattendedAccess.Permissions.ClipboardFiles</string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessPermissionsClipboardFiles_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessPermissionsBlockInput">Security.PermissionProfiles._UnattendedAccess.Permissions.BlockInput</string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessPermissionsBlockInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessPermissionsSas">Security.PermissionProfiles._UnattendedAccess.Permissions.Sas</string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessPermissionsSas_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessPermissionsRestart">Security.PermissionProfiles._UnattendedAccess.Permissions.Restart</string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessPermissionsRestart_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessPermissionsFileManager">Security.PermissionProfiles._UnattendedAccess.Permissions.FileManager</string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessPermissionsFileManager_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessPermissionsLockDesk">Security.PermissionProfiles._UnattendedAccess.Permissions.LockDesk</string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessPermissionsLockDesk_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessPermissionsSysinfo">Security.PermissionProfiles._UnattendedAccess.Permissions.Sysinfo</string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessPermissionsSysinfo_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessPermissionsWhiteboard">Security.PermissionProfiles._UnattendedAccess.Permissions.Whiteboard</string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessPermissionsWhiteboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessPermissionsTcpTunnel">Security.PermissionProfiles._UnattendedAccess.Permissions.TcpTunnel</string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessPermissionsTcpTunnel_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessPermissionsVpn">Security.PermissionProfiles._UnattendedAccess.Permissions.Vpn</string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessPermissionsVpn_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessPermissionsUserPointer">Security.PermissionProfiles._UnattendedAccess.Permissions.UserPointer</string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessPermissionsUserPointer_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessPermissionsPrivacyFeature">Security.PermissionProfiles._UnattendedAccess.Permissions.PrivacyFeature</string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessPermissionsPrivacyFeature_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessPermissionsRecordSession">Security.PermissionProfiles._UnattendedAccess.Permissions.RecordSession</string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessPermissionsRecordSession_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile1ChangeableInAcceptWindowAudio">Security.PermissionProfiles.Profile1.ChangeableInAcceptWindow.Audio</string>
+			<string id="Pol_SecurityPermissionProfilesProfile1ChangeableInAcceptWindowAudio_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile1ChangeableInAcceptWindowInput">Security.PermissionProfiles.Profile1.ChangeableInAcceptWindow.Input</string>
+			<string id="Pol_SecurityPermissionProfilesProfile1ChangeableInAcceptWindowInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile1ChangeableInAcceptWindowClipboard">Security.PermissionProfiles.Profile1.ChangeableInAcceptWindow.Clipboard</string>
+			<string id="Pol_SecurityPermissionProfilesProfile1ChangeableInAcceptWindowClipboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile1ChangeableInAcceptWindowClipboardFiles">Security.PermissionProfiles.Profile1.ChangeableInAcceptWindow.ClipboardFiles</string>
+			<string id="Pol_SecurityPermissionProfilesProfile1ChangeableInAcceptWindowClipboardFiles_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile1ChangeableInAcceptWindowBlockInput">Security.PermissionProfiles.Profile1.ChangeableInAcceptWindow.BlockInput</string>
+			<string id="Pol_SecurityPermissionProfilesProfile1ChangeableInAcceptWindowBlockInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile1ChangeableInAcceptWindowSas">Security.PermissionProfiles.Profile1.ChangeableInAcceptWindow.Sas</string>
+			<string id="Pol_SecurityPermissionProfilesProfile1ChangeableInAcceptWindowSas_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile1ChangeableInAcceptWindowRestart">Security.PermissionProfiles.Profile1.ChangeableInAcceptWindow.Restart</string>
+			<string id="Pol_SecurityPermissionProfilesProfile1ChangeableInAcceptWindowRestart_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile1ChangeableInAcceptWindowFileManager">Security.PermissionProfiles.Profile1.ChangeableInAcceptWindow.FileManager</string>
+			<string id="Pol_SecurityPermissionProfilesProfile1ChangeableInAcceptWindowFileManager_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile1ChangeableInAcceptWindowLockDesk">Security.PermissionProfiles.Profile1.ChangeableInAcceptWindow.LockDesk</string>
+			<string id="Pol_SecurityPermissionProfilesProfile1ChangeableInAcceptWindowLockDesk_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile1ChangeableInAcceptWindowSysinfo">Security.PermissionProfiles.Profile1.ChangeableInAcceptWindow.Sysinfo</string>
+			<string id="Pol_SecurityPermissionProfilesProfile1ChangeableInAcceptWindowSysinfo_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile1ChangeableInAcceptWindowWhiteboard">Security.PermissionProfiles.Profile1.ChangeableInAcceptWindow.Whiteboard</string>
+			<string id="Pol_SecurityPermissionProfilesProfile1ChangeableInAcceptWindowWhiteboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile1ChangeableInAcceptWindowTcpTunnel">Security.PermissionProfiles.Profile1.ChangeableInAcceptWindow.TcpTunnel</string>
+			<string id="Pol_SecurityPermissionProfilesProfile1ChangeableInAcceptWindowTcpTunnel_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile1ChangeableInAcceptWindowVpn">Security.PermissionProfiles.Profile1.ChangeableInAcceptWindow.Vpn</string>
+			<string id="Pol_SecurityPermissionProfilesProfile1ChangeableInAcceptWindowVpn_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile1ChangeableInAcceptWindowUserPointer">Security.PermissionProfiles.Profile1.ChangeableInAcceptWindow.UserPointer</string>
+			<string id="Pol_SecurityPermissionProfilesProfile1ChangeableInAcceptWindowUserPointer_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile1ChangeableInAcceptWindowPrivacyFeature">Security.PermissionProfiles.Profile1.ChangeableInAcceptWindow.PrivacyFeature</string>
+			<string id="Pol_SecurityPermissionProfilesProfile1ChangeableInAcceptWindowPrivacyFeature_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile1ChangeableInAcceptWindowRecordSession">Security.PermissionProfiles.Profile1.ChangeableInAcceptWindow.RecordSession</string>
+			<string id="Pol_SecurityPermissionProfilesProfile1ChangeableInAcceptWindowRecordSession_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile2ChangeableInAcceptWindowAudio">Security.PermissionProfiles.Profile2.ChangeableInAcceptWindow.Audio</string>
+			<string id="Pol_SecurityPermissionProfilesProfile2ChangeableInAcceptWindowAudio_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile2ChangeableInAcceptWindowInput">Security.PermissionProfiles.Profile2.ChangeableInAcceptWindow.Input</string>
+			<string id="Pol_SecurityPermissionProfilesProfile2ChangeableInAcceptWindowInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile2ChangeableInAcceptWindowClipboard">Security.PermissionProfiles.Profile2.ChangeableInAcceptWindow.Clipboard</string>
+			<string id="Pol_SecurityPermissionProfilesProfile2ChangeableInAcceptWindowClipboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile2ChangeableInAcceptWindowClipboardFiles">Security.PermissionProfiles.Profile2.ChangeableInAcceptWindow.ClipboardFiles</string>
+			<string id="Pol_SecurityPermissionProfilesProfile2ChangeableInAcceptWindowClipboardFiles_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile2ChangeableInAcceptWindowBlockInput">Security.PermissionProfiles.Profile2.ChangeableInAcceptWindow.BlockInput</string>
+			<string id="Pol_SecurityPermissionProfilesProfile2ChangeableInAcceptWindowBlockInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile2ChangeableInAcceptWindowSas">Security.PermissionProfiles.Profile2.ChangeableInAcceptWindow.Sas</string>
+			<string id="Pol_SecurityPermissionProfilesProfile2ChangeableInAcceptWindowSas_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile2ChangeableInAcceptWindowRestart">Security.PermissionProfiles.Profile2.ChangeableInAcceptWindow.Restart</string>
+			<string id="Pol_SecurityPermissionProfilesProfile2ChangeableInAcceptWindowRestart_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile2ChangeableInAcceptWindowFileManager">Security.PermissionProfiles.Profile2.ChangeableInAcceptWindow.FileManager</string>
+			<string id="Pol_SecurityPermissionProfilesProfile2ChangeableInAcceptWindowFileManager_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile2ChangeableInAcceptWindowLockDesk">Security.PermissionProfiles.Profile2.ChangeableInAcceptWindow.LockDesk</string>
+			<string id="Pol_SecurityPermissionProfilesProfile2ChangeableInAcceptWindowLockDesk_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile2ChangeableInAcceptWindowSysinfo">Security.PermissionProfiles.Profile2.ChangeableInAcceptWindow.Sysinfo</string>
+			<string id="Pol_SecurityPermissionProfilesProfile2ChangeableInAcceptWindowSysinfo_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile2ChangeableInAcceptWindowWhiteboard">Security.PermissionProfiles.Profile2.ChangeableInAcceptWindow.Whiteboard</string>
+			<string id="Pol_SecurityPermissionProfilesProfile2ChangeableInAcceptWindowWhiteboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile2ChangeableInAcceptWindowTcpTunnel">Security.PermissionProfiles.Profile2.ChangeableInAcceptWindow.TcpTunnel</string>
+			<string id="Pol_SecurityPermissionProfilesProfile2ChangeableInAcceptWindowTcpTunnel_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile2ChangeableInAcceptWindowVpn">Security.PermissionProfiles.Profile2.ChangeableInAcceptWindow.Vpn</string>
+			<string id="Pol_SecurityPermissionProfilesProfile2ChangeableInAcceptWindowVpn_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile2ChangeableInAcceptWindowUserPointer">Security.PermissionProfiles.Profile2.ChangeableInAcceptWindow.UserPointer</string>
+			<string id="Pol_SecurityPermissionProfilesProfile2ChangeableInAcceptWindowUserPointer_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile2ChangeableInAcceptWindowPrivacyFeature">Security.PermissionProfiles.Profile2.ChangeableInAcceptWindow.PrivacyFeature</string>
+			<string id="Pol_SecurityPermissionProfilesProfile2ChangeableInAcceptWindowPrivacyFeature_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile2ChangeableInAcceptWindowRecordSession">Security.PermissionProfiles.Profile2.ChangeableInAcceptWindow.RecordSession</string>
+			<string id="Pol_SecurityPermissionProfilesProfile2ChangeableInAcceptWindowRecordSession_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile3ChangeableInAcceptWindowAudio">Security.PermissionProfiles.Profile3.ChangeableInAcceptWindow.Audio</string>
+			<string id="Pol_SecurityPermissionProfilesProfile3ChangeableInAcceptWindowAudio_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile3ChangeableInAcceptWindowInput">Security.PermissionProfiles.Profile3.ChangeableInAcceptWindow.Input</string>
+			<string id="Pol_SecurityPermissionProfilesProfile3ChangeableInAcceptWindowInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile3ChangeableInAcceptWindowClipboard">Security.PermissionProfiles.Profile3.ChangeableInAcceptWindow.Clipboard</string>
+			<string id="Pol_SecurityPermissionProfilesProfile3ChangeableInAcceptWindowClipboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile3ChangeableInAcceptWindowClipboardFiles">Security.PermissionProfiles.Profile3.ChangeableInAcceptWindow.ClipboardFiles</string>
+			<string id="Pol_SecurityPermissionProfilesProfile3ChangeableInAcceptWindowClipboardFiles_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile3ChangeableInAcceptWindowBlockInput">Security.PermissionProfiles.Profile3.ChangeableInAcceptWindow.BlockInput</string>
+			<string id="Pol_SecurityPermissionProfilesProfile3ChangeableInAcceptWindowBlockInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile3ChangeableInAcceptWindowSas">Security.PermissionProfiles.Profile3.ChangeableInAcceptWindow.Sas</string>
+			<string id="Pol_SecurityPermissionProfilesProfile3ChangeableInAcceptWindowSas_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile3ChangeableInAcceptWindowRestart">Security.PermissionProfiles.Profile3.ChangeableInAcceptWindow.Restart</string>
+			<string id="Pol_SecurityPermissionProfilesProfile3ChangeableInAcceptWindowRestart_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile3ChangeableInAcceptWindowFileManager">Security.PermissionProfiles.Profile3.ChangeableInAcceptWindow.FileManager</string>
+			<string id="Pol_SecurityPermissionProfilesProfile3ChangeableInAcceptWindowFileManager_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile3ChangeableInAcceptWindowLockDesk">Security.PermissionProfiles.Profile3.ChangeableInAcceptWindow.LockDesk</string>
+			<string id="Pol_SecurityPermissionProfilesProfile3ChangeableInAcceptWindowLockDesk_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile3ChangeableInAcceptWindowSysinfo">Security.PermissionProfiles.Profile3.ChangeableInAcceptWindow.Sysinfo</string>
+			<string id="Pol_SecurityPermissionProfilesProfile3ChangeableInAcceptWindowSysinfo_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile3ChangeableInAcceptWindowWhiteboard">Security.PermissionProfiles.Profile3.ChangeableInAcceptWindow.Whiteboard</string>
+			<string id="Pol_SecurityPermissionProfilesProfile3ChangeableInAcceptWindowWhiteboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile3ChangeableInAcceptWindowTcpTunnel">Security.PermissionProfiles.Profile3.ChangeableInAcceptWindow.TcpTunnel</string>
+			<string id="Pol_SecurityPermissionProfilesProfile3ChangeableInAcceptWindowTcpTunnel_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile3ChangeableInAcceptWindowVpn">Security.PermissionProfiles.Profile3.ChangeableInAcceptWindow.Vpn</string>
+			<string id="Pol_SecurityPermissionProfilesProfile3ChangeableInAcceptWindowVpn_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile3ChangeableInAcceptWindowUserPointer">Security.PermissionProfiles.Profile3.ChangeableInAcceptWindow.UserPointer</string>
+			<string id="Pol_SecurityPermissionProfilesProfile3ChangeableInAcceptWindowUserPointer_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile3ChangeableInAcceptWindowPrivacyFeature">Security.PermissionProfiles.Profile3.ChangeableInAcceptWindow.PrivacyFeature</string>
+			<string id="Pol_SecurityPermissionProfilesProfile3ChangeableInAcceptWindowPrivacyFeature_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile3ChangeableInAcceptWindowRecordSession">Security.PermissionProfiles.Profile3.ChangeableInAcceptWindow.RecordSession</string>
+			<string id="Pol_SecurityPermissionProfilesProfile3ChangeableInAcceptWindowRecordSession_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile4ChangeableInAcceptWindowAudio">Security.PermissionProfiles.Profile4.ChangeableInAcceptWindow.Audio</string>
+			<string id="Pol_SecurityPermissionProfilesProfile4ChangeableInAcceptWindowAudio_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile4ChangeableInAcceptWindowInput">Security.PermissionProfiles.Profile4.ChangeableInAcceptWindow.Input</string>
+			<string id="Pol_SecurityPermissionProfilesProfile4ChangeableInAcceptWindowInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile4ChangeableInAcceptWindowClipboard">Security.PermissionProfiles.Profile4.ChangeableInAcceptWindow.Clipboard</string>
+			<string id="Pol_SecurityPermissionProfilesProfile4ChangeableInAcceptWindowClipboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile4ChangeableInAcceptWindowClipboardFiles">Security.PermissionProfiles.Profile4.ChangeableInAcceptWindow.ClipboardFiles</string>
+			<string id="Pol_SecurityPermissionProfilesProfile4ChangeableInAcceptWindowClipboardFiles_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile4ChangeableInAcceptWindowBlockInput">Security.PermissionProfiles.Profile4.ChangeableInAcceptWindow.BlockInput</string>
+			<string id="Pol_SecurityPermissionProfilesProfile4ChangeableInAcceptWindowBlockInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile4ChangeableInAcceptWindowSas">Security.PermissionProfiles.Profile4.ChangeableInAcceptWindow.Sas</string>
+			<string id="Pol_SecurityPermissionProfilesProfile4ChangeableInAcceptWindowSas_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile4ChangeableInAcceptWindowRestart">Security.PermissionProfiles.Profile4.ChangeableInAcceptWindow.Restart</string>
+			<string id="Pol_SecurityPermissionProfilesProfile4ChangeableInAcceptWindowRestart_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile4ChangeableInAcceptWindowFileManager">Security.PermissionProfiles.Profile4.ChangeableInAcceptWindow.FileManager</string>
+			<string id="Pol_SecurityPermissionProfilesProfile4ChangeableInAcceptWindowFileManager_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile4ChangeableInAcceptWindowLockDesk">Security.PermissionProfiles.Profile4.ChangeableInAcceptWindow.LockDesk</string>
+			<string id="Pol_SecurityPermissionProfilesProfile4ChangeableInAcceptWindowLockDesk_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile4ChangeableInAcceptWindowSysinfo">Security.PermissionProfiles.Profile4.ChangeableInAcceptWindow.Sysinfo</string>
+			<string id="Pol_SecurityPermissionProfilesProfile4ChangeableInAcceptWindowSysinfo_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile4ChangeableInAcceptWindowWhiteboard">Security.PermissionProfiles.Profile4.ChangeableInAcceptWindow.Whiteboard</string>
+			<string id="Pol_SecurityPermissionProfilesProfile4ChangeableInAcceptWindowWhiteboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile4ChangeableInAcceptWindowTcpTunnel">Security.PermissionProfiles.Profile4.ChangeableInAcceptWindow.TcpTunnel</string>
+			<string id="Pol_SecurityPermissionProfilesProfile4ChangeableInAcceptWindowTcpTunnel_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile4ChangeableInAcceptWindowVpn">Security.PermissionProfiles.Profile4.ChangeableInAcceptWindow.Vpn</string>
+			<string id="Pol_SecurityPermissionProfilesProfile4ChangeableInAcceptWindowVpn_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile4ChangeableInAcceptWindowUserPointer">Security.PermissionProfiles.Profile4.ChangeableInAcceptWindow.UserPointer</string>
+			<string id="Pol_SecurityPermissionProfilesProfile4ChangeableInAcceptWindowUserPointer_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile4ChangeableInAcceptWindowPrivacyFeature">Security.PermissionProfiles.Profile4.ChangeableInAcceptWindow.PrivacyFeature</string>
+			<string id="Pol_SecurityPermissionProfilesProfile4ChangeableInAcceptWindowPrivacyFeature_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile4ChangeableInAcceptWindowRecordSession">Security.PermissionProfiles.Profile4.ChangeableInAcceptWindow.RecordSession</string>
+			<string id="Pol_SecurityPermissionProfilesProfile4ChangeableInAcceptWindowRecordSession_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile5ChangeableInAcceptWindowAudio">Security.PermissionProfiles.Profile5.ChangeableInAcceptWindow.Audio</string>
+			<string id="Pol_SecurityPermissionProfilesProfile5ChangeableInAcceptWindowAudio_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile5ChangeableInAcceptWindowInput">Security.PermissionProfiles.Profile5.ChangeableInAcceptWindow.Input</string>
+			<string id="Pol_SecurityPermissionProfilesProfile5ChangeableInAcceptWindowInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile5ChangeableInAcceptWindowClipboard">Security.PermissionProfiles.Profile5.ChangeableInAcceptWindow.Clipboard</string>
+			<string id="Pol_SecurityPermissionProfilesProfile5ChangeableInAcceptWindowClipboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile5ChangeableInAcceptWindowClipboardFiles">Security.PermissionProfiles.Profile5.ChangeableInAcceptWindow.ClipboardFiles</string>
+			<string id="Pol_SecurityPermissionProfilesProfile5ChangeableInAcceptWindowClipboardFiles_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile5ChangeableInAcceptWindowBlockInput">Security.PermissionProfiles.Profile5.ChangeableInAcceptWindow.BlockInput</string>
+			<string id="Pol_SecurityPermissionProfilesProfile5ChangeableInAcceptWindowBlockInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile5ChangeableInAcceptWindowSas">Security.PermissionProfiles.Profile5.ChangeableInAcceptWindow.Sas</string>
+			<string id="Pol_SecurityPermissionProfilesProfile5ChangeableInAcceptWindowSas_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile5ChangeableInAcceptWindowRestart">Security.PermissionProfiles.Profile5.ChangeableInAcceptWindow.Restart</string>
+			<string id="Pol_SecurityPermissionProfilesProfile5ChangeableInAcceptWindowRestart_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile5ChangeableInAcceptWindowFileManager">Security.PermissionProfiles.Profile5.ChangeableInAcceptWindow.FileManager</string>
+			<string id="Pol_SecurityPermissionProfilesProfile5ChangeableInAcceptWindowFileManager_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile5ChangeableInAcceptWindowLockDesk">Security.PermissionProfiles.Profile5.ChangeableInAcceptWindow.LockDesk</string>
+			<string id="Pol_SecurityPermissionProfilesProfile5ChangeableInAcceptWindowLockDesk_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile5ChangeableInAcceptWindowSysinfo">Security.PermissionProfiles.Profile5.ChangeableInAcceptWindow.Sysinfo</string>
+			<string id="Pol_SecurityPermissionProfilesProfile5ChangeableInAcceptWindowSysinfo_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile5ChangeableInAcceptWindowWhiteboard">Security.PermissionProfiles.Profile5.ChangeableInAcceptWindow.Whiteboard</string>
+			<string id="Pol_SecurityPermissionProfilesProfile5ChangeableInAcceptWindowWhiteboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile5ChangeableInAcceptWindowTcpTunnel">Security.PermissionProfiles.Profile5.ChangeableInAcceptWindow.TcpTunnel</string>
+			<string id="Pol_SecurityPermissionProfilesProfile5ChangeableInAcceptWindowTcpTunnel_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile5ChangeableInAcceptWindowVpn">Security.PermissionProfiles.Profile5.ChangeableInAcceptWindow.Vpn</string>
+			<string id="Pol_SecurityPermissionProfilesProfile5ChangeableInAcceptWindowVpn_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile5ChangeableInAcceptWindowUserPointer">Security.PermissionProfiles.Profile5.ChangeableInAcceptWindow.UserPointer</string>
+			<string id="Pol_SecurityPermissionProfilesProfile5ChangeableInAcceptWindowUserPointer_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile5ChangeableInAcceptWindowPrivacyFeature">Security.PermissionProfiles.Profile5.ChangeableInAcceptWindow.PrivacyFeature</string>
+			<string id="Pol_SecurityPermissionProfilesProfile5ChangeableInAcceptWindowPrivacyFeature_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile5ChangeableInAcceptWindowRecordSession">Security.PermissionProfiles.Profile5.ChangeableInAcceptWindow.RecordSession</string>
+			<string id="Pol_SecurityPermissionProfilesProfile5ChangeableInAcceptWindowRecordSession_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile6ChangeableInAcceptWindowAudio">Security.PermissionProfiles.Profile6.ChangeableInAcceptWindow.Audio</string>
+			<string id="Pol_SecurityPermissionProfilesProfile6ChangeableInAcceptWindowAudio_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile6ChangeableInAcceptWindowInput">Security.PermissionProfiles.Profile6.ChangeableInAcceptWindow.Input</string>
+			<string id="Pol_SecurityPermissionProfilesProfile6ChangeableInAcceptWindowInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile6ChangeableInAcceptWindowClipboard">Security.PermissionProfiles.Profile6.ChangeableInAcceptWindow.Clipboard</string>
+			<string id="Pol_SecurityPermissionProfilesProfile6ChangeableInAcceptWindowClipboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile6ChangeableInAcceptWindowClipboardFiles">Security.PermissionProfiles.Profile6.ChangeableInAcceptWindow.ClipboardFiles</string>
+			<string id="Pol_SecurityPermissionProfilesProfile6ChangeableInAcceptWindowClipboardFiles_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile6ChangeableInAcceptWindowBlockInput">Security.PermissionProfiles.Profile6.ChangeableInAcceptWindow.BlockInput</string>
+			<string id="Pol_SecurityPermissionProfilesProfile6ChangeableInAcceptWindowBlockInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile6ChangeableInAcceptWindowSas">Security.PermissionProfiles.Profile6.ChangeableInAcceptWindow.Sas</string>
+			<string id="Pol_SecurityPermissionProfilesProfile6ChangeableInAcceptWindowSas_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile6ChangeableInAcceptWindowRestart">Security.PermissionProfiles.Profile6.ChangeableInAcceptWindow.Restart</string>
+			<string id="Pol_SecurityPermissionProfilesProfile6ChangeableInAcceptWindowRestart_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile6ChangeableInAcceptWindowFileManager">Security.PermissionProfiles.Profile6.ChangeableInAcceptWindow.FileManager</string>
+			<string id="Pol_SecurityPermissionProfilesProfile6ChangeableInAcceptWindowFileManager_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile6ChangeableInAcceptWindowLockDesk">Security.PermissionProfiles.Profile6.ChangeableInAcceptWindow.LockDesk</string>
+			<string id="Pol_SecurityPermissionProfilesProfile6ChangeableInAcceptWindowLockDesk_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile6ChangeableInAcceptWindowSysinfo">Security.PermissionProfiles.Profile6.ChangeableInAcceptWindow.Sysinfo</string>
+			<string id="Pol_SecurityPermissionProfilesProfile6ChangeableInAcceptWindowSysinfo_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile6ChangeableInAcceptWindowWhiteboard">Security.PermissionProfiles.Profile6.ChangeableInAcceptWindow.Whiteboard</string>
+			<string id="Pol_SecurityPermissionProfilesProfile6ChangeableInAcceptWindowWhiteboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile6ChangeableInAcceptWindowTcpTunnel">Security.PermissionProfiles.Profile6.ChangeableInAcceptWindow.TcpTunnel</string>
+			<string id="Pol_SecurityPermissionProfilesProfile6ChangeableInAcceptWindowTcpTunnel_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile6ChangeableInAcceptWindowVpn">Security.PermissionProfiles.Profile6.ChangeableInAcceptWindow.Vpn</string>
+			<string id="Pol_SecurityPermissionProfilesProfile6ChangeableInAcceptWindowVpn_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile6ChangeableInAcceptWindowUserPointer">Security.PermissionProfiles.Profile6.ChangeableInAcceptWindow.UserPointer</string>
+			<string id="Pol_SecurityPermissionProfilesProfile6ChangeableInAcceptWindowUserPointer_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile6ChangeableInAcceptWindowPrivacyFeature">Security.PermissionProfiles.Profile6.ChangeableInAcceptWindow.PrivacyFeature</string>
+			<string id="Pol_SecurityPermissionProfilesProfile6ChangeableInAcceptWindowPrivacyFeature_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile6ChangeableInAcceptWindowRecordSession">Security.PermissionProfiles.Profile6.ChangeableInAcceptWindow.RecordSession</string>
+			<string id="Pol_SecurityPermissionProfilesProfile6ChangeableInAcceptWindowRecordSession_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile7ChangeableInAcceptWindowAudio">Security.PermissionProfiles.Profile7.ChangeableInAcceptWindow.Audio</string>
+			<string id="Pol_SecurityPermissionProfilesProfile7ChangeableInAcceptWindowAudio_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile7ChangeableInAcceptWindowInput">Security.PermissionProfiles.Profile7.ChangeableInAcceptWindow.Input</string>
+			<string id="Pol_SecurityPermissionProfilesProfile7ChangeableInAcceptWindowInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile7ChangeableInAcceptWindowClipboard">Security.PermissionProfiles.Profile7.ChangeableInAcceptWindow.Clipboard</string>
+			<string id="Pol_SecurityPermissionProfilesProfile7ChangeableInAcceptWindowClipboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile7ChangeableInAcceptWindowClipboardFiles">Security.PermissionProfiles.Profile7.ChangeableInAcceptWindow.ClipboardFiles</string>
+			<string id="Pol_SecurityPermissionProfilesProfile7ChangeableInAcceptWindowClipboardFiles_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile7ChangeableInAcceptWindowBlockInput">Security.PermissionProfiles.Profile7.ChangeableInAcceptWindow.BlockInput</string>
+			<string id="Pol_SecurityPermissionProfilesProfile7ChangeableInAcceptWindowBlockInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile7ChangeableInAcceptWindowSas">Security.PermissionProfiles.Profile7.ChangeableInAcceptWindow.Sas</string>
+			<string id="Pol_SecurityPermissionProfilesProfile7ChangeableInAcceptWindowSas_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile7ChangeableInAcceptWindowRestart">Security.PermissionProfiles.Profile7.ChangeableInAcceptWindow.Restart</string>
+			<string id="Pol_SecurityPermissionProfilesProfile7ChangeableInAcceptWindowRestart_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile7ChangeableInAcceptWindowFileManager">Security.PermissionProfiles.Profile7.ChangeableInAcceptWindow.FileManager</string>
+			<string id="Pol_SecurityPermissionProfilesProfile7ChangeableInAcceptWindowFileManager_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile7ChangeableInAcceptWindowLockDesk">Security.PermissionProfiles.Profile7.ChangeableInAcceptWindow.LockDesk</string>
+			<string id="Pol_SecurityPermissionProfilesProfile7ChangeableInAcceptWindowLockDesk_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile7ChangeableInAcceptWindowSysinfo">Security.PermissionProfiles.Profile7.ChangeableInAcceptWindow.Sysinfo</string>
+			<string id="Pol_SecurityPermissionProfilesProfile7ChangeableInAcceptWindowSysinfo_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile7ChangeableInAcceptWindowWhiteboard">Security.PermissionProfiles.Profile7.ChangeableInAcceptWindow.Whiteboard</string>
+			<string id="Pol_SecurityPermissionProfilesProfile7ChangeableInAcceptWindowWhiteboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile7ChangeableInAcceptWindowTcpTunnel">Security.PermissionProfiles.Profile7.ChangeableInAcceptWindow.TcpTunnel</string>
+			<string id="Pol_SecurityPermissionProfilesProfile7ChangeableInAcceptWindowTcpTunnel_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile7ChangeableInAcceptWindowVpn">Security.PermissionProfiles.Profile7.ChangeableInAcceptWindow.Vpn</string>
+			<string id="Pol_SecurityPermissionProfilesProfile7ChangeableInAcceptWindowVpn_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile7ChangeableInAcceptWindowUserPointer">Security.PermissionProfiles.Profile7.ChangeableInAcceptWindow.UserPointer</string>
+			<string id="Pol_SecurityPermissionProfilesProfile7ChangeableInAcceptWindowUserPointer_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile7ChangeableInAcceptWindowPrivacyFeature">Security.PermissionProfiles.Profile7.ChangeableInAcceptWindow.PrivacyFeature</string>
+			<string id="Pol_SecurityPermissionProfilesProfile7ChangeableInAcceptWindowPrivacyFeature_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile7ChangeableInAcceptWindowRecordSession">Security.PermissionProfiles.Profile7.ChangeableInAcceptWindow.RecordSession</string>
+			<string id="Pol_SecurityPermissionProfilesProfile7ChangeableInAcceptWindowRecordSession_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile8ChangeableInAcceptWindowAudio">Security.PermissionProfiles.Profile8.ChangeableInAcceptWindow.Audio</string>
+			<string id="Pol_SecurityPermissionProfilesProfile8ChangeableInAcceptWindowAudio_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile8ChangeableInAcceptWindowInput">Security.PermissionProfiles.Profile8.ChangeableInAcceptWindow.Input</string>
+			<string id="Pol_SecurityPermissionProfilesProfile8ChangeableInAcceptWindowInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile8ChangeableInAcceptWindowClipboard">Security.PermissionProfiles.Profile8.ChangeableInAcceptWindow.Clipboard</string>
+			<string id="Pol_SecurityPermissionProfilesProfile8ChangeableInAcceptWindowClipboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile8ChangeableInAcceptWindowClipboardFiles">Security.PermissionProfiles.Profile8.ChangeableInAcceptWindow.ClipboardFiles</string>
+			<string id="Pol_SecurityPermissionProfilesProfile8ChangeableInAcceptWindowClipboardFiles_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile8ChangeableInAcceptWindowBlockInput">Security.PermissionProfiles.Profile8.ChangeableInAcceptWindow.BlockInput</string>
+			<string id="Pol_SecurityPermissionProfilesProfile8ChangeableInAcceptWindowBlockInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile8ChangeableInAcceptWindowSas">Security.PermissionProfiles.Profile8.ChangeableInAcceptWindow.Sas</string>
+			<string id="Pol_SecurityPermissionProfilesProfile8ChangeableInAcceptWindowSas_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile8ChangeableInAcceptWindowRestart">Security.PermissionProfiles.Profile8.ChangeableInAcceptWindow.Restart</string>
+			<string id="Pol_SecurityPermissionProfilesProfile8ChangeableInAcceptWindowRestart_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile8ChangeableInAcceptWindowFileManager">Security.PermissionProfiles.Profile8.ChangeableInAcceptWindow.FileManager</string>
+			<string id="Pol_SecurityPermissionProfilesProfile8ChangeableInAcceptWindowFileManager_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile8ChangeableInAcceptWindowLockDesk">Security.PermissionProfiles.Profile8.ChangeableInAcceptWindow.LockDesk</string>
+			<string id="Pol_SecurityPermissionProfilesProfile8ChangeableInAcceptWindowLockDesk_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile8ChangeableInAcceptWindowSysinfo">Security.PermissionProfiles.Profile8.ChangeableInAcceptWindow.Sysinfo</string>
+			<string id="Pol_SecurityPermissionProfilesProfile8ChangeableInAcceptWindowSysinfo_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile8ChangeableInAcceptWindowWhiteboard">Security.PermissionProfiles.Profile8.ChangeableInAcceptWindow.Whiteboard</string>
+			<string id="Pol_SecurityPermissionProfilesProfile8ChangeableInAcceptWindowWhiteboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile8ChangeableInAcceptWindowTcpTunnel">Security.PermissionProfiles.Profile8.ChangeableInAcceptWindow.TcpTunnel</string>
+			<string id="Pol_SecurityPermissionProfilesProfile8ChangeableInAcceptWindowTcpTunnel_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile8ChangeableInAcceptWindowVpn">Security.PermissionProfiles.Profile8.ChangeableInAcceptWindow.Vpn</string>
+			<string id="Pol_SecurityPermissionProfilesProfile8ChangeableInAcceptWindowVpn_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile8ChangeableInAcceptWindowUserPointer">Security.PermissionProfiles.Profile8.ChangeableInAcceptWindow.UserPointer</string>
+			<string id="Pol_SecurityPermissionProfilesProfile8ChangeableInAcceptWindowUserPointer_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile8ChangeableInAcceptWindowPrivacyFeature">Security.PermissionProfiles.Profile8.ChangeableInAcceptWindow.PrivacyFeature</string>
+			<string id="Pol_SecurityPermissionProfilesProfile8ChangeableInAcceptWindowPrivacyFeature_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile8ChangeableInAcceptWindowRecordSession">Security.PermissionProfiles.Profile8.ChangeableInAcceptWindow.RecordSession</string>
+			<string id="Pol_SecurityPermissionProfilesProfile8ChangeableInAcceptWindowRecordSession_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile9ChangeableInAcceptWindowAudio">Security.PermissionProfiles.Profile9.ChangeableInAcceptWindow.Audio</string>
+			<string id="Pol_SecurityPermissionProfilesProfile9ChangeableInAcceptWindowAudio_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile9ChangeableInAcceptWindowInput">Security.PermissionProfiles.Profile9.ChangeableInAcceptWindow.Input</string>
+			<string id="Pol_SecurityPermissionProfilesProfile9ChangeableInAcceptWindowInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile9ChangeableInAcceptWindowClipboard">Security.PermissionProfiles.Profile9.ChangeableInAcceptWindow.Clipboard</string>
+			<string id="Pol_SecurityPermissionProfilesProfile9ChangeableInAcceptWindowClipboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile9ChangeableInAcceptWindowClipboardFiles">Security.PermissionProfiles.Profile9.ChangeableInAcceptWindow.ClipboardFiles</string>
+			<string id="Pol_SecurityPermissionProfilesProfile9ChangeableInAcceptWindowClipboardFiles_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile9ChangeableInAcceptWindowBlockInput">Security.PermissionProfiles.Profile9.ChangeableInAcceptWindow.BlockInput</string>
+			<string id="Pol_SecurityPermissionProfilesProfile9ChangeableInAcceptWindowBlockInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile9ChangeableInAcceptWindowSas">Security.PermissionProfiles.Profile9.ChangeableInAcceptWindow.Sas</string>
+			<string id="Pol_SecurityPermissionProfilesProfile9ChangeableInAcceptWindowSas_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile9ChangeableInAcceptWindowRestart">Security.PermissionProfiles.Profile9.ChangeableInAcceptWindow.Restart</string>
+			<string id="Pol_SecurityPermissionProfilesProfile9ChangeableInAcceptWindowRestart_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile9ChangeableInAcceptWindowFileManager">Security.PermissionProfiles.Profile9.ChangeableInAcceptWindow.FileManager</string>
+			<string id="Pol_SecurityPermissionProfilesProfile9ChangeableInAcceptWindowFileManager_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile9ChangeableInAcceptWindowLockDesk">Security.PermissionProfiles.Profile9.ChangeableInAcceptWindow.LockDesk</string>
+			<string id="Pol_SecurityPermissionProfilesProfile9ChangeableInAcceptWindowLockDesk_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile9ChangeableInAcceptWindowSysinfo">Security.PermissionProfiles.Profile9.ChangeableInAcceptWindow.Sysinfo</string>
+			<string id="Pol_SecurityPermissionProfilesProfile9ChangeableInAcceptWindowSysinfo_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile9ChangeableInAcceptWindowWhiteboard">Security.PermissionProfiles.Profile9.ChangeableInAcceptWindow.Whiteboard</string>
+			<string id="Pol_SecurityPermissionProfilesProfile9ChangeableInAcceptWindowWhiteboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile9ChangeableInAcceptWindowTcpTunnel">Security.PermissionProfiles.Profile9.ChangeableInAcceptWindow.TcpTunnel</string>
+			<string id="Pol_SecurityPermissionProfilesProfile9ChangeableInAcceptWindowTcpTunnel_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile9ChangeableInAcceptWindowVpn">Security.PermissionProfiles.Profile9.ChangeableInAcceptWindow.Vpn</string>
+			<string id="Pol_SecurityPermissionProfilesProfile9ChangeableInAcceptWindowVpn_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile9ChangeableInAcceptWindowUserPointer">Security.PermissionProfiles.Profile9.ChangeableInAcceptWindow.UserPointer</string>
+			<string id="Pol_SecurityPermissionProfilesProfile9ChangeableInAcceptWindowUserPointer_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile9ChangeableInAcceptWindowPrivacyFeature">Security.PermissionProfiles.Profile9.ChangeableInAcceptWindow.PrivacyFeature</string>
+			<string id="Pol_SecurityPermissionProfilesProfile9ChangeableInAcceptWindowPrivacyFeature_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile9ChangeableInAcceptWindowRecordSession">Security.PermissionProfiles.Profile9.ChangeableInAcceptWindow.RecordSession</string>
+			<string id="Pol_SecurityPermissionProfilesProfile9ChangeableInAcceptWindowRecordSession_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile10ChangeableInAcceptWindowAudio">Security.PermissionProfiles.Profile10.ChangeableInAcceptWindow.Audio</string>
+			<string id="Pol_SecurityPermissionProfilesProfile10ChangeableInAcceptWindowAudio_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile10ChangeableInAcceptWindowInput">Security.PermissionProfiles.Profile10.ChangeableInAcceptWindow.Input</string>
+			<string id="Pol_SecurityPermissionProfilesProfile10ChangeableInAcceptWindowInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile10ChangeableInAcceptWindowClipboard">Security.PermissionProfiles.Profile10.ChangeableInAcceptWindow.Clipboard</string>
+			<string id="Pol_SecurityPermissionProfilesProfile10ChangeableInAcceptWindowClipboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile10ChangeableInAcceptWindowClipboardFiles">Security.PermissionProfiles.Profile10.ChangeableInAcceptWindow.ClipboardFiles</string>
+			<string id="Pol_SecurityPermissionProfilesProfile10ChangeableInAcceptWindowClipboardFiles_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile10ChangeableInAcceptWindowBlockInput">Security.PermissionProfiles.Profile10.ChangeableInAcceptWindow.BlockInput</string>
+			<string id="Pol_SecurityPermissionProfilesProfile10ChangeableInAcceptWindowBlockInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile10ChangeableInAcceptWindowSas">Security.PermissionProfiles.Profile10.ChangeableInAcceptWindow.Sas</string>
+			<string id="Pol_SecurityPermissionProfilesProfile10ChangeableInAcceptWindowSas_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile10ChangeableInAcceptWindowRestart">Security.PermissionProfiles.Profile10.ChangeableInAcceptWindow.Restart</string>
+			<string id="Pol_SecurityPermissionProfilesProfile10ChangeableInAcceptWindowRestart_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile10ChangeableInAcceptWindowFileManager">Security.PermissionProfiles.Profile10.ChangeableInAcceptWindow.FileManager</string>
+			<string id="Pol_SecurityPermissionProfilesProfile10ChangeableInAcceptWindowFileManager_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile10ChangeableInAcceptWindowLockDesk">Security.PermissionProfiles.Profile10.ChangeableInAcceptWindow.LockDesk</string>
+			<string id="Pol_SecurityPermissionProfilesProfile10ChangeableInAcceptWindowLockDesk_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile10ChangeableInAcceptWindowSysinfo">Security.PermissionProfiles.Profile10.ChangeableInAcceptWindow.Sysinfo</string>
+			<string id="Pol_SecurityPermissionProfilesProfile10ChangeableInAcceptWindowSysinfo_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile10ChangeableInAcceptWindowWhiteboard">Security.PermissionProfiles.Profile10.ChangeableInAcceptWindow.Whiteboard</string>
+			<string id="Pol_SecurityPermissionProfilesProfile10ChangeableInAcceptWindowWhiteboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile10ChangeableInAcceptWindowTcpTunnel">Security.PermissionProfiles.Profile10.ChangeableInAcceptWindow.TcpTunnel</string>
+			<string id="Pol_SecurityPermissionProfilesProfile10ChangeableInAcceptWindowTcpTunnel_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile10ChangeableInAcceptWindowVpn">Security.PermissionProfiles.Profile10.ChangeableInAcceptWindow.Vpn</string>
+			<string id="Pol_SecurityPermissionProfilesProfile10ChangeableInAcceptWindowVpn_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile10ChangeableInAcceptWindowUserPointer">Security.PermissionProfiles.Profile10.ChangeableInAcceptWindow.UserPointer</string>
+			<string id="Pol_SecurityPermissionProfilesProfile10ChangeableInAcceptWindowUserPointer_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile10ChangeableInAcceptWindowPrivacyFeature">Security.PermissionProfiles.Profile10.ChangeableInAcceptWindow.PrivacyFeature</string>
+			<string id="Pol_SecurityPermissionProfilesProfile10ChangeableInAcceptWindowPrivacyFeature_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile10ChangeableInAcceptWindowRecordSession">Security.PermissionProfiles.Profile10.ChangeableInAcceptWindow.RecordSession</string>
+			<string id="Pol_SecurityPermissionProfilesProfile10ChangeableInAcceptWindowRecordSession_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultChangeableInAcceptWindowAudio">Security.PermissionProfiles._Default.ChangeableInAcceptWindow.Audio</string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultChangeableInAcceptWindowAudio_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultChangeableInAcceptWindowInput">Security.PermissionProfiles._Default.ChangeableInAcceptWindow.Input</string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultChangeableInAcceptWindowInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultChangeableInAcceptWindowClipboard">Security.PermissionProfiles._Default.ChangeableInAcceptWindow.Clipboard</string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultChangeableInAcceptWindowClipboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultChangeableInAcceptWindowClipboardFiles">Security.PermissionProfiles._Default.ChangeableInAcceptWindow.ClipboardFiles</string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultChangeableInAcceptWindowClipboardFiles_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultChangeableInAcceptWindowBlockInput">Security.PermissionProfiles._Default.ChangeableInAcceptWindow.BlockInput</string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultChangeableInAcceptWindowBlockInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultChangeableInAcceptWindowSas">Security.PermissionProfiles._Default.ChangeableInAcceptWindow.Sas</string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultChangeableInAcceptWindowSas_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultChangeableInAcceptWindowRestart">Security.PermissionProfiles._Default.ChangeableInAcceptWindow.Restart</string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultChangeableInAcceptWindowRestart_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultChangeableInAcceptWindowFileManager">Security.PermissionProfiles._Default.ChangeableInAcceptWindow.FileManager</string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultChangeableInAcceptWindowFileManager_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultChangeableInAcceptWindowLockDesk">Security.PermissionProfiles._Default.ChangeableInAcceptWindow.LockDesk</string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultChangeableInAcceptWindowLockDesk_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultChangeableInAcceptWindowSysinfo">Security.PermissionProfiles._Default.ChangeableInAcceptWindow.Sysinfo</string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultChangeableInAcceptWindowSysinfo_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultChangeableInAcceptWindowWhiteboard">Security.PermissionProfiles._Default.ChangeableInAcceptWindow.Whiteboard</string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultChangeableInAcceptWindowWhiteboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultChangeableInAcceptWindowTcpTunnel">Security.PermissionProfiles._Default.ChangeableInAcceptWindow.TcpTunnel</string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultChangeableInAcceptWindowTcpTunnel_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultChangeableInAcceptWindowVpn">Security.PermissionProfiles._Default.ChangeableInAcceptWindow.Vpn</string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultChangeableInAcceptWindowVpn_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultChangeableInAcceptWindowUserPointer">Security.PermissionProfiles._Default.ChangeableInAcceptWindow.UserPointer</string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultChangeableInAcceptWindowUserPointer_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultChangeableInAcceptWindowPrivacyFeature">Security.PermissionProfiles._Default.ChangeableInAcceptWindow.PrivacyFeature</string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultChangeableInAcceptWindowPrivacyFeature_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultChangeableInAcceptWindowRecordSession">Security.PermissionProfiles._Default.ChangeableInAcceptWindow.RecordSession</string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultChangeableInAcceptWindowRecordSession_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingChangeableInAcceptWindowAudio">Security.PermissionProfiles._ScreenSharing.ChangeableInAcceptWindow.Audio</string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingChangeableInAcceptWindowAudio_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingChangeableInAcceptWindowInput">Security.PermissionProfiles._ScreenSharing.ChangeableInAcceptWindow.Input</string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingChangeableInAcceptWindowInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingChangeableInAcceptWindowClipboard">Security.PermissionProfiles._ScreenSharing.ChangeableInAcceptWindow.Clipboard</string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingChangeableInAcceptWindowClipboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingChangeableInAcceptWindowClipboardFiles">Security.PermissionProfiles._ScreenSharing.ChangeableInAcceptWindow.ClipboardFiles</string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingChangeableInAcceptWindowClipboardFiles_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingChangeableInAcceptWindowBlockInput">Security.PermissionProfiles._ScreenSharing.ChangeableInAcceptWindow.BlockInput</string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingChangeableInAcceptWindowBlockInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingChangeableInAcceptWindowSas">Security.PermissionProfiles._ScreenSharing.ChangeableInAcceptWindow.Sas</string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingChangeableInAcceptWindowSas_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingChangeableInAcceptWindowRestart">Security.PermissionProfiles._ScreenSharing.ChangeableInAcceptWindow.Restart</string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingChangeableInAcceptWindowRestart_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingChangeableInAcceptWindowFileManager">Security.PermissionProfiles._ScreenSharing.ChangeableInAcceptWindow.FileManager</string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingChangeableInAcceptWindowFileManager_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingChangeableInAcceptWindowLockDesk">Security.PermissionProfiles._ScreenSharing.ChangeableInAcceptWindow.LockDesk</string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingChangeableInAcceptWindowLockDesk_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingChangeableInAcceptWindowSysinfo">Security.PermissionProfiles._ScreenSharing.ChangeableInAcceptWindow.Sysinfo</string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingChangeableInAcceptWindowSysinfo_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingChangeableInAcceptWindowWhiteboard">Security.PermissionProfiles._ScreenSharing.ChangeableInAcceptWindow.Whiteboard</string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingChangeableInAcceptWindowWhiteboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingChangeableInAcceptWindowTcpTunnel">Security.PermissionProfiles._ScreenSharing.ChangeableInAcceptWindow.TcpTunnel</string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingChangeableInAcceptWindowTcpTunnel_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingChangeableInAcceptWindowVpn">Security.PermissionProfiles._ScreenSharing.ChangeableInAcceptWindow.Vpn</string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingChangeableInAcceptWindowVpn_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingChangeableInAcceptWindowUserPointer">Security.PermissionProfiles._ScreenSharing.ChangeableInAcceptWindow.UserPointer</string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingChangeableInAcceptWindowUserPointer_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingChangeableInAcceptWindowPrivacyFeature">Security.PermissionProfiles._ScreenSharing.ChangeableInAcceptWindow.PrivacyFeature</string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingChangeableInAcceptWindowPrivacyFeature_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingChangeableInAcceptWindowRecordSession">Security.PermissionProfiles._ScreenSharing.ChangeableInAcceptWindow.RecordSession</string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingChangeableInAcceptWindowRecordSession_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessChangeableInAcceptWindowAudio">Security.PermissionProfiles._FullAccess.ChangeableInAcceptWindow.Audio</string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessChangeableInAcceptWindowAudio_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessChangeableInAcceptWindowInput">Security.PermissionProfiles._FullAccess.ChangeableInAcceptWindow.Input</string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessChangeableInAcceptWindowInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessChangeableInAcceptWindowClipboard">Security.PermissionProfiles._FullAccess.ChangeableInAcceptWindow.Clipboard</string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessChangeableInAcceptWindowClipboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessChangeableInAcceptWindowClipboardFiles">Security.PermissionProfiles._FullAccess.ChangeableInAcceptWindow.ClipboardFiles</string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessChangeableInAcceptWindowClipboardFiles_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessChangeableInAcceptWindowBlockInput">Security.PermissionProfiles._FullAccess.ChangeableInAcceptWindow.BlockInput</string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessChangeableInAcceptWindowBlockInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessChangeableInAcceptWindowSas">Security.PermissionProfiles._FullAccess.ChangeableInAcceptWindow.Sas</string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessChangeableInAcceptWindowSas_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessChangeableInAcceptWindowRestart">Security.PermissionProfiles._FullAccess.ChangeableInAcceptWindow.Restart</string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessChangeableInAcceptWindowRestart_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessChangeableInAcceptWindowFileManager">Security.PermissionProfiles._FullAccess.ChangeableInAcceptWindow.FileManager</string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessChangeableInAcceptWindowFileManager_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessChangeableInAcceptWindowLockDesk">Security.PermissionProfiles._FullAccess.ChangeableInAcceptWindow.LockDesk</string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessChangeableInAcceptWindowLockDesk_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessChangeableInAcceptWindowSysinfo">Security.PermissionProfiles._FullAccess.ChangeableInAcceptWindow.Sysinfo</string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessChangeableInAcceptWindowSysinfo_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessChangeableInAcceptWindowWhiteboard">Security.PermissionProfiles._FullAccess.ChangeableInAcceptWindow.Whiteboard</string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessChangeableInAcceptWindowWhiteboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessChangeableInAcceptWindowTcpTunnel">Security.PermissionProfiles._FullAccess.ChangeableInAcceptWindow.TcpTunnel</string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessChangeableInAcceptWindowTcpTunnel_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessChangeableInAcceptWindowVpn">Security.PermissionProfiles._FullAccess.ChangeableInAcceptWindow.Vpn</string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessChangeableInAcceptWindowVpn_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessChangeableInAcceptWindowUserPointer">Security.PermissionProfiles._FullAccess.ChangeableInAcceptWindow.UserPointer</string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessChangeableInAcceptWindowUserPointer_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessChangeableInAcceptWindowPrivacyFeature">Security.PermissionProfiles._FullAccess.ChangeableInAcceptWindow.PrivacyFeature</string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessChangeableInAcceptWindowPrivacyFeature_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessChangeableInAcceptWindowRecordSession">Security.PermissionProfiles._FullAccess.ChangeableInAcceptWindow.RecordSession</string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessChangeableInAcceptWindowRecordSession_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessChangeableInAcceptWindowAudio">Security.PermissionProfiles._UnattendedAccess.ChangeableInAcceptWindow.Audio</string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessChangeableInAcceptWindowAudio_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessChangeableInAcceptWindowInput">Security.PermissionProfiles._UnattendedAccess.ChangeableInAcceptWindow.Input</string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessChangeableInAcceptWindowInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessChangeableInAcceptWindowClipboard">Security.PermissionProfiles._UnattendedAccess.ChangeableInAcceptWindow.Clipboard</string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessChangeableInAcceptWindowClipboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessChangeableInAcceptWindowClipboardFiles">Security.PermissionProfiles._UnattendedAccess.ChangeableInAcceptWindow.ClipboardFiles</string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessChangeableInAcceptWindowClipboardFiles_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessChangeableInAcceptWindowBlockInput">Security.PermissionProfiles._UnattendedAccess.ChangeableInAcceptWindow.BlockInput</string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessChangeableInAcceptWindowBlockInput_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessChangeableInAcceptWindowSas">Security.PermissionProfiles._UnattendedAccess.ChangeableInAcceptWindow.Sas</string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessChangeableInAcceptWindowSas_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessChangeableInAcceptWindowRestart">Security.PermissionProfiles._UnattendedAccess.ChangeableInAcceptWindow.Restart</string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessChangeableInAcceptWindowRestart_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessChangeableInAcceptWindowFileManager">Security.PermissionProfiles._UnattendedAccess.ChangeableInAcceptWindow.FileManager</string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessChangeableInAcceptWindowFileManager_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessChangeableInAcceptWindowLockDesk">Security.PermissionProfiles._UnattendedAccess.ChangeableInAcceptWindow.LockDesk</string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessChangeableInAcceptWindowLockDesk_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessChangeableInAcceptWindowSysinfo">Security.PermissionProfiles._UnattendedAccess.ChangeableInAcceptWindow.Sysinfo</string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessChangeableInAcceptWindowSysinfo_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessChangeableInAcceptWindowWhiteboard">Security.PermissionProfiles._UnattendedAccess.ChangeableInAcceptWindow.Whiteboard</string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessChangeableInAcceptWindowWhiteboard_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessChangeableInAcceptWindowTcpTunnel">Security.PermissionProfiles._UnattendedAccess.ChangeableInAcceptWindow.TcpTunnel</string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessChangeableInAcceptWindowTcpTunnel_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessChangeableInAcceptWindowVpn">Security.PermissionProfiles._UnattendedAccess.ChangeableInAcceptWindow.Vpn</string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessChangeableInAcceptWindowVpn_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessChangeableInAcceptWindowUserPointer">Security.PermissionProfiles._UnattendedAccess.ChangeableInAcceptWindow.UserPointer</string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessChangeableInAcceptWindowUserPointer_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessChangeableInAcceptWindowPrivacyFeature">Security.PermissionProfiles._UnattendedAccess.ChangeableInAcceptWindow.PrivacyFeature</string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessChangeableInAcceptWindowPrivacyFeature_Help"></string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessChangeableInAcceptWindowRecordSession">Security.PermissionProfiles._UnattendedAccess.ChangeableInAcceptWindow.RecordSession</string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessChangeableInAcceptWindowRecordSession_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesDefineProfile1">Security.PermissionProfiles.Define.Profile1</string>
+			<string id="Pol_SecurityPermissionProfilesDefineProfile1_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesDefineProfile2">Security.PermissionProfiles.Define.Profile2</string>
+			<string id="Pol_SecurityPermissionProfilesDefineProfile2_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesDefineProfile3">Security.PermissionProfiles.Define.Profile3</string>
+			<string id="Pol_SecurityPermissionProfilesDefineProfile3_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesDefineProfile4">Security.PermissionProfiles.Define.Profile4</string>
+			<string id="Pol_SecurityPermissionProfilesDefineProfile4_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesDefineProfile5">Security.PermissionProfiles.Define.Profile5</string>
+			<string id="Pol_SecurityPermissionProfilesDefineProfile5_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesDefineProfile6">Security.PermissionProfiles.Define.Profile6</string>
+			<string id="Pol_SecurityPermissionProfilesDefineProfile6_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesDefineProfile7">Security.PermissionProfiles.Define.Profile7</string>
+			<string id="Pol_SecurityPermissionProfilesDefineProfile7_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesDefineProfile8">Security.PermissionProfiles.Define.Profile8</string>
+			<string id="Pol_SecurityPermissionProfilesDefineProfile8_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesDefineProfile9">Security.PermissionProfiles.Define.Profile9</string>
+			<string id="Pol_SecurityPermissionProfilesDefineProfile9_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesDefineProfile10">Security.PermissionProfiles.Define.Profile10</string>
+			<string id="Pol_SecurityPermissionProfilesDefineProfile10_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesDefine_Default">Security.PermissionProfiles.Define._Default</string>
+			<string id="Pol_SecurityPermissionProfilesDefine_Default_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesDefine_FullAccess">Security.PermissionProfiles.Define._FullAccess</string>
+			<string id="Pol_SecurityPermissionProfilesDefine_FullAccess_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesDefine_ScreenSharing">Security.PermissionProfiles.Define._ScreenSharing</string>
+			<string id="Pol_SecurityPermissionProfilesDefine_ScreenSharing_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesDefine_UnattendedAccess">Security.PermissionProfiles.Define._UnattendedAccess</string>
+			<string id="Pol_SecurityPermissionProfilesDefine_UnattendedAccess_Help"></string>
+			<string id="Pol_SecurityPermissionProfilesProfile1Salt">Security.PermissionProfiles.Profile1.Salt</string>
+			<string id="Pol_SecurityPermissionProfilesProfile1Salt_Help">Enter the salt generated for you password in the generator on https://my.anydesk.com/password-generator.</string>
+			<string id="Pol_SecurityPermissionProfilesProfile2Salt">Security.PermissionProfiles.Profile2.Salt</string>
+			<string id="Pol_SecurityPermissionProfilesProfile2Salt_Help">Enter the salt generated for you password in the generator on https://my.anydesk.com/password-generator.</string>
+			<string id="Pol_SecurityPermissionProfilesProfile3Salt">Security.PermissionProfiles.Profile3.Salt</string>
+			<string id="Pol_SecurityPermissionProfilesProfile3Salt_Help">Enter the salt generated for you password in the generator on https://my.anydesk.com/password-generator.</string>
+			<string id="Pol_SecurityPermissionProfilesProfile4Salt">Security.PermissionProfiles.Profile4.Salt</string>
+			<string id="Pol_SecurityPermissionProfilesProfile4Salt_Help">Enter the salt generated for you password in the generator on https://my.anydesk.com/password-generator.</string>
+			<string id="Pol_SecurityPermissionProfilesProfile5Salt">Security.PermissionProfiles.Profile5.Salt</string>
+			<string id="Pol_SecurityPermissionProfilesProfile5Salt_Help">Enter the salt generated for you password in the generator on https://my.anydesk.com/password-generator.</string>
+			<string id="Pol_SecurityPermissionProfilesProfile6Salt">Security.PermissionProfiles.Profile6.Salt</string>
+			<string id="Pol_SecurityPermissionProfilesProfile6Salt_Help">Enter the salt generated for you password in the generator on https://my.anydesk.com/password-generator.</string>
+			<string id="Pol_SecurityPermissionProfilesProfile7Salt">Security.PermissionProfiles.Profile7.Salt</string>
+			<string id="Pol_SecurityPermissionProfilesProfile7Salt_Help">Enter the salt generated for you password in the generator on https://my.anydesk.com/password-generator.</string>
+			<string id="Pol_SecurityPermissionProfilesProfile8Salt">Security.PermissionProfiles.Profile8.Salt</string>
+			<string id="Pol_SecurityPermissionProfilesProfile8Salt_Help">Enter the salt generated for you password in the generator on https://my.anydesk.com/password-generator.</string>
+			<string id="Pol_SecurityPermissionProfilesProfile9Salt">Security.PermissionProfiles.Profile9.Salt</string>
+			<string id="Pol_SecurityPermissionProfilesProfile9Salt_Help">Enter the salt generated for you password in the generator on https://my.anydesk.com/password-generator.</string>
+			<string id="Pol_SecurityPermissionProfilesProfile10Salt">Security.PermissionProfiles.Profile10.Salt</string>
+			<string id="Pol_SecurityPermissionProfilesProfile10Salt_Help">Enter the salt generated for you password in the generator on https://my.anydesk.com/password-generator.</string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultSalt">Security.PermissionProfiles._Default.Salt</string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultSalt_Help">Enter the salt generated for you password in the generator on https://my.anydesk.com/password-generator.</string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessSalt">Security.PermissionProfiles._FullAccess.Salt</string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessSalt_Help">Enter the salt generated for you password in the generator on https://my.anydesk.com/password-generator.</string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingSalt">Security.PermissionProfiles._ScreenSharing.Salt</string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingSalt_Help">Enter the salt generated for you password in the generator on https://my.anydesk.com/password-generator.</string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessSalt">Security.PermissionProfiles._UnattendedAccess.Salt</string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessSalt_Help">Enter the salt generated for you password in the generator on https://my.anydesk.com/password-generator.</string>
+			<string id="Pol_SecurityPermissionProfilesProfile1Pwd">Security.PermissionProfiles.Profile1.Pwd</string>
+			<string id="Pol_SecurityPermissionProfilesProfile1Pwd_Help">Enter the hash generated for your password in the generator on https://my.anydesk.com/password-generator.</string>
+			<string id="Pol_SecurityPermissionProfilesProfile2Pwd">Security.PermissionProfiles.Profile2.Pwd</string>
+			<string id="Pol_SecurityPermissionProfilesProfile2Pwd_Help">Enter the hash generated for your password in the generator on https://my.anydesk.com/password-generator.</string>
+			<string id="Pol_SecurityPermissionProfilesProfile3Pwd">Security.PermissionProfiles.Profile3.Pwd</string>
+			<string id="Pol_SecurityPermissionProfilesProfile3Pwd_Help">Enter the hash generated for your password in the generator on https://my.anydesk.com/password-generator.</string>
+			<string id="Pol_SecurityPermissionProfilesProfile4Pwd">Security.PermissionProfiles.Profile4.Pwd</string>
+			<string id="Pol_SecurityPermissionProfilesProfile4Pwd_Help">Enter the hash generated for your password in the generator on https://my.anydesk.com/password-generator.</string>
+			<string id="Pol_SecurityPermissionProfilesProfile5Pwd">Security.PermissionProfiles.Profile5.Pwd</string>
+			<string id="Pol_SecurityPermissionProfilesProfile5Pwd_Help">Enter the hash generated for your password in the generator on https://my.anydesk.com/password-generator.</string>
+			<string id="Pol_SecurityPermissionProfilesProfile6Pwd">Security.PermissionProfiles.Profile6.Pwd</string>
+			<string id="Pol_SecurityPermissionProfilesProfile6Pwd_Help">Enter the hash generated for your password in the generator on https://my.anydesk.com/password-generator.</string>
+			<string id="Pol_SecurityPermissionProfilesProfile7Pwd">Security.PermissionProfiles.Profile7.Pwd</string>
+			<string id="Pol_SecurityPermissionProfilesProfile7Pwd_Help">Enter the hash generated for your password in the generator on https://my.anydesk.com/password-generator.</string>
+			<string id="Pol_SecurityPermissionProfilesProfile8Pwd">Security.PermissionProfiles.Profile8.Pwd</string>
+			<string id="Pol_SecurityPermissionProfilesProfile8Pwd_Help">Enter the hash generated for your password in the generator on https://my.anydesk.com/password-generator.</string>
+			<string id="Pol_SecurityPermissionProfilesProfile9Pwd">Security.PermissionProfiles.Profile9.Pwd</string>
+			<string id="Pol_SecurityPermissionProfilesProfile9Pwd_Help">Enter the hash generated for your password in the generator on https://my.anydesk.com/password-generator.</string>
+			<string id="Pol_SecurityPermissionProfilesProfile10Pwd">Security.PermissionProfiles.Profile10.Pwd</string>
+			<string id="Pol_SecurityPermissionProfilesProfile10Pwd_Help">Enter the hash generated for your password in the generator on https://my.anydesk.com/password-generator.</string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultPwd">Security.PermissionProfiles._Default.Pwd</string>
+			<string id="Pol_SecurityPermissionProfiles_DefaultPwd_Help">Enter the hash generated for your password in the generator on https://my.anydesk.com/password-generator.</string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessPwd">Security.PermissionProfiles._FullAccess.Pwd</string>
+			<string id="Pol_SecurityPermissionProfiles_FullAccessPwd_Help">Enter the hash generated for your password in the generator on https://my.anydesk.com/password-generator.</string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingPwd">Security.PermissionProfiles._ScreenSharing.Pwd</string>
+			<string id="Pol_SecurityPermissionProfiles_ScreenSharingPwd_Help">Enter the hash generated for your password in the generator on https://my.anydesk.com/password-generator.</string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessPwd">Security.PermissionProfiles._UnattendedAccess.Pwd</string>
+			<string id="Pol_SecurityPermissionProfiles_UnattendedAccessPwd_Help">Enter the hash generated for your password in the generator on https://my.anydesk.com/password-generator.</string>
+			<string id="Pol_SecurityTwoFactorAuthMode_0">Optional</string>
+			<string id="Pol_SecurityTwoFactorAuthMode_1">Enforced</string>
+			<string id="Pol_SecurityTwoFactorAuthMode">Security.TwoFactorAuth.Mode</string>
+			<string id="Pol_SecurityTwoFactorAuthMode_Help">Choose Two-Factor Authentication mode 
+Optional means unnatended access can be used without setting up Two-Factor authentication 
+Enforced means Two-Factor authentication is required to use unnatended access</string>
+
+		</stringTable>
+
+
+		<presentationTable>
+			<presentation id="Pres_ABookViewType">
+				<dropdownList
+					refId="Pres_ABookViewType_DrpLst"
+					noSort="true"
+					defaultItem="0"
+					>Address book view type:
+				</dropdownList>
+			</presentation>
+			<presentation id="Pres_UiLang">
+				<dropdownList
+					refId="Pres_UiLang_DrpLst"
+					noSort="true"
+					defaultItem="5"
+					>Choose one of the available languages:
+				</dropdownList>
+			</presentation>
+			<presentation id="Pres_SecurityInteractiveAccess">
+				<dropdownList
+					refId="Pres_SecurityInteractiveAccess_DrpLst"
+					noSort="true"
+					defaultItem="1"
+					>Interactive access mode:
+				</dropdownList>
+			</presentation>
+			<presentation id="Pres_SecurityAclList">
+				<multiTextBox
+					defaultHeight="8"
+					refId="Pres_SecurityAclList_MltTxtStr"
+					>Set Access Control List:
+				</multiTextBox>
+			</presentation>
+			<presentation id="Pres_PrivacyNameShow">
+				<dropdownList
+					refId="Pres_PrivacyNameShow_DrpLst"
+					noSort="true"
+					defaultItem="1"
+					>Set the username:
+				</dropdownList>
+			</presentation>
+			<presentation id="Pres_PrivacyName">
+				<textBox refId="Pres_PrivacyName_TxtStr">
+					<label>Specify a custom username:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_PrivacyImageShow">
+				<dropdownList
+					refId="Pres_PrivacyImageShow_DrpLst"
+					noSort="true"
+					defaultItem="1"
+					>Set the user image:
+				</dropdownList>
+			</presentation>
+			<presentation id="Pres_PrivacyBkgndShow">
+				<dropdownList
+					refId="Pres_PrivacyBkgndShow_DrpLst"
+					noSort="true"
+					defaultItem="1"
+					>Desk Preview options:
+				</dropdownList>
+			</presentation>
+			<presentation id="Pres_PrivacyScrshotPathCfg">
+				<dropdownList
+					refId="Pres_PrivacyScrshotPathCfg_DrpLst"
+					noSort="true"
+					defaultItem="1"
+					>Screenshot path:
+				</dropdownList>
+			</presentation>
+			<presentation id="Pres_PrivacyScrshotPath">
+				<textBox refId="Pres_PrivacyScrshotPath_TxtStr">
+					<label>Set the custom screenshot path:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_PrivacyChatPathCfg">
+				<dropdownList
+					refId="Pres_PrivacyChatPathCfg_DrpLst"
+					noSort="true"
+					defaultItem="1"
+					>Chat Log path:
+				</dropdownList>
+			</presentation>
+			<presentation id="Pres_PrivacyScreenFrameMode">
+				<dropdownList
+					refId="Pres_PrivacyScreenFrameMode_DrpLst"
+					noSort="true"
+					defaultItem="0"
+					>Screen Frame Mode:
+				</dropdownList>
+			</presentation>
+			<presentation id="Pres_PrivacyScreenFrameColorDefault">
+				<textBox refId="Pres_PrivacyScreenFrameColorDefault_TxtStr">
+					<label>Screen Frame Default Color:</label>
+					<defaultValue>#DDDDDD80</defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_PrivacyScreenFrameColorWatched">
+				<textBox refId="Pres_PrivacyScreenFrameColorWatched_TxtStr">
+					<label>Screen Frame Watched Color:</label>
+					<defaultValue>#EF443B80</defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_PrivacyScreenFrameWidth">
+				<decimalTextBox
+					refId="Pres_PrivacyScreenFrameWidth_TxtDec"
+					defaultValue="10"
+					>Screen Frame width in absolute pixels
+				</decimalTextBox>
+			</presentation>
+			<presentation id="Pres_ImageQualityPreset">
+				<dropdownList
+					refId="Pres_ImageQualityPreset_DrpLst"
+					noSort="true"
+					defaultItem="1"
+					>Select Display Quality options:
+				</dropdownList>
+			</presentation>
+			<presentation id="Pres_ImageViewmode">
+				<dropdownList
+					refId="Pres_ImageViewmode_DrpLst"
+					noSort="true"
+					defaultItem="1"
+					>Choose the view mode:
+				</dropdownList>
+			</presentation>
+			<presentation id="Pres_ImageRendermode">
+				<dropdownList
+					refId="Pres_ImageRendermode_DrpLst"
+					noSort="true"
+					defaultItem="2"
+					>Choose the render mode:
+				</dropdownList>
+			</presentation>
+			<presentation id="Pres_AudioTransmitMode">
+				<dropdownList
+					refId="Pres_AudioTransmitMode_DrpLst"
+					noSort="true"
+					defaultItem="1"
+					>Audio Transmission mode:
+				</dropdownList>
+			</presentation>
+			<presentation id="Pres_AudioPlaybackMode">
+				<dropdownList
+					refId="Pres_AudioPlaybackMode_DrpLst"
+					noSort="true"
+					defaultItem="1"
+					>Audio Output mode:
+				</dropdownList>
+			</presentation>
+			<presentation id="Pres_AnynetListenPort">
+				<decimalTextBox
+					refId="Pres_AnynetListenPort_TxtDec"
+					defaultValue="7070"
+					>Set the listening port:
+				</decimalTextBox>
+			</presentation>
+			<presentation id="Pres_RecordingPathCfg">
+				<dropdownList
+					refId="Pres_RecordingPathCfg_DrpLst"
+					noSort="true"
+					defaultItem="0"
+					>Choose the recording path:
+				</dropdownList>
+				<textBox refId="Pres_RecordingPathCfg_TxtStr">
+					<label>Set a custom recording path:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_UiMainWinX">
+				<decimalTextBox
+					refId="Pres_UiMainWinX_TxtDec"
+					defaultValue=""
+					>Set the horizontal position of the window on the screen:
+				</decimalTextBox>
+			</presentation>
+			<presentation id="Pres_UiMainWinY">
+				<decimalTextBox
+					refId="Pres_UiMainWinY_TxtDec"
+					defaultValue=""
+					>Set the vertical position of the window on the screen:
+				</decimalTextBox>
+			</presentation>
+			<presentation id="Pres_UiMainWinWidth">
+				<decimalTextBox
+					refId="Pres_UiMainWinWidth_TxtDec"
+					defaultValue=""
+					>Set the window width in pixels:
+				</decimalTextBox>
+			</presentation>
+			<presentation id="Pres_UiMainWinHeight">
+				<decimalTextBox
+					refId="Pres_UiMainWinHeight_TxtDec"
+					defaultValue=""
+					>Set the window height in pixels:
+				</decimalTextBox>
+			</presentation>
+			<presentation id="Pres_UiDisclaimerTitle">
+				<textBox refId="Pres_UiDisclaimerTitle_TxtStr">
+					<label>Set the title of the disclaimer:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_UiDisclaimerText">
+				<textBox refId="Pres_UiDisclaimerText_TxtStr">
+					<label>Enter a text of the disclaimer:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_UiDisclaimerAccept">
+				<textBox refId="Pres_UiDisclaimerAccept_TxtStr">
+					<label>Text for the disclaimer accept button:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_UiDisclaimerCancel">
+				<textBox refId="Pres_UiDisclaimerCancel_TxtStr">
+					<label>Text for the disclaimer cancel button:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_UiDisclaimerTextColor">
+				<textBox refId="Pres_UiDisclaimerTextColor_TxtStr">
+					<label>Set color for the disclaimer title and text:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_UiDisclaimerBgColor">
+				<textBox refId="Pres_UiDisclaimerBgColor_TxtStr">
+					<label>Set color for the disclaimer background:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_UiWindowTitle">
+				<textBox refId="Pres_UiWindowTitle_TxtStr">
+					<label>Change title of the AnyDesk window:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_UiIdGroupColor">
+				<textBox refId="Pres_UiIdGroupColor_TxtStr">
+					<label>Set line color above "This Desk":</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_UiIdGroupTitle">
+				<textBox refId="Pres_UiIdGroupTitle_TxtStr">
+					<label>Change name for "This Desk":</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_UiIdGroupText">
+				<textBox refId="Pres_UiIdGroupText_TxtStr">
+					<label>Replace the information under "This Desk":</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_UiConnectGroupColor">
+				<textBox refId="Pres_UiConnectGroupColor_TxtStr">
+					<label>Set line color above "Remote Desk":</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_UiConnectGroupTitle">
+				<textBox refId="Pres_UiConnectGroupTitle_TxtStr">
+					<label>Change name for "Remote Desk":</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_UiConnectGroupText">
+				<textBox refId="Pres_UiConnectGroupText_TxtStr">
+					<label>Replace the information under "Remote Desk":</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_UiInstallGroupColor">
+				<textBox refId="Pres_UiInstallGroupColor_TxtStr">
+					<label>Set line color for version information:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_UiVersionGroupColor">
+				<textBox refId="Pres_UiVersionGroupColor_TxtStr">
+					<label>Set line color above "Version Information":</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_UiSupportGroupColor">
+				<textBox refId="Pres_UiSupportGroupColor_TxtStr">
+					<label>Set line color above "Support Information":</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_SecurityPasswordsPermissions">
+				<multiTextBox
+					defaultHeight="8"
+					refId="Pres_SecurityPasswordsPermissions_MltTxtStr"
+					>Specify permissions for each user:
+				</multiTextBox>
+			</presentation>
+			<presentation id="Pres_SecurityPermissionProfilesDefineProfile1">
+				<textBox refId="Pres_SecurityPermissionProfilesDefineProfile1_TxtStr">
+					<label>Enter the name of the profile:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_SecurityPermissionProfilesDefineProfile2">
+				<textBox refId="Pres_SecurityPermissionProfilesDefineProfile2_TxtStr">
+					<label>Enter the name of the profile:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_SecurityPermissionProfilesDefineProfile3">
+				<textBox refId="Pres_SecurityPermissionProfilesDefineProfile3_TxtStr">
+					<label>Enter the name of the profile:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_SecurityPermissionProfilesDefineProfile4">
+				<textBox refId="Pres_SecurityPermissionProfilesDefineProfile4_TxtStr">
+					<label>Enter the name of the profile:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_SecurityPermissionProfilesDefineProfile5">
+				<textBox refId="Pres_SecurityPermissionProfilesDefineProfile5_TxtStr">
+					<label>Enter the name of the profile:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_SecurityPermissionProfilesDefineProfile6">
+				<textBox refId="Pres_SecurityPermissionProfilesDefineProfile6_TxtStr">
+					<label>Enter the name of the profile:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_SecurityPermissionProfilesDefineProfile7">
+				<textBox refId="Pres_SecurityPermissionProfilesDefineProfile7_TxtStr">
+					<label>Enter the name of the profile:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_SecurityPermissionProfilesDefineProfile8">
+				<textBox refId="Pres_SecurityPermissionProfilesDefineProfile8_TxtStr">
+					<label>Enter the name of the profile:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_SecurityPermissionProfilesDefineProfile9">
+				<textBox refId="Pres_SecurityPermissionProfilesDefineProfile9_TxtStr">
+					<label>Enter the name of the profile:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_SecurityPermissionProfilesDefineProfile10">
+				<textBox refId="Pres_SecurityPermissionProfilesDefineProfile10_TxtStr">
+					<label>Enter the name of the profile:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_SecurityPermissionProfilesDefine_Default">
+				<textBox refId="Pres_SecurityPermissionProfilesDefine_Default_TxtStr">
+					<label></label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_SecurityPermissionProfilesDefine_FullAccess">
+				<textBox refId="Pres_SecurityPermissionProfilesDefine_FullAccess_TxtStr">
+					<label></label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_SecurityPermissionProfilesDefine_ScreenSharing">
+				<textBox refId="Pres_SecurityPermissionProfilesDefine_ScreenSharing_TxtStr">
+					<label></label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_SecurityPermissionProfilesDefine_UnattendedAccess">
+				<textBox refId="Pres_SecurityPermissionProfilesDefine_UnattendedAccess_TxtStr">
+					<label></label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_SecurityPermissionProfilesProfile1Salt">
+				<textBox refId="Pres_SecurityPermissionProfilesProfile1Salt_TxtStr">
+					<label>Enter the generated salt:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_SecurityPermissionProfilesProfile2Salt">
+				<textBox refId="Pres_SecurityPermissionProfilesProfile2Salt_TxtStr">
+					<label>Enter the generated salt:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_SecurityPermissionProfilesProfile3Salt">
+				<textBox refId="Pres_SecurityPermissionProfilesProfile3Salt_TxtStr">
+					<label>Enter the generated salt:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_SecurityPermissionProfilesProfile4Salt">
+				<textBox refId="Pres_SecurityPermissionProfilesProfile4Salt_TxtStr">
+					<label>Enter the generated salt:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_SecurityPermissionProfilesProfile5Salt">
+				<textBox refId="Pres_SecurityPermissionProfilesProfile5Salt_TxtStr">
+					<label>Enter the generated salt:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_SecurityPermissionProfilesProfile6Salt">
+				<textBox refId="Pres_SecurityPermissionProfilesProfile6Salt_TxtStr">
+					<label>Enter the generated salt:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_SecurityPermissionProfilesProfile7Salt">
+				<textBox refId="Pres_SecurityPermissionProfilesProfile7Salt_TxtStr">
+					<label>Enter the generated salt:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_SecurityPermissionProfilesProfile8Salt">
+				<textBox refId="Pres_SecurityPermissionProfilesProfile8Salt_TxtStr">
+					<label>Enter the generated salt:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_SecurityPermissionProfilesProfile9Salt">
+				<textBox refId="Pres_SecurityPermissionProfilesProfile9Salt_TxtStr">
+					<label>Enter the generated salt:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_SecurityPermissionProfilesProfile10Salt">
+				<textBox refId="Pres_SecurityPermissionProfilesProfile10Salt_TxtStr">
+					<label>Enter the generated salt:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_SecurityPermissionProfiles_DefaultSalt">
+				<textBox refId="Pres_SecurityPermissionProfiles_DefaultSalt_TxtStr">
+					<label>Enter the generated salt:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_SecurityPermissionProfiles_FullAccessSalt">
+				<textBox refId="Pres_SecurityPermissionProfiles_FullAccessSalt_TxtStr">
+					<label>Enter the generated salt:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_SecurityPermissionProfiles_ScreenSharingSalt">
+				<textBox refId="Pres_SecurityPermissionProfiles_ScreenSharingSalt_TxtStr">
+					<label>Enter the generated salt:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_SecurityPermissionProfiles_UnattendedAccessSalt">
+				<textBox refId="Pres_SecurityPermissionProfiles_UnattendedAccessSalt_TxtStr">
+					<label>Enter the generated salt:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_SecurityPermissionProfilesProfile1Pwd">
+				<textBox refId="Pres_SecurityPermissionProfilesProfile1Pwd_TxtStr">
+					<label>Enter the generated hash:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_SecurityPermissionProfilesProfile2Pwd">
+				<textBox refId="Pres_SecurityPermissionProfilesProfile2Pwd_TxtStr">
+					<label>Enter the generated hash:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_SecurityPermissionProfilesProfile3Pwd">
+				<textBox refId="Pres_SecurityPermissionProfilesProfile3Pwd_TxtStr">
+					<label>Enter the generated hash:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_SecurityPermissionProfilesProfile4Pwd">
+				<textBox refId="Pres_SecurityPermissionProfilesProfile4Pwd_TxtStr">
+					<label>Enter the generated hash:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_SecurityPermissionProfilesProfile5Pwd">
+				<textBox refId="Pres_SecurityPermissionProfilesProfile5Pwd_TxtStr">
+					<label>Enter the generated hash:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_SecurityPermissionProfilesProfile6Pwd">
+				<textBox refId="Pres_SecurityPermissionProfilesProfile6Pwd_TxtStr">
+					<label>Enter the generated hash:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_SecurityPermissionProfilesProfile7Pwd">
+				<textBox refId="Pres_SecurityPermissionProfilesProfile7Pwd_TxtStr">
+					<label>Enter the generated hash:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_SecurityPermissionProfilesProfile8Pwd">
+				<textBox refId="Pres_SecurityPermissionProfilesProfile8Pwd_TxtStr">
+					<label>Enter the generated hash:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_SecurityPermissionProfilesProfile9Pwd">
+				<textBox refId="Pres_SecurityPermissionProfilesProfile9Pwd_TxtStr">
+					<label>Enter the generated hash:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_SecurityPermissionProfilesProfile10Pwd">
+				<textBox refId="Pres_SecurityPermissionProfilesProfile10Pwd_TxtStr">
+					<label>Enter the generated hash:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_SecurityPermissionProfiles_DefaultPwd">
+				<textBox refId="Pres_SecurityPermissionProfiles_DefaultPwd_TxtStr">
+					<label>Enter the generated hash:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_SecurityPermissionProfiles_FullAccessPwd">
+				<textBox refId="Pres_SecurityPermissionProfiles_FullAccessPwd_TxtStr">
+					<label>Enter the generated hash:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_SecurityPermissionProfiles_ScreenSharingPwd">
+				<textBox refId="Pres_SecurityPermissionProfiles_ScreenSharingPwd_TxtStr">
+					<label>Enter the generated hash:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_SecurityPermissionProfiles_UnattendedAccessPwd">
+				<textBox refId="Pres_SecurityPermissionProfiles_UnattendedAccessPwd_TxtStr">
+					<label>Enter the generated hash:</label>
+					<defaultValue></defaultValue>
+				</textBox>
+			</presentation>
+			<presentation id="Pres_SecurityTwoFactorAuthMode">
+				<dropdownList
+					refId="Pres_SecurityTwoFactorAuthMode_DrpLst"
+					noSort="true"
+					defaultItem="0"
+					>Two-Factor authentication mode:
+				</dropdownList>
+			</presentation>
+
+		</presentationTable>
+
+	</resources>
+</policyDefinitionResources>

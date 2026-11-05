@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -53,7 +54,21 @@ class IshchiApp extends ConsumerWidget {
       // instead of a floating pill. The system nav bar itself is made transparent in main.dart
       // instead, so the Scaffold's own background (which already matches the theme) shows
       // through cleanly with no extra layer needed.
-      builder: (context, child) => SafeArea(top: false, bottom: true, child: child!),
+      builder: (context, child) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        final icons = isDark ? Brightness.light : Brightness.dark;
+        return AnnotatedRegion<SystemUiOverlayStyle>(
+          value: SystemUiOverlayStyle(
+            statusBarColor: Colors.transparent,
+            statusBarIconBrightness: icons,
+            statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
+            systemNavigationBarColor: Colors.transparent,
+            systemNavigationBarDividerColor: Colors.transparent,
+            systemNavigationBarIconBrightness: icons,
+          ),
+          child: child!,
+        );
+      },
     );
   }
 }

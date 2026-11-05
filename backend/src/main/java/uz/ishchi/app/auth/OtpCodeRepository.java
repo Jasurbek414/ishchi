@@ -8,4 +8,6 @@ import java.util.Optional;
 public interface OtpCodeRepository extends JpaRepository<OtpCode, Long> {
 
     Optional<OtpCode> findTopByPhoneAndPurposeAndUsedFalseOrderByCreatedAtDesc(String phone, OtpPurpose purpose);
+
+    void deleteByPhone(String phone);
 }

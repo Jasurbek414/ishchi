@@ -27,6 +27,7 @@ export default function UsersPage() {
   const [walletUser, setWalletUser] = useState(null);
   const [detailUser, setDetailUser] = useState(null);
   const [messageUser, setMessageUser] = useState(null);
+  const [deletingUser, setDeletingUser] = useState(null);
 
   useEffect(() => {
     const t = setTimeout(() => { setSearch(searchInput.trim()); setPage(0); }, 350);
@@ -143,6 +144,9 @@ export default function UsersPage() {
                   {u.telegramLinked && (
                     <button className="btn btn-outline" onClick={() => setMessageUser(u)}>Xabar yuborish</button>
                   )}
+                  {u.role !== 'ADMIN' && (
+                    <button className="btn btn-outline-danger" onClick={() => setDeletingUser(u)}>O'chirish</button>
+                  )}
                 </td>
               </tr>
             ))}
@@ -168,6 +172,95 @@ export default function UsersPage() {
       {messageUser && (
         <SendMessageModal user={messageUser} onClose={() => setMessageUser(null)} />
       )}
+      {deletingUser && (
+        <DeleteUserModal
+          user={deletingUser}
+          walletEnabled={walletEnabled}
+          onClose={() => setDeletingUser(null)}
+          onDeleted={() => {
+            setDeletingUser(null);
+            // Deleting the only row on the last page would otherwise leave an empty page.
+            if (data && data.content.length === 1 && page > 0) setPage((p) => p - 1);
+            else load();
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function DeleteUserModal({ user, walletEnabled, onClose, onDeleted }) {
+  const [confirmText, setConfirmText] = useState('');
+  const [balance, setBalance] = useState(null);
+  const [error, setError] = useState(null);
+  const [busy, setBusy] = useState(false);
+
+  // Deleting an account also deletes its wallet, so show what is about to be lost.
+  useEffect(() => {
+    if (!walletEnabled) return;
+    api.get(`/api/admin/wallets/${user.id}`)
+      .then((w) => setBalance(Number(w.balance)))
+      .catch(() => setBalance(null));
+  }, [user.id, walletEnabled]);
+
+  // Typing the phone number is the confirmation: this cannot be undone, and a misclick on a
+  // plain "Are you sure?" dialog is far too easy next to the Block button.
+  const confirmed = confirmText.trim() === user.phone;
+
+  async function remove(e) {
+    e.preventDefault();
+    if (!confirmed) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await api.del(`/api/admin/users/${user.id}`);
+      onDeleted();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "O'chirib bo'lmadi");
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="modal-backdrop" onClick={busy ? undefined : onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <h3>Foydalanuvchini o'chirish</h3>
+        <p className="mt-0 mx-0 mb-3 text-[14px]">
+          <strong>{user.fullName || user.phone}</strong> ({ROLE_LABELS[user.role] || user.role}) akkaunti
+          butunlay o'chiriladi. Bu amalni <strong>qaytarib bo'lmaydi</strong>.
+        </p>
+        <ul className="mt-0 mx-0 mb-3.5 pl-[18px] text-[13px] text-text-secondary">
+          <li>Profil va yuklangan rasmlari</li>
+          {user.role === 'EMPLOYER' && <li>U joylashtirgan barcha buyurtmalar va ularning rasmlari</li>}
+          {user.role === 'WORKER' && <li>Ish tajribasi va ochilgan buyurtmalar tarixi</li>}
+          {walletEnabled && <li>Hamyon va uning tranzaksiya tarixi</li>}
+          <li>Tizimga kirish huquqi (barcha qurilmalarda)</li>
+        </ul>
+        {walletEnabled && balance > 0 && (
+          <div className="error-text">
+            Diqqat: hamyonda {balance.toLocaleString('uz-UZ')} so'm qoldiq bor, u ham yo'qoladi.
+          </div>
+        )}
+        <form onSubmit={remove}>
+          <div className="field">
+            <label>Tasdiqlash uchun telefon raqamini kiriting: <strong>{user.phone}</strong></label>
+            <input
+              type="text"
+              value={confirmText}
+              onChange={(e) => setConfirmText(e.target.value)}
+              placeholder={user.phone}
+              autoFocus
+            />
+          </div>
+          {error && <div className="error-text">{error}</div>}
+          <div className="modal-actions">
+            <button type="button" className="btn btn-outline" onClick={onClose} disabled={busy}>Bekor qilish</button>
+            <button type="submit" className="btn bg-danger text-white" disabled={!confirmed || busy}>
+              {busy ? "O'chirilmoqda..." : "Butunlay o'chirish"}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

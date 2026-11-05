@@ -36,7 +36,8 @@ android {
         applicationId = "uz.ecos.ishchi.app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        // Play's automatic protection requires minSdk 24+ (Android 7.0); Flutter's default is 21.
+        minSdk = 24
         targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -59,6 +60,12 @@ android {
             // so every release build shares the same signature and can update the app in place
             // instead of requiring an uninstall first. Falls back to the debug key otherwise.
             signingConfig = if (hasReleaseKeystore) signingConfigs.getByName("release") else signingConfigs.getByName("debug")
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
 }

@@ -24,6 +24,10 @@ class Worker {
     this.hasDriverLicense = false,
     this.driverLicenseCategories,
     this.experiences = const [],
+    this.availableUntil,
+    this.ratingAverage,
+    this.ratingCount = 0,
+    this.verified = false,
   });
 
   final int id;
@@ -46,6 +50,17 @@ class Worker {
   final bool hasDriverLicense;
   final String? driverLicenseCategories;
   final List<WorkExperience> experiences;
+
+  /// Set when the worker said they can work today; a past value means the day has rolled over.
+  final DateTime? availableUntil;
+  final double? ratingAverage;
+  final int ratingCount;
+
+  /// Documents checked by an admin — the one signal the platform itself vouches for.
+  final bool verified;
+
+  /// True only while the "I can work today" window is still open.
+  bool get availableToday => availableUntil != null && availableUntil!.isAfter(DateTime.now());
 
   String get fullName => '$firstName $lastName';
 
@@ -71,6 +86,12 @@ class Worker {
         workPreference: WorkPreference.fromApi(json['workPreference'] as String?),
         hasDriverLicense: json['hasDriverLicense'] as bool? ?? false,
         driverLicenseCategories: json['driverLicenseCategories'] as String?,
+        availableUntil: json['availableUntil'] == null
+            ? null
+            : DateTime.tryParse(json['availableUntil'] as String),
+        ratingAverage: (json['ratingAverage'] as num?)?.toDouble(),
+        ratingCount: (json['ratingCount'] as num?)?.toInt() ?? 0,
+        verified: json['verified'] as bool? ?? false,
         experiences: (json['experiences'] as List<dynamic>? ?? [])
             .map((e) => WorkExperience.fromJson(e as Map<String, dynamic>))
             .toList(),

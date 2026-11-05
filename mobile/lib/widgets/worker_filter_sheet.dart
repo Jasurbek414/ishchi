@@ -18,6 +18,7 @@ class _WorkerFilterSheetState extends State<WorkerFilterSheet> {
   late int? _regionId = widget.initial.regionId;
   late int? _districtId = widget.initial.districtId;
   late int? _professionId = widget.initial.professionId;
+  late bool _availableToday = widget.initial.availableToday ?? false;
   final _experienceController = TextEditingController();
 
   @override
@@ -53,6 +54,7 @@ class _WorkerFilterSheetState extends State<WorkerFilterSheet> {
                     _regionId = null;
                     _districtId = null;
                     _professionId = null;
+                    _availableToday = false;
                     _experienceController.clear();
                   }),
                   child: Text(context.l10n.clearAction),
@@ -81,6 +83,14 @@ class _WorkerFilterSheetState extends State<WorkerFilterSheet> {
               decoration: InputDecoration(labelText: context.l10n.minExperienceFieldLabel),
             ),
             const SizedBox(height: 20),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              value: _availableToday,
+              onChanged: (value) => setState(() => _availableToday = value),
+              title: Text(context.l10n.availableTodayFilter, style: const TextStyle(fontSize: 14.5)),
+              secondary: const Icon(Icons.today_outlined),
+            ),
+            const SizedBox(height: 12),
             ElevatedButton(
               onPressed: () {
                 final filter = (
@@ -90,6 +100,7 @@ class _WorkerFilterSheetState extends State<WorkerFilterSheet> {
                   minExperience: int.tryParse(_experienceController.text.trim()),
                   search: widget.initial.search,
                   workPreference: widget.initial.workPreference,
+                  availableToday: _availableToday ? true : null,
                 );
                 Navigator.of(context).pop(filter);
               },

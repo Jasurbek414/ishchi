@@ -42,6 +42,13 @@ class Job {
     this.images = const [],
     this.latitude,
     this.longitude,
+    this.urgent = false,
+    this.applicationCount,
+    this.myApplicationStatus,
+    this.employerJobsPosted,
+    this.employerJobsCompleted,
+    this.employerRatingAverage,
+    this.employerRatingCount,
   });
 
   final int id;
@@ -72,6 +79,26 @@ class Job {
   final List<JobImage> images;
   final double? latitude;
   final double? longitude;
+
+  /// "Bugunga kerak" — shown first in the list and badged on the card.
+  final bool urgent;
+
+  /// How many workers responded. Null where the server did not look it up.
+  final int? applicationCount;
+
+  /// This worker's own response, if any. Null for an employer, or when they have not responded.
+  final ApplicationStatus? myApplicationStatus;
+
+  /*
+   * The employer's track record. Served only by the single-job endpoint, so these are null in a
+   * list — working them out per row would cost a query per row.
+   */
+  final int? employerJobsPosted;
+  final int? employerJobsCompleted;
+  final double? employerRatingAverage;
+  final int? employerRatingCount;
+
+  bool get hasResponded => myApplicationStatus != null;
 
   String get location => '$regionName, $districtName';
 
@@ -108,5 +135,12 @@ class Job {
             .toList(),
         latitude: (json['latitude'] as num?)?.toDouble(),
         longitude: (json['longitude'] as num?)?.toDouble(),
+        urgent: json['urgent'] as bool? ?? false,
+        applicationCount: (json['applicationCount'] as num?)?.toInt(),
+        myApplicationStatus: ApplicationStatus.fromApi(json['myApplicationStatus'] as String?),
+        employerJobsPosted: (json['employerJobsPosted'] as num?)?.toInt(),
+        employerJobsCompleted: (json['employerJobsCompleted'] as num?)?.toInt(),
+        employerRatingAverage: (json['employerRatingAverage'] as num?)?.toDouble(),
+        employerRatingCount: (json['employerRatingCount'] as num?)?.toInt(),
       );
 }

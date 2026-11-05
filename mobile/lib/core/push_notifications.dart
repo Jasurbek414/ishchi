@@ -1,6 +1,8 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
+import 'design_tokens.dart';
+
 /// Handles the device side of push notifications: local display for foreground
 /// messages, and requesting permission. Token registration with the backend is
 /// driven separately (see `state/push_token_provider.dart`) since it needs to
@@ -26,7 +28,8 @@ class PushNotifications {
 
     await _localNotifications.initialize(
       const InitializationSettings(
-        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+        android: AndroidInitializationSettings('@drawable/ic_stat_notification'),
+        iOS: DarwinInitializationSettings(),
       ),
     );
     await _localNotifications
@@ -60,8 +63,10 @@ class PushNotifications {
           channelDescription: _channel.description,
           importance: Importance.high,
           priority: Priority.high,
-          icon: '@mipmap/ic_launcher',
+          icon: '@drawable/ic_stat_notification',
+          color: DesignTokens.primary,
         ),
+        iOS: const DarwinNotificationDetails(),
       ),
     );
   }

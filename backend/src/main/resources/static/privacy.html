@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Maxfiylik siyosati / Privacy Policy — Ishchi</title>
+  <style>
+    :root {
+      --primary: #1068eb;
+      --primary-dark: #0b4bb3;
+      --primary-light: #e8f1fd;
+      --text: #1a2233;
+      --text-muted: #5a6578;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --border: #e2e8f0;
+      --border-focus: #94a3b8;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .wrap {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 40px 20px 80px;
+    }
+
+    header {
+      margin-bottom: 28px;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--text);
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-badge {
+      display: inline-block;
+      background: var(--primary);
+      color: white;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 6px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .lang-switcher {
+      display: inline-flex;
+      background: #e2e8f0;
+      padding: 3px;
+      border-radius: 10px;
+      gap: 2px;
+    }
+
+    .lang-btn {
+      border: none;
+      background: transparent;
+      padding: 6px 14px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-radius: 7px;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: all 0.15s ease;
+    }
+
+    .lang-btn.active {
+      background: white;
+      color: var(--primary-dark);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    .lang-btn:hover:not(.active) {
+      color: var(--text);
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      margin: 0 0 6px;
+      letter-spacing: -0.02em;
+      color: #0f172a;
+    }
+
+    .meta {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-bottom: 24px;
+    }
+
+    h2 {
+      font-size: 1.15rem;
+      margin-top: 32px;
+      margin-bottom: 12px;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    p, li {
+      color: #334155;
+      font-size: 0.97rem;
+    }
+
+    ul {
+      padding-left: 22px;
+      margin: 10px 0;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .highlight-box {
+      background: #eff6ff;
+      border-left: 4px solid var(--primary);
+      border-radius: 8px;
+      padding: 16px 18px;
+      margin: 18px 0;
+    }
+
+    .highlight-box p {
+      margin: 0;
+      color: #1e3a8a;
+      font-size: 0.94rem;
+    }
+
+    .contact-card {
+      background: var(--primary-light);
+      border: 1px solid #bfdbfe;
+      border-radius: 14px;
+      padding: 22px 24px;
+      margin-top: 24px;
+    }
+
+    .contact-card h3 {
+      margin: 0 0 10px;
+      font-size: 1.05rem;
+      color: #1e3a8a;
+    }
+
+    .contact-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .contact-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .contact-label {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: #3b82f6;
+      letter-spacing: 0.04em;
+    }
+
+    .contact-value {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #0f172a;
+      word-break: break-all;
+    }
+
+    .deletion-steps {
+      background: #f1f5f9;
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-top: 10px;
+    }
+
+    .deletion-steps ol {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    .deletion-steps li {
+      margin-bottom: 6px;
+      font-size: 0.94rem;
+    }
+
+    footer.page-footer {
+      text-align: center;
+      margin-top: 36px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .lang-section {
+      display: none;
+    }
+
+    .lang-section.active {
+      display: block;
+    }
+
+    @media (max-width: 600px) {
+      .card {
+        padding: 22px 18px;
+        border-radius: 12px;
+      }
+      h1 { font-size: 1.45rem; }
+      .contact-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="top-bar">
+      <a href="/" class="brand">
+        <span>ISHCHI</span>
+        <span class="brand-badge">UZINC</span>
+      </a>
+      <div class="lang-switcher" role="tablist" aria-label="Tilni tanlash">
+        <button type="button" class="lang-btn active" data-lang-btn="uz" onclick="switchLang('uz')">O'zbekcha</button>
+        <button type="button" class="lang-btn" data-lang-btn="ru" onclick="switchLang('ru')">Русский</button>
+        <button type="button" class="lang-btn" data-lang-btn="en" onclick="switchLang('en')">English</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="card">
+
+    <!-- ======================= O'ZBEKCHA ======================= -->
+    <section id="section-uz" class="lang-section active" lang="uz">
+      <h1>Ishchi — Maxfiylik siyosati</h1>
+      <div class="meta">Oxirgi yangilanish: 2026-yil 22-sentabr | Ishlab chiquvchi: <b>UZINC</b></div>
+
+      <p>
+        Ushbu Maxfiylik siyosati <b>"UZINC"</b> tomonidan taqdim etilayotgan <b>"Ishchi"</b> mobil ilovasi
+        va rasmiy veb-saytida (<a href="https://uzbishchi.uz" target="_blank" rel="noopener">uzbishchi.uz</a>)
+        foydalanuvchilarning shaxsiy ma'lumotlari qanday to'planishi, ishlatilishi, saqlanishi va himoya qilinishini belgilaydi.
+      </p>
+      <p>
+        Platformadan foydalanish, ro'yxatdan o'tish yoki ma'lumot kiritish orqali siz ushbu Maxfiylik siyosati shartlariga to'liq rozilik bildirasiz.
+      </p>
+
+      <h2>1. Biz to'playdigan ma'lumotlar</h2>
+      <p>Ilovaning asosiy funksiyalarini ta'minlash maqsadida quyidagi shaxsiy ma'lumotlar yig'iladi:</p>
+      <ul>
+        <li><b>Hisob ma'lumotlari:</b> Telefon raqami va parol. Parollar bir tomonlama kriptografik usulda (BCrypt hashing) shifrlanadi va hech qachon ochiq holda saqlanmaydi.</li>
+        <li><b>Profil ma'lumotlari:</b> Ism, familiya, profil fotosurati, viloyat va tuman, kasb-hunar, ish tajribasi, ko'nikmalar hamda foydalanuvchi ixtiyoriy ravishda ko'rsatgan boshqa ma'lumotlar.</li>
+        <li><b>Geolokatsiya (joylashuv) ma'lumotlari:</b> Ish beruvchi va ishchini hududiy yaqinlik bo'yicha bog'lash hamda xaritada e'lonlarni ko'rsatish uchun aniq yoki taxminiy GPS koordinatalari. Bu ma'lumot faqat foydalanuvchi ilovada tegishli ruxsatni bergandagina olinadi.</li>
+        <li><b>E'lonlar va media fayllar:</b> Ish e'loni sarlavhasi, tavsifi, taklif etilayotgan ish haqi, bajarilish manzili hamda e'longa biriktirilgan fotosuratlar.</li>
+        <li><b>Qurilma ma'lumotlari va bildirishnoma tokenlari:</b> Yangi ish e'lonlari, javoblar va tizim xabarnomalarini yetkazish uchun Firebase Cloud Messaging (FCM) qurilma tokeni.</li>
+        <li><b>Hamyon va tranzaksiya yozuvlari:</b> Ilova ichidagi xizmatlar uchun to'lov tarixi (bank plastik karta raqamlari yoki CVV/PIN kodlari bizning serverlarimizda saqlanmaydi).</li>
+      </ul>
+
+      <h2>2. Ma'lumotlardan foydalanish maqsadi</h2>
+      <ul>
+        <li>Foydalanuvchini autentifikatsiya qilish va hisob xavfsizligini ta'minlash;</li>
+        <li>Ish qidiruvchilar va ish beruvchilarni kasb va masofa bo'yicha moslashtirish;</li>
+        <li>Ish e'lonlarini joylashtirish, qidirish va boshqarish;</li>
+        <li>Muhim xabarlar, arizalar va tizim yangilanishlari bo'yicha push-bildirishnomalar jo'natish;</li>
+        <li>Ilova xavfsizligini monitoring qilish, firibgarlik va qoidabuzarliklarning oldini olish;</li>
+        <li>Texnik yordam va mijozlarga xizmat ko'rsatish so'rovlarini ko'rib chiqish.</li>
+      </ul>
+
+      <h2>3. Ma'lumotlarni uchinchi tomonlarga berish</h2>
+      <p>
+        Biz foydalanuvchilarning shaxsiy ma'lumotlarini uchinchi shaxslarga sotmaymiz va noqonuniy ijaraga bermaymiz.
+        Ma'lumotlar faqat quyidagi zarur hollarda ishonchli xizmat ko'rsatuvchilarga uzatiladi:
+      </p>
+      <ul>
+        <li><b>Google Firebase:</b> Push-bildirishnomalarni qurilmaga yetkazish uchun faqat FCM tokeni orqali;</li>
+        <li><b>Telegram Bot API:</b> Agar foydalanuvchi o'z hisobini ixtiyoriy ravishda Telegram bot bilan bog'lasa, faqat tegishli Telegram ID identifikatori orqali;</li>
+        <li><b>Qonunchilik talabi:</b> O'zbekiston Respublikasining amaldagi qonun hujjatlarida belgilangan tartibda vakolatli davlat organlarining qonuniy so'rovlariga asosan.</li>
+      </ul>
+
+      <h2>4. Ma'lumotlar xavfsizligi va saqlanishi</h2>
+      <p>
+        Foydalanuvchi ma'lumotlari hisob faol bo'lgan davrda saqlanadi. Biz ma'lumotlarni ruxsatsiz kirish,
+        o'zgartirish, oshkor qilish yoki yo'qotishdan himoya qilish uchun zamonaviy xavfsizlik choralari
+        (HTTPS/TLS shifrlangan aloqa kanali, xavfsiz token saqlash va ma'lumotlar bazasi shifrlash)dan foydalanamiz.
+      </p>
+
+      <h2>5. Hisob va shaxsiy ma'lumotlarni o'chirish (Account & Data Deletion)</h2>
+      <div class="highlight-box">
+        <p>
+          Har bir foydalanuvchi o'zining shaxsiy ma'lumotlarini va akkauntini to'liq o'chirish huquqiga ega.
+        </p>
+      </div>
+      <p>Akkaunt va barcha shaxsiy ma'lumotlarni o'chirish usullari:</p>
+      <div class="deletion-steps">
+        <ol>
+          <li><b>Ilova ichidan:</b> Profilingizga kiring &rarr; Sozlamalar &rarr; "Hisobni o'chirish" tugmasini bosing va tasdiqlang.</li>
+          <li><b>Aloqa orqali:</b> Ro'yxatdan o'tgan telefon raqamingizdan quyidagi email manziliga xat yuboring yoki telefon orqali murojaat qiling:
+            <br />Email: <a href="mailto:info@uzinc.uz">info@uzinc.uz</a>
+            <br />Telefon: <a href="tel:+998200008588">+998 20 000 85 88</a>
+          </li>
+        </ol>
+      </div>
+      <p>
+        O'chirish so'rovi qabul qilingandan so'ng, profilingiz, fotosuratlaringiz, joylashtirilgan e'lonlaringiz va tizimdagi barcha shaxsiy ma'lumotlaringiz <b>48 soat ichida butunlay o'chirib tashlanadi</b>.
+      </p>
+
+      <h2>6. Bolalar maxfiyligi</h2>
+      <p>
+        "Ishchi" xizmati mehnat faoliyati bilan shug'ullanish huquqiga ega bo'lgan shaxslar (18 yoshdan katta) uchun mo'ljallangan.
+        Biz 18 yoshga to'lmagan bolalardan bilgan holda shaxsiy ma'lumot to'plamaymiz.
+      </p>
+
+      <h2>7. Siyosatdagi o'zgarishlar</h2>
+      <p>
+        Mazkur Maxfiylik siyosati vaqti-vaqti bilan yangilanishi mumkin. O'zgartirishlar kiritilganda, ushbu sahifada oxirgi yangilanish sanasi aks ettiriladi va muhim o'zgarishlar ilova orqali xabar qilinadi.
+      </p>
+
+      <h2>8. Biz bilan bog'lanish</h2>
+      <div class="contact-card">
+        <h3>UZINC — Mijozlarni qo'llab-quvvatlash</h3>
+        <p style="margin:0 0 12px; font-size: 0.93rem; color: #1e3a8a;">
+          Maxfiylik siyosati, shaxsiy ma'lumotlarni o'chirish yoki ilova ishi bo'yicha savollaringiz bo'lsa, biz bilan bog'laning:
+        </p>
+        <div class="contact-grid">
+          <div class="contact-item">
+            <span class="contact-label">Elektron pochta</span>
+            <span class="contact-value"><a href="mailto:info@uzinc.uz">info@uzinc.uz</a></span>
+          </div>
+          <div class="contact-item">
+            <span class="contact-label">Telefon raqam</span>
+            <span class="contact-value"><a href="tel:+998200008588">+998 20 000 85 88</a></span>
+          </div>
+          <div class="contact-item">
+            <span class="contact-label">Rasmiy veb-sayt</span>
+            <span class="contact-value"><a href="https://uzbishchi.uz" target="_blank" rel="noopener">uzbishchi.uz</a></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= РУССКИЙ ======================= -->
+    <section id="section-ru" class="lang-section" lang="ru">
+      <h1>Ishchi — Политика конфиденциальности</h1>
+      <div class="meta">Последнее обновление: 22 сентября 2026 г. | Разработчик: <b>UZINC</b></div>
+
+      <p>
+        Настоящая Политика конфиденциальности определяет порядок сбора, использования, хранения и защиты персональных данных
+        пользователей мобильного приложения <b>"Ishchi"</b> и веб-сайта (<a href="https://uzbishchi.uz" target="_blank" rel="noopener">uzbishchi.uz</a>),
+        предоставляемых компанией <b>"UZINC"</b>.
+      </p>
+      <p>
+        Используя приложение или сайт, регистрируясь или публикуя объявления, вы выражаете полное согласие с условиями настоящей Политики.
+      </p>
+
+      <h2>1. Собираемые данные</h2>
+      <ul>
+        <li><b>Данные учетной записи:</b> Номер мобильного телефона и пароль. Пароли шифруются с использованием одностороннего хэширования (BCrypt) и никогда не хранятся в открытом виде.</li>
+        <li><b>Данные профиля:</b> Имя, фамилия, фотография профиля, область и район проживания, профессия, опыт работы, навыки и иная добровольно указанная информация.</li>
+        <li><b>Геолокация (местоположение):</b> Приблизительные или точные GPS-координаты для поиска работы и исполнителей поблизости, а также отображения вакансий на карте. Сбор осуществляется исключительно с явного разрешения пользователя.</li>
+        <li><b>Объявления и медиафайлы:</b> Текст объявлений, условия оплаты, адрес выполнения работ, а также прикрепленные фотографии.</li>
+        <li><b>Уведомления и токены устройств:</b> Токены Firebase Cloud Messaging (FCM) для доставки push-уведомлений о новых откликах, вакансиях и системных событиях.</li>
+        <li><b>История транзакций:</b> Информация о пополнениях внутреннего кошелька приложения (номера банковских карт и реквизиты на наших серверах не сохраняются).</li>
+      </ul>
+
+      <h2>2. Цели обработки данных</h2>
+      <ul>
+        <li>Аутентификация пользователей и защита безопасности аккаунтов;</li>
+        <li>Подбор подходящих исполнителей и работодателей по специальности и расстоянию;</li>
+        <li>Публикация, поиск и управление объявлениями о работе;</li>
+        <li>Отправка push-уведомлений о статусах откликов и важных сообщениях;</li>
+        <li>Предотвращение мошенничества и обеспечение безопасности сервиса;</li>
+        <li>Оказание технической поддержки пользователям.</li>
+      </ul>
+
+      <h2>3. Передача данных третьим лицам</h2>
+      <p>
+        Мы не продаем и не передаем персональные данные третьим лицам в коммерческих целях.
+        Данные могут передаваться только доверенным сервисам, необходимым для функционирования системы:
+      </p>
+      <ul>
+        <li><b>Google Firebase:</b> Передача токена устройства для отправки push-уведомлений;</li>
+        <li><b>Telegram Bot API:</b> В случае добровольной привязки аккаунта к Telegram-боту сервиса;</li>
+        <li><b>Законодательные требования:</b> Компетентным государственным органам по официальному запросу в соответствии с законодательством Республики Узбекистан.</li>
+      </ul>
+
+      <h2>4. Безопасность и хранение данных</h2>
+      <p>
+        Данные хранятся в течение всего срока активности аккаунта. Вся передача информации защищена
+        протоколами шифрования HTTPS/TLS. Доступ к базе данных ограничен и защищен современными средствами безопасности.
+      </p>
+
+      <h2>5. Удаление аккаунта и данных (Account & Data Deletion)</h2>
+      <div class="highlight-box">
+        <p>
+          Каждый пользователь имеет право в любой момент полностью удалить свой аккаунт и связанные персональные данные.
+        </p>
+      </div>
+      <p>Способы удаления данных:</p>
+      <div class="deletion-steps">
+        <ol>
+          <li><b>Через приложение:</b> Перейдите в Профиль &rarr; Настройки &rarr; нажмите «Удалить аккаунт» и подтвердите действие.</li>
+          <li><b>Через службу поддержки:</b> Отправьте запрос с вашего зарегистрированного номера телефона на email или позвоните нам:
+            <br />Email: <a href="mailto:info@uzinc.uz">info@uzinc.uz</a>
+            <br />Телефон: <a href="tel:+998200008588">+998 20 000 85 88</a>
+          </li>
+        </ol>
+      </div>
+      <p>
+        После подтверждения запроса ваш профиль, контакты, опубликованные вакансии и медиафайлы <b>безвозвратно удаляются в течение 48 часов</b>.
+      </p>
+
+      <h2>6. Конфиденциальность детей</h2>
+      <p>
+        Сервис предназначен исключительно для дееспособных лиц трудоспособного возраста (старше 18 лет). Мы намеренно не собираем персональные данные несовершеннолетних.
+      </p>
+
+      <h2>7. Контактная информация</h2>
+      <div class="contact-card">
+        <h3>UZINC — Служба поддержки</h3>
+        <p style="margin:0 0 12px; font-size: 0.93rem; color: #1e3a8a;">
+          По любым вопросам относительно политики конфиденциальности или удаления данных обращайтесь:
+        </p>
+        <div class="contact-grid">
+          <div class="contact-item">
+            <span class="contact-label">Email</span>
+            <span class="contact-value"><a href="mailto:info@uzinc.uz">info@uzinc.uz</a></span>
+          </div>
+          <div class="contact-item">
+            <span class="contact-label">Телефон</span>
+            <span class="contact-value"><a href="tel:+998200008588">+998 20 000 85 88</a></span>
+          </div>
+          <div class="contact-item">
+            <span class="contact-label">Веб-сайт</span>
+            <span class="contact-value"><a href="https://uzbishchi.uz" target="_blank" rel="noopener">uzbishchi.uz</a></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= ENGLISH ======================= -->
+    <section id="section-en" class="lang-section" lang="en">
+      <h1>Ishchi — Privacy Policy</h1>
+      <div class="meta">Last updated: September 22, 2026 | Developer / Operator: <b>UZINC</b></div>
+
+      <p>
+        This Privacy Policy explains how <b>"UZINC"</b> collects, uses, maintains, and safeguards information
+        collected from users of the <b>"Ishchi"</b> mobile application and the official website (<a href="https://uzbishchi.uz" target="_blank" rel="noopener">uzbishchi.uz</a>).
+      </p>
+      <p>
+        By accessing, registering, or using our application, you signify your acceptance of this policy.
+      </p>
+
+      <h2>1. Information We Collect</h2>
+      <ul>
+        <li><b>Account Information:</b> Mobile phone number and password. Passwords are cryptographically hashed using BCrypt and are never stored in plain text.</li>
+        <li><b>Profile Information:</b> First name, last name, profile photograph, region, city/district, profession, work experience, skills, and any additional details you choose to provide.</li>
+        <li><b>Location Data:</b> Precise or approximate GPS coordinates used to display nearby jobs, match workers with local employers, and show interactive map listings. Collected only with explicit user permission.</li>
+        <li><b>Listings and Media:</b> Job posting descriptions, rates, location details, and uploaded job/task photographs.</li>
+        <li><b>Device Information & Push Tokens:</b> Firebase Cloud Messaging (FCM) tokens required to send push notifications regarding applications, messages, and job updates.</li>
+        <li><b>Wallet & Transaction Records:</b> In-app balance operations. Note that credit card and sensitive payment credential details are never stored on our servers.</li>
+      </ul>
+
+      <h2>2. How We Use Collected Information</h2>
+      <ul>
+        <li>Authenticate users and secure account access;</li>
+        <li>Facilitate direct matching between workers and employers based on profession and geographic proximity;</li>
+        <li>Send essential push notifications and system messages;</li>
+        <li>Maintain service integrity, prevent abuse, spam, and fraudulent activities;</li>
+        <li>Respond to user support queries and assistance requests.</li>
+      </ul>
+
+      <h2>3. Third-Party Services & Data Sharing</h2>
+      <p>
+        We do not sell, trade, or rent users' personal identification information to third parties. Data is shared only with trusted infrastructure providers required to operate the service:
+      </p>
+      <ul>
+        <li><b>Google Firebase Cloud Messaging:</b> Device tokens used solely for delivering push notifications;</li>
+        <li><b>Telegram Bot API:</b> Only when a user voluntarily links their Telegram account for notification delivery;</li>
+        <li><b>Legal Compliance:</b> When required by applicable law or legitimate governmental requests pursuant to the legislation of the Republic of Uzbekistan.</li>
+      </ul>
+
+      <h2>4. Data Retention and Security</h2>
+      <p>
+        We retain user data as long as your account remains active. All transmissions are encrypted using industry-standard HTTPS/TLS protocols. We employ strict access controls and security measures to protect against unauthorized access, disclosure, or destruction.
+      </p>
+
+      <h2>5. Account and Data Deletion (User Rights)</h2>
+      <div class="highlight-box">
+        <p>
+          You have the absolute right to request the permanent deletion of your account and all associated personal data at any time.
+        </p>
+      </div>
+      <p>How to delete your account and personal data:</p>
+      <div class="deletion-steps">
+        <ol>
+          <li><b>Directly in the App:</b> Go to Profile &rarr; Settings &rarr; tap "Delete Account" and confirm.</li>
+          <li><b>Via Contact:</b> Contact our support team with your registered phone number via email or telephone:
+            <br />Email: <a href="mailto:info@uzinc.uz">info@uzinc.uz</a>
+            <br />Phone: <a href="tel:+998200008588">+998 20 000 85 88</a>
+          </li>
+        </ol>
+      </div>
+      <p>
+        Upon receipt of your deletion request, your profile, photographs, posted listings, and personal data will be <b>permanently purged within 48 hours</b>.
+      </p>
+
+      <h2>6. Children's Privacy</h2>
+      <p>
+        The platform is designed strictly for adults of legal employment age (18 years and older). We do not knowingly collect personal identifiable information from minors.
+      </p>
+
+      <h2>7. Contact Information</h2>
+      <div class="contact-card">
+        <h3>UZINC — Customer Support</h3>
+        <p style="margin:0 0 12px; font-size: 0.93rem; color: #1e3a8a;">
+          If you have questions regarding this Privacy Policy or wish to request data deletion, please contact us:
+        </p>
+        <div class="contact-grid">
+          <div class="contact-item">
+            <span class="contact-label">Email</span>
+            <span class="contact-value"><a href="mailto:info@uzinc.uz">info@uzinc.uz</a></span>
+          </div>
+          <div class="contact-item">
+            <span class="contact-label">Phone</span>
+            <span class="contact-value"><a href="tel:+998200008588">+998 20 000 85 88</a></span>
+          </div>
+          <div class="contact-item">
+            <span class="contact-label">Website</span>
+            <span class="contact-value"><a href="https://uzbishchi.uz" target="_blank" rel="noopener">uzbishchi.uz</a></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="page-footer">
+    &copy; 2026 UZINC. Barcha huquqlar himoyalangan / All rights reserved.
+  </footer>
+</div>
+
+<script>
+  function switchLang(lang) {
+    document.querySelectorAll('.lang-section').forEach(function(sec) {
+      sec.classList.remove('active');
+    });
+    document.querySelectorAll('[data-lang-btn]').forEach(function(btn) {
+      btn.classList.remove('active');
+    });
+
+    var targetSec = document.getElementById('section-' + lang);
+    var targetBtn = document.querySelector('[data-lang-btn="' + lang + '"]');
+
+    if (targetSec) targetSec.classList.add('active');
+    if (targetBtn) targetBtn.classList.add('active');
+
+    // Update document title and lang attribute
+    document.documentElement.lang = lang;
+    try {
+      history.replaceState(null, '', '#' + lang);
+    } catch (e) {}
+  }
+
+  // Restore language from URL hash if provided (#ru, #en, #uz)
+  (function() {
+    var hash = (window.location.hash || '').replace('#', '').toLowerCase();
+    if (hash === 'ru' || hash === 'en' || hash === 'uz') {
+      switchLang(hash);
+    }
+  })();
+</script>
+</body>
+</html>

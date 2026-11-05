@@ -87,6 +87,7 @@ class _WorkerHomeScreenState extends ConsumerState<WorkerHomeScreen> {
             sort: 'nearest',
             nearRegionId: profile.regionId,
             nearDistrictId: profile.districtId,
+            urgent: null,
           );
           final jobsAsync = ref.watch(jobsSearchProvider(filter));
           final bannersAsync = ref.watch(promoBannersProvider((audience: 'WORKER', regionId: profile.regionId)));
@@ -142,12 +143,16 @@ class _WorkerHomeScreenState extends ConsumerState<WorkerHomeScreen> {
                   const SizedBox(height: 16),
                 ],
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      context.l10n.jobsNearYouSection,
-                      style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: cs.onSurface),
+                    Expanded(
+                      child: Text(
+                        context.l10n.jobsNearYouSection,
+                        style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: cs.onSurface),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
+                    const SizedBox(width: 8),
                     TextButton(
                       onPressed: widget.onSeeAllJobs,
                       child: Text(context.l10n.viewAllAction),
@@ -220,7 +225,7 @@ class _AvailabilityCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = available ? AppColors.success : Theme.of(context).colorScheme.error;
+    final color = available ? context.themeSuccess : Theme.of(context).colorScheme.error;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(

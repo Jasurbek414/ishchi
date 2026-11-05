@@ -12,6 +12,7 @@ typedef WorkerFilter = ({
   int? minExperience,
   String? search,
   WorkPreference? workPreference,
+  bool? availableToday,
 });
 
 const defaultWorkerFilter = (
@@ -21,6 +22,7 @@ const defaultWorkerFilter = (
   minExperience: null,
   search: null,
   workPreference: null,
+  availableToday: null,
 );
 
 final workersSearchProvider = FutureProvider.family<PageResponse<Worker>, WorkerFilter>((ref, filter) {
@@ -31,6 +33,7 @@ final workersSearchProvider = FutureProvider.family<PageResponse<Worker>, Worker
         minExperience: filter.minExperience,
         search: filter.search,
         workPreference: filter.workPreference,
+        availableToday: filter.availableToday,
         size: 50,
       );
 });

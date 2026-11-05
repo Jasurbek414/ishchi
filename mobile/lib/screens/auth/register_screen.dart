@@ -8,6 +8,7 @@ import '../../models/enums.dart';
 import '../../state/core_providers.dart';
 import '../../widgets/region_district_selector.dart';
 import '../../widgets/telegram_link_waiting.dart';
+import '../../widgets/password_field.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -131,10 +132,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       : context.l10n.phoneFormatError,
                 ),
                 const SizedBox(height: 14),
-                TextFormField(
+                PasswordField(
                   controller: _passwordController,
-                  obscureText: true,
-                  decoration: InputDecoration(labelText: context.l10n.passwordFieldLabel),
+                  labelText: context.l10n.passwordFieldLabel,
                   validator: (v) => (v == null || v.length < 6) ? context.l10n.passwordMinLengthError : null,
                 ),
                 const SizedBox(height: 20),
