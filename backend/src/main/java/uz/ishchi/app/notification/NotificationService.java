@@ -4,6 +4,7 @@ import com.google.firebase.messaging.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,6 +12,7 @@ import uz.ishchi.app.common.DevicePlatform;
 import uz.ishchi.app.common.Role;
 import uz.ishchi.app.common.exception.ApiException;
 import uz.ishchi.app.config.FirebaseConfig;
+import uz.ishchi.app.notification.dto.NotificationResponse;
 import uz.ishchi.app.user.User;
 
 import java.util.List;
@@ -24,16 +26,16 @@ public class NotificationService {
 
     private final FirebaseConfig firebaseConfig;
     private final DeviceTokenRepository deviceTokenRepository;
-    // Self-injected proxy: broadcast() must call send() *through the Spring proxy* (not a
-    // plain `this.send(...)`) or the @Async/@Transactional on send() are silently skipped —
-    // that self-invocation gap is exactly what caused deleteByToken() to run outside any
-    // transaction and blow up with TransactionRequiredException on the broadcast path.
+    private final AppNotificationRepository appNotificationRepository;
     private final NotificationService self;
 
-    public NotificationService(FirebaseConfig firebaseConfig, DeviceTokenRepository deviceTokenRepository,
-                                @Lazy NotificationService self) {
+    public NotificationService(FirebaseConfig firebaseConfig,
+                               DeviceTokenRepository deviceTokenRepository,
+                               AppNotificationRepository appNotificationRepository,
+                               @Lazy NotificationService self) {
         this.firebaseConfig = firebaseConfig;
         this.deviceTokenRepository = deviceTokenRepository;
+        this.appNotificationRepository = appNotificationRepository;
         this.self = self;
     }
 
@@ -52,6 +54,61 @@ public class NotificationService {
     @Transactional
     public void unregisterToken(User user, String token) {
         deviceTokenRepository.deleteByTokenAndUserId(token, user.getId());
+    }
+
+    @Transactional(readOnly = true)
+    public List<NotificationResponse> getUserNotifications(User user, int page, int size) {
+        return appNotificationRepository.findByUserIdOrderByCreatedAtDesc(
+                user.getId(), PageRequest.of(page, Math.min(size, 100))
+        ).stream().map(NotificationResponse::from).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public long getUnreadCount(User user) {
+        return appNotificationRepository.countByUserIdAndReadFalse(user.getId());
+    }
+
+    @Transactional
+    public void markAsRead(User user, Long notificationId) {
+        AppNotification n = appNotificationRepository.findById(notificationId)
+                .orElseThrow(() -> ApiException.notFound("Bildirishnoma topilmadi"));
+        if (!n.getUser().getId().equals(user.getId())) {
+            throw ApiException.forbidden("Ruxsat berilmagan");
+        }
+        n.setRead(true);
+        appNotificationRepository.save(n);
+    }
+
+    @Transactional
+    public void markAllAsRead(User user) {
+        appNotificationRepository.markAllAsRead(user.getId());
+    }
+
+    @Transactional
+    public void deleteNotification(User user, Long notificationId) {
+        AppNotification n = appNotificationRepository.findById(notificationId)
+                .orElseThrow(() -> ApiException.notFound("Bildirishnoma topilmadi"));
+        if (!n.getUser().getId().equals(user.getId())) {
+            throw ApiException.forbidden("Ruxsat berilmagan");
+        }
+        appNotificationRepository.delete(n);
+    }
+
+    @Transactional
+    public void clearAll(User user) {
+        appNotificationRepository.deleteAllByUserId(user.getId());
+    }
+
+    /** Saves in database and sends push to all user's registered devices */
+    @Transactional
+    public void sendToUser(User user, String title, String body, String type, Map<String, String> data) {
+        AppNotification n = new AppNotification(user, title, body, type != null ? type : "SYSTEM");
+        appNotificationRepository.save(n);
+
+        List<String> tokens = deviceTokenRepository.findTokensByUserId(user.getId());
+        if (!tokens.isEmpty()) {
+            self.send(tokens, title, body, data != null ? data : Map.of("type", type != null ? type : "system"));
+        }
     }
 
     /** Fire-and-forget — never blocks the caller (job creation, admin broadcast, etc.). */

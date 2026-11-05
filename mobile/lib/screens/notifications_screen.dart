@@ -91,90 +91,99 @@ class NotificationsScreen extends ConsumerWidget {
             ),
         ],
       ),
-      body: notifications.isEmpty
-          ? Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        color: cs.surfaceContainerHighest.withValues(alpha: 0.5),
-                        shape: BoxShape.circle,
+      body: RefreshIndicator(
+        onRefresh: () => ref.read(inAppNotificationsProvider.notifier).fetchFromBackend(),
+        child: notifications.isEmpty
+            ? ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: [
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.7,
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 32),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 80,
+                              height: 80,
+                              decoration: BoxDecoration(
+                                color: cs.surfaceContainerHighest.withValues(alpha: 0.5),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.notifications_off_outlined,
+                                size: 40,
+                                color: cs.onSurfaceVariant.withValues(alpha: 0.6),
+                              ),
+                            ),
+                            const SizedBox(height: 18),
+                            const Text(
+                              "Bildirishnomalar yo'q",
+                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              "Sizga kelgan barcha yangi ishlar, arizalar va muhim xabarnomalar shu yerda ko'rinadi.",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(color: cs.onSurfaceVariant, fontSize: 14, height: 1.4),
+                            ),
+                          ],
+                        ),
                       ),
-                      child: Icon(
-                        Icons.notifications_off_outlined,
-                        size: 40,
-                        color: cs.onSurfaceVariant.withValues(alpha: 0.6),
-                      ),
                     ),
-                    const SizedBox(height: 18),
-                    const Text(
-                      "Bildirishnomalar yo'q",
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      "Sizga kelgan barcha yangi ishlar, arizalar va muhim xabarnomalar shu yerda ko'rinadi.",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: cs.onSurfaceVariant, fontSize: 14, height: 1.4),
-                    ),
-                  ],
-                ),
-              ),
-            )
-          : ListView.separated(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              itemCount: notifications.length,
-              separatorBuilder: (context, index) => const SizedBox(height: 10),
-              itemBuilder: (context, index) {
-                final item = notifications[index];
-                final iconColor = _iconColorForType(item.type, cs);
-
-                return Dismissible(
-                  key: Key(item.id),
-                  direction: DismissDirection.endToStart,
-                  background: Container(
-                    alignment: Alignment.centerRight,
-                    padding: const EdgeInsets.only(right: 20),
-                    decoration: BoxDecoration(
-                      color: cs.error,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: const Icon(Icons.delete_outline, color: Colors.white),
                   ),
-                  onDismissed: (_) {
-                    ref.read(inAppNotificationsProvider.notifier).removeNotification(item.id);
-                  },
-                  child: Material(
-                    color: item.isRead
-                        ? cs.surface
-                        : cs.primaryContainer.withValues(alpha: 0.18),
-                    borderRadius: BorderRadius.circular(16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      side: BorderSide(
-                        color: item.isRead
-                            ? cs.outlineVariant.withValues(alpha: 0.4)
-                            : cs.primary.withValues(alpha: 0.3),
-                        width: 1,
+                ],
+              )
+            : ListView.separated(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                itemCount: notifications.length,
+                separatorBuilder: (context, index) => const SizedBox(height: 10),
+                itemBuilder: (context, index) {
+                  final item = notifications[index];
+                  final iconColor = _iconColorForType(item.type, cs);
+
+                  return Dismissible(
+                    key: Key(item.id),
+                    direction: DismissDirection.endToStart,
+                    background: Container(
+                      alignment: Alignment.centerRight,
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      decoration: BoxDecoration(
+                        color: Colors.red.shade400,
+                        borderRadius: BorderRadius.circular(16),
                       ),
+                      child: const Icon(Icons.delete_outline, color: Colors.white),
                     ),
+                    onDismissed: (_) {
+                      ref.read(inAppNotificationsProvider.notifier).removeNotification(item.id);
+                    },
                     child: InkWell(
-                      borderRadius: BorderRadius.circular(16),
                       onTap: () {
                         if (!item.isRead) {
                           ref.read(inAppNotificationsProvider.notifier).markAsRead(item.id);
                         }
                         if (item.jobId != null) {
-                          context.push('/worker/jobs/${item.jobId}');
+                          context.push('/jobs/${item.jobId}');
                         }
                       },
-                      child: Padding(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
                         padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: item.isRead
+                              ? cs.surfaceContainerLowest
+                              : cs.primaryContainer.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: item.isRead
+                                ? cs.outlineVariant.withValues(alpha: 0.3)
+                                : cs.primary.withValues(alpha: 0.3),
+                            width: 1,
+                          ),
+                        ),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -183,12 +192,12 @@ class NotificationsScreen extends ConsumerWidget {
                               height: 44,
                               decoration: BoxDecoration(
                                 color: iconColor.withValues(alpha: 0.12),
-                                borderRadius: BorderRadius.circular(12),
+                                shape: BoxShape.circle,
                               ),
                               child: Icon(
                                 _iconForType(item.type),
                                 color: iconColor,
-                                size: 24,
+                                size: 22,
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -205,7 +214,7 @@ class NotificationsScreen extends ConsumerWidget {
                                             fontSize: 15,
                                             fontWeight: item.isRead
                                                 ? FontWeight.w600
-                                                : FontWeight.w800,
+                                                : FontWeight.w700,
                                             color: cs.onSurface,
                                           ),
                                         ),
@@ -231,12 +240,11 @@ class NotificationsScreen extends ConsumerWidget {
                                       height: 1.35,
                                     ),
                                   ),
-                                  const SizedBox(height: 8),
+                                  const SizedBox(height: 6),
                                   Text(
                                     _formatTimestamp(item.createdAt),
                                     style: TextStyle(
                                       fontSize: 11,
-                                      fontWeight: FontWeight.w500,
                                       color: cs.onSurfaceVariant.withValues(alpha: 0.7),
                                     ),
                                   ),
@@ -247,10 +255,10 @@ class NotificationsScreen extends ConsumerWidget {
                         ),
                       ),
                     ),
-                  ),
-                );
-              },
-            ),
+                  );
+                },
+              ),
+      ),
     );
   }
 }

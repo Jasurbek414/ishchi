@@ -39,6 +39,14 @@ class PushNotifications {
         ?.createNotificationChannel(_channel);
 
     FirebaseMessaging.onMessage.listen(_showForegroundNotification);
+    FirebaseMessaging.onMessageOpenedApp.listen((message) {
+      onMessageReceived?.call(message);
+    });
+
+    final initial = await FirebaseMessaging.instance.getInitialMessage();
+    if (initial != null) {
+      onMessageReceived?.call(initial);
+    }
   }
 
   Future<bool> requestPermission() async {
