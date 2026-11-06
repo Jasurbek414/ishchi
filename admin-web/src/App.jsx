@@ -5,6 +5,7 @@ import ProtectedRoute from './components/ProtectedRoute.jsx';
 import Layout from './components/Layout.jsx';
 import LoginPage from './pages/LoginPage.jsx';
 import DashboardPage from './pages/DashboardPage.jsx';
+import MapManagementPage from './pages/MapManagementPage.jsx';
 import UsersPage from './pages/UsersPage.jsx';
 import JobsPage from './pages/JobsPage.jsx';
 import ProfessionsPage from './pages/ProfessionsPage.jsx';
@@ -34,6 +35,7 @@ export default function App() {
             }
           >
             <Route index element={<DashboardPage />} />
+            <Route path="map" element={<MapManagementPage />} />
             <Route path="users" element={<UsersPage />} />
             <Route path="jobs" element={<JobsPage />} />
             <Route path="professions" element={<ProfessionsPage />} />

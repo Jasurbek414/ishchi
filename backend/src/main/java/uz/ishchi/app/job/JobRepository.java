@@ -52,6 +52,17 @@ public interface JobRepository extends JpaRepository<Job, Long>, JpaSpecificatio
 
     long countByEmployerIdAndStatus(Long employerId, uz.ishchi.app.common.JobStatus status);
 
+    long countByLatitudeIsNotNullAndLongitudeIsNotNull();
+
+    @Query("select j.region.id, count(j) from Job j where j.status = uz.ishchi.app.common.JobStatus.ACTIVE and j.blocked = false group by j.region.id")
+    List<Object[]> countActiveJobsByRegionGrouped();
+
+    @Query("select j.district.id, count(j) from Job j where j.status = uz.ishchi.app.common.JobStatus.ACTIVE and j.blocked = false group by j.district.id")
+    List<Object[]> countActiveJobsByDistrictGrouped();
+
+    @Query("select j from Job j join fetch j.employer e join fetch j.profession p join fetch j.region r left join fetch j.district d where j.status = uz.ishchi.app.common.JobStatus.ACTIVE and j.blocked = false and j.latitude is not null and j.longitude is not null order by j.createdAt desc")
+    List<Job> findActiveJobsWithCoordinates();
+
     /**
      * Payment percentiles for comparable postings. Uses percentile_cont rather than loading the rows
      * so the whole answer is one indexed aggregate, and only counts postings of the same payment

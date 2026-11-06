@@ -24,6 +24,12 @@ public interface WorkerProfileRepository extends JpaRepository<WorkerProfile, Lo
     @org.springframework.data.jpa.repository.Query("select p.avatarUrl from WorkerProfile p where p.user.id = :userId")
     Optional<String> findAvatarUrlByUserId(@org.springframework.data.repository.query.Param("userId") Long userId);
 
+    @org.springframework.data.jpa.repository.Query("select w.region.id, count(w) from WorkerProfile w group by w.region.id")
+    List<Object[]> countWorkersByRegionGrouped();
+
+    @org.springframework.data.jpa.repository.Query("select w.district.id, count(w) from WorkerProfile w group by w.district.id")
+    List<Object[]> countWorkersByDistrictGrouped();
+
     /**
      * Search results used to lazy-load user, region and district per row — four extra queries for
      * every worker returned. Only the to-one sides are graphed here; join-fetching the professions

@@ -100,6 +100,7 @@ async function request(method, path, { body, query, isForm, retry = true } = {})
 export const api = {
   get: (path, query) => request('GET', path, { query }),
   post: (path, body) => request('POST', path, { body }),
+  put: (path, body) => request('PUT', path, { body }),
   postForm: (path, formData) => request('POST', path, { body: formData, isForm: true }),
   patch: (path, body) => request('PATCH', path, { body }),
   patchForm: (path, formData) => request('PATCH', path, { body: formData, isForm: true }),

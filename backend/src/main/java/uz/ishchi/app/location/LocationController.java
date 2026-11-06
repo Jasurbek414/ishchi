@@ -18,6 +18,7 @@ public class LocationController {
     @GetMapping
     public List<RegionResponse> getRegions() {
         return regionRepository.findAll().stream()
+                .filter(Region::isActive)
                 .sorted((a, b) -> a.getName().compareToIgnoreCase(b.getName()))
                 .map(RegionResponse::from)
                 .toList();

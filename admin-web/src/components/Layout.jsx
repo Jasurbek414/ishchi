@@ -5,6 +5,7 @@ import {
   Flag,
   LayoutDashboard,
   LayoutTemplate,
+  Map,
   Megaphone,
   Send,
   Settings,
@@ -16,6 +17,7 @@ import ThemeToggle from './ThemeToggle.jsx';
 
 const NAV_ITEMS = [
   { to: '/', label: 'Statistika', icon: LayoutDashboard, end: true },
+  { to: '/map', label: 'Xarita & Hududlar', icon: Map },
   { to: '/users', label: 'Foydalanuvchilar', icon: Users },
   { to: '/jobs', label: 'Buyurtmalar', icon: Briefcase },
   { to: '/professions', label: 'Kasblar', icon: Tags },

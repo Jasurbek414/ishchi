@@ -107,4 +107,10 @@ public class WorkerProfile {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
+
+    public String getFullName() {
+        if (firstName == null) return lastName == null ? "" : lastName;
+        if (lastName == null || lastName.isBlank()) return firstName;
+        return firstName + " " + lastName;
+    }
 }

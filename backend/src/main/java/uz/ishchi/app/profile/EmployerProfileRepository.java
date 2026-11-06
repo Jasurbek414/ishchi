@@ -23,6 +23,9 @@ public interface EmployerProfileRepository extends JpaRepository<EmployerProfile
     @Query("select p.avatarUrl from EmployerProfile p where p.user.id = :userId")
     Optional<String> findAvatarUrlByUserId(@Param("userId") Long userId);
 
+    @Query("select e.region.id, count(e) from EmployerProfile e group by e.region.id")
+    List<Object[]> countEmployersByRegionGrouped();
+
     @Query("select e from EmployerProfile e where e.latitude is not null and e.longitude is not null " +
             "and e.user.active = true and (:regionId is null or e.region.id = :regionId) " +
             "and e.latitude between :minLat and :maxLat and e.longitude between :minLon and :maxLon " +
