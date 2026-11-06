@@ -121,6 +121,8 @@ deploy() {
     die "Backend 3 daqiqada ishga tushmadi (loglar yuqorida). Baza zaxirasi: $backup. Oldingi kod: git checkout $prev"
   fi
   log "Backend ishlayapti — $new"
+  # Cloudflare tunnelni yangi konteyner IP'siga darhol ulash
+  docker restart ishchi-tunnel-landing >/dev/null 2>&1 || true
 }
 
 case "${1:-deploy}" in
