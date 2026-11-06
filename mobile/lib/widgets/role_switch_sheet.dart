@@ -48,7 +48,10 @@ class _RoleSwitchSheetState extends ConsumerState<RoleSwitchSheet> {
     final cs = Theme.of(context).colorScheme;
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
     final bottomPadding = MediaQuery.paddingOf(context).bottom;
-    final maxSheetHeight = MediaQuery.sizeOf(context).height * 0.85;
+    final screenHeight = MediaQuery.sizeOf(context).height;
+    final maxSheetHeight = _targetRole == UserRole.worker
+        ? screenHeight * 0.55
+        : screenHeight * 0.40;
 
     return SafeArea(
       top: false,
@@ -59,7 +62,7 @@ class _RoleSwitchSheetState extends ConsumerState<RoleSwitchSheet> {
             left: 20,
             right: 20,
             top: 14,
-            bottom: bottomInset > 0 ? bottomInset + 12 : (bottomPadding > 0 ? bottomPadding + 16 : 24),
+            bottom: bottomInset > 0 ? bottomInset + 12 : (bottomPadding > 0 ? bottomPadding + 14 : 20),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -69,7 +72,7 @@ class _RoleSwitchSheetState extends ConsumerState<RoleSwitchSheet> {
                 child: Container(
                   width: 40,
                   height: 4,
-                  margin: const EdgeInsets.only(bottom: 16),
+                  margin: const EdgeInsets.only(bottom: 14),
                   decoration: BoxDecoration(
                     color: cs.outlineVariant.withValues(alpha: 0.7),
                     borderRadius: BorderRadius.circular(2),
@@ -78,7 +81,7 @@ class _RoleSwitchSheetState extends ConsumerState<RoleSwitchSheet> {
               ),
               Row(
                 children: [
-                  Icon(PhosphorIcons.arrowsClockwise(PhosphorIconsStyle.fill), color: cs.primary, size: 24),
+                  Icon(PhosphorIcons.arrowsClockwise(PhosphorIconsStyle.fill), color: cs.primary, size: 22),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
@@ -88,19 +91,19 @@ class _RoleSwitchSheetState extends ConsumerState<RoleSwitchSheet> {
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
               Text(
                 context.l10n.switchRoleDescription(widget.currentRole.label(context)),
-                style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13.5, height: 1.4),
+                style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13, height: 1.35),
               ),
-              Flexible(
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (_targetRole == UserRole.worker) ...[
-                        const SizedBox(height: 18),
+              if (_targetRole == UserRole.worker)
+                Flexible(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const SizedBox(height: 14),
                         Text(context.l10n.professionsOptionalLabel,
                             style: TextStyle(fontWeight: FontWeight.w700, color: cs.onSurface)),
                         const SizedBox(height: 8),
@@ -109,16 +112,14 @@ class _RoleSwitchSheetState extends ConsumerState<RoleSwitchSheet> {
                           onChanged: (ids) => setState(() => _professionIds = ids),
                         ),
                       ],
-                      if (_error != null) ...[
-                        const SizedBox(height: 12),
-                        Text(_error!, style: TextStyle(color: cs.error)),
-                      ],
-                      const SizedBox(height: 8),
-                    ],
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
+              if (_error != null) ...[
+                const SizedBox(height: 10),
+                Text(_error!, style: TextStyle(color: cs.error)),
+              ],
+              const SizedBox(height: 14),
               Row(
                 children: [
                   Expanded(
