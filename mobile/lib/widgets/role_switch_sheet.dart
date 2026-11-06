@@ -47,22 +47,21 @@ class _RoleSwitchSheetState extends ConsumerState<RoleSwitchSheet> {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
-    final bottomPadding = MediaQuery.paddingOf(context).bottom;
     final screenHeight = MediaQuery.sizeOf(context).height;
     final maxSheetHeight = _targetRole == UserRole.worker
-        ? screenHeight * 0.55
-        : screenHeight * 0.40;
+        ? screenHeight * 0.52
+        : 320.0;
 
     return SafeArea(
       top: false,
       child: ConstrainedBox(
         constraints: BoxConstraints(maxHeight: maxSheetHeight),
         child: Padding(
-          padding: EdgeInsets.only(
-            left: 20,
-            right: 20,
-            top: 14,
-            bottom: bottomInset > 0 ? bottomInset + 12 : (bottomPadding > 0 ? bottomPadding + 14 : 20),
+          padding: EdgeInsets.fromLTRB(
+            20,
+            10,
+            20,
+            bottomInset > 0 ? bottomInset + 10 : 14,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -70,9 +69,9 @@ class _RoleSwitchSheetState extends ConsumerState<RoleSwitchSheet> {
             children: [
               Center(
                 child: Container(
-                  width: 40,
+                  width: 36,
                   height: 4,
-                  margin: const EdgeInsets.only(bottom: 14),
+                  margin: const EdgeInsets.only(bottom: 12),
                   decoration: BoxDecoration(
                     color: cs.outlineVariant.withValues(alpha: 0.7),
                     borderRadius: BorderRadius.circular(2),
@@ -81,20 +80,24 @@ class _RoleSwitchSheetState extends ConsumerState<RoleSwitchSheet> {
               ),
               Row(
                 children: [
-                  Icon(PhosphorIcons.arrowsClockwise(PhosphorIconsStyle.fill), color: cs.primary, size: 22),
-                  const SizedBox(width: 10),
+                  Icon(
+                    PhosphorIcons.arrowsClockwise(PhosphorIconsStyle.bold),
+                    color: cs.primary,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       context.l10n.switchToRoleTitle(_targetRole.label(context)),
-                      style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+                      style: const TextStyle(fontSize: 16.5, fontWeight: FontWeight.w800),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
               Text(
                 context.l10n.switchRoleDescription(widget.currentRole.label(context)),
-                style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13, height: 1.35),
+                style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13, height: 1.3),
               ),
               if (_targetRole == UserRole.worker)
                 Flexible(
@@ -103,9 +106,11 @@ class _RoleSwitchSheetState extends ConsumerState<RoleSwitchSheet> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const SizedBox(height: 14),
-                        Text(context.l10n.professionsOptionalLabel,
-                            style: TextStyle(fontWeight: FontWeight.w700, color: cs.onSurface)),
+                        const SizedBox(height: 12),
+                        Text(
+                          context.l10n.professionsOptionalLabel,
+                          style: TextStyle(fontWeight: FontWeight.w700, color: cs.onSurface),
+                        ),
                         const SizedBox(height: 8),
                         ProfessionMultiSelector(
                           selectedIds: _professionIds,
@@ -116,29 +121,54 @@ class _RoleSwitchSheetState extends ConsumerState<RoleSwitchSheet> {
                   ),
                 ),
               if (_error != null) ...[
-                const SizedBox(height: 10),
-                Text(_error!, style: TextStyle(color: cs.error)),
+                const SizedBox(height: 8),
+                Text(_error!, style: TextStyle(color: cs.error, fontSize: 12.5)),
               ],
               const SizedBox(height: 14),
               Row(
                 children: [
                   Expanded(
-                    child: OutlinedButton(
-                      onPressed: _switching ? null : () => Navigator.pop(context),
-                      child: Text(context.l10n.commonCancel),
+                    child: SizedBox(
+                      height: 44,
+                      child: OutlinedButton(
+                        onPressed: _switching ? null : () => Navigator.pop(context),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: Text(
+                          context.l10n.commonCancel,
+                          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: ElevatedButton(
-                      onPressed: _switching ? null : _confirm,
-                      child: _switching
-                          ? const SizedBox(
-                              height: 22,
-                              width: 22,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                            )
-                          : Text(context.l10n.switchAction),
+                    child: SizedBox(
+                      height: 44,
+                      child: ElevatedButton(
+                        onPressed: _switching ? null : _confirm,
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          elevation: 0,
+                        ),
+                        child: _switching
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                              )
+                            : Text(
+                                context.l10n.switchAction,
+                                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                      ),
                     ),
                   ),
                 ],

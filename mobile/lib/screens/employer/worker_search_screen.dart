@@ -75,9 +75,8 @@ class _WorkerSearchScreenState extends ConsumerState<WorkerSearchScreen> {
             onPressed: () => showModalBottomSheet(
               context: context,
               isScrollControlled: true,
-              useSafeArea: true,
               shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
               ),
               builder: (_) => const RoleSwitchSheet(currentRole: UserRole.employer),
             ),

@@ -49,10 +49,9 @@ class ProfileScreen extends ConsumerWidget {
   void _openRoleSwitch(BuildContext context, UserRole currentRole) {
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
+      isScrollControlled: currentRole == UserRole.employer,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
       ),
       builder: (_) => RoleSwitchSheet(currentRole: currentRole),
     );
