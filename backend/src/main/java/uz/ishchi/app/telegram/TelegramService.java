@@ -342,9 +342,7 @@ public class TelegramService {
     }
 
     void sendMainMenu(String token, long chatId) {
-        String welcome = "Assalomu alaykum! \"Ishchi\" botiga xush kelibsiz.
-
-"
+        String welcome = "Assalomu alaykum! \"Ishchi\" botiga xush kelibsiz.\n\n"
                 + "Ish beruvchi va ishchini bog'laydigan platforma. Qulay va tezkor foydalanish uchun quyidagi \"🚀 Ishchi ilovasini ochish\" tugmasini bosing:";
         String tmaUrl = (baseUrl.endsWith("/") ? baseUrl : baseUrl + "/") + "tma/";
         telegramClient.sendMessageWithKeyboard(token, chatId, welcome, List.of(
