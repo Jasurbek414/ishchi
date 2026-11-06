@@ -292,15 +292,40 @@ public class TelegramService {
             telegramClient.sendMessage(token, chatId, "Telefon raqam formatini aniqlab bo'lmadi.");
             return Optional.empty();
         }
+        // First, check if a real account with this phone exists
         Optional<User> userOpt = userRepository.findByPhone(phone);
         if (userOpt.isEmpty()) {
+            // Check if TMA user (with placeholder phone) exists for this chatId
+            Optional<User> tmaUserOpt = userRepository.findByTelegramChatId(chatId);
+            if (tmaUserOpt.isPresent() && tmaUserOpt.get().getPhone() != null
+                    && tmaUserOpt.get().getPhone().startsWith("+998TG")) {
+                // Update the TMA placeholder phone with the real verified phone
+                User tmaUser = tmaUserOpt.get();
+                tmaUser.setPhone(phone);
+                tmaUser.setVerified(true);
+                userRepository.saveAndFlush(tmaUser);
+                telegramClient.sendMessage(token, chatId,
+                        "\u2705 Telefon raqamingiz ulandi! Endi to'liq akkountingiz faol.");
+                sendMainMenu(token, chatId);
+                return Optional.empty();
+            }
             telegramClient.sendMessage(token, chatId,
                     "Bu raqam (" + phone + ") bilan ro'yxatdan o'tilmagan. Avval ilovada ro'yxatdan o'ting.");
             return Optional.empty();
         }
+        // If a TMA user exists for this chatId, merge them (transfer TMA user's data to real account)
+        Optional<User> tmaUserOpt = userRepository.findByTelegramChatId(chatId);
+        if (tmaUserOpt.isPresent() && tmaUserOpt.get().getPhone() != null
+                && tmaUserOpt.get().getPhone().startsWith("+998TG")
+                && !tmaUserOpt.get().getId().equals(userOpt.get().getId())) {
+            // Unlink TMA placeholder from this chat (real account will take over)
+            User tmaUser = tmaUserOpt.get();
+            tmaUser.setTelegramChatId(null);
+            userRepository.saveAndFlush(tmaUser);
+        }
         LinkedUser linked = linkUser(userOpt.get(), chatId);
         if (linked.pendingPurpose() == null) {
-            telegramClient.sendMessage(token, chatId, "✅ Akkountingiz ulandi. Endi tasdiqlash kodlari shu botga yuboriladi.");
+            telegramClient.sendMessage(token, chatId, "\u2705 Akkountingiz ulandi. Endi tasdiqlash kodlari shu botga yuboriladi.");
         }
         return Optional.of(linked);
     }

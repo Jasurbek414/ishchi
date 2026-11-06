@@ -154,7 +154,7 @@ public class TmaService {
                 fresh.setRole(Role.EMPLOYER);
                 fresh.setTelegramChatId(telegramId);
                 fresh.setActive(true);
-                fresh.setVerified(true);
+                fresh.setVerified(false); // Will be set true after onboarding
                 fresh = userRepository.saveAndFlush(fresh);
 
                 // Create initial employer profile
@@ -375,8 +375,11 @@ public class TmaService {
         boolean hasWorker = workerOpt.isPresent();
         boolean hasEmployer = employerOpt.isPresent();
 
-        // isRegistered = false if phone is still the auto-generated TG placeholder
-        boolean isRegistered = user.getPhone() != null && !user.getPhone().startsWith("+998TG");
+        // isRegistered = false only for brand-new TMA users who haven't completed onboarding.
+        // New users are created with verified=false (set by authenticate()).
+        // After register() is called, verified is set to true.
+        // Existing users (created before this feature) already have verified=true → they skip onboarding.
+        boolean isRegistered = user.isVerified();
 
         if (user.getRole() == Role.WORKER && hasWorker) {
             WorkerProfile wp = workerOpt.get();
@@ -534,14 +537,9 @@ public class TmaService {
             user.setRole(Role.EMPLOYER);
         }
 
-        // Mark as registered by setting a real phone placeholder (not +998TG...)
-        // We use "+998TGR" prefix for registered-but-no-phone users
-        if (user.getPhone() != null && user.getPhone().startsWith("+998TG")) {
-            // Replace placeholder with registered marker
-            String registeredPhone = "+998TGR" + userId;
-            if (registeredPhone.length() > 20) registeredPhone = registeredPhone.substring(0, 20);
-            user.setPhone(registeredPhone);
-        }
+        // Mark as registered
+        // Keep the +998TG placeholder as is (don't change phone, just mark verified)
+        user.setVerified(true);
         userRepository.save(user);
 
         String newToken = jwtService.generateAccessToken(user.getId(), user.getPhone(), user.getRole());
