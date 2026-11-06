@@ -60,7 +60,8 @@ public class SecurityConfig {
                                 .requestMatcher(AnyRequestMatcher.INSTANCE)
                                 .maxAgeInSeconds(15_552_000)
                                 .includeSubDomains(false))
-                        .referrerPolicy(ref -> ref.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.SAME_ORIGIN)))
+                        .referrerPolicy(ref -> ref.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.SAME_ORIGIN))
+                        .frameOptions(frame -> frame.disable()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/auth/**",

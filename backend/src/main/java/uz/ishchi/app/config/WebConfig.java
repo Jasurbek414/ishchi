@@ -47,5 +47,20 @@ public class WebConfig implements WebMvcConfigurer {
                         return location.createRelative("index.html");
                     }
                 });
+
+        // Serves the Telegram Mini App (TMA) single-page app built into classpath:/static/tma/
+        registry.addResourceHandler("/tma", "/tma/", "/tma/**")
+                .addResourceLocations("classpath:/static/tma/")
+                .resourceChain(true)
+                .addResolver(new PathResourceResolver() {
+                    @Override
+                    protected Resource getResource(String resourcePath, Resource location) throws IOException {
+                        Resource requested = location.createRelative(resourcePath);
+                        if (requested.exists() && requested.isReadable()) {
+                            return requested;
+                        }
+                        return location.createRelative("index.html");
+                    }
+                });
     }
 }
