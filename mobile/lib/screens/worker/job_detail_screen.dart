@@ -62,28 +62,39 @@ class JobDetailScreen extends ConsumerWidget {
       bottomNavigationBar: job == null
           ? null
           : Container(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surface,
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
-                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 20, offset: const Offset(0, -6))],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Responding comes first and is free: it is what lets the employer call this
-                  // worker back, instead of the worker paying to call into the dark.
-                  _RespondButton(job: job),
-                  const SizedBox(height: 10),
-                  if (job.unlocked && job.employerPhone != null)
-                    OutlinedButton.icon(
-                      onPressed: () => _call(context, job.employerPhone!),
-                      icon: const Icon(Icons.call),
-                      label: Text(context.l10n.contactPhoneValue(job.employerPhone!)),
-                    )
-                  else
-                    _UnlockContactCard(jobId: jobId),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.08),
+                    blurRadius: 20,
+                    offset: const Offset(0, -6),
+                  ),
                 ],
+              ),
+              child: SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Responding comes first and is free: it is what lets the employer call this
+                      // worker back, instead of the worker paying to call into the dark.
+                      _RespondButton(job: job),
+                      const SizedBox(height: 10),
+                      if (job.unlocked && job.employerPhone != null)
+                        OutlinedButton.icon(
+                          onPressed: () => _call(context, job.employerPhone!),
+                          icon: const Icon(Icons.call),
+                          label: Text(context.l10n.contactPhoneValue(job.employerPhone!)),
+                        )
+                      else
+                        _UnlockContactCard(jobId: jobId),
+                    ],
+                  ),
+                ),
               ),
             ),
     );
@@ -228,7 +239,7 @@ class _JobDetailBody extends StatelessWidget {
       children: [
         _JobHeader(job: job),
         Padding(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 36),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

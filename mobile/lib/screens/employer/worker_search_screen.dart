@@ -15,6 +15,8 @@ import '../../widgets/app_bottom_nav.dart';
 import '../../widgets/worker_card.dart';
 import '../../widgets/worker_filter_sheet.dart';
 import '../../widgets/notification_bell_button.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
+import '../../widgets/role_switch_sheet.dart';
 
 class WorkerSearchScreen extends ConsumerStatefulWidget {
   const WorkerSearchScreen({super.key});
@@ -67,6 +69,19 @@ class _WorkerSearchScreenState extends ConsumerState<WorkerSearchScreen> {
       appBar: AppBar(
         title: Text(context.l10n.workerSearchTitle),
         actions: [
+          IconButton(
+            icon: Icon(PhosphorIcons.arrowsClockwise(PhosphorIconsStyle.bold)),
+            tooltip: "Ishchi roliga o'tish",
+            onPressed: () => showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              useSafeArea: true,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              builder: (_) => const RoleSwitchSheet(currentRole: UserRole.employer),
+            ),
+          ),
           const NotificationBellButton(),
           IconButton(
             icon: const Icon(Icons.map_outlined),

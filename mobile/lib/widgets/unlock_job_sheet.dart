@@ -22,6 +22,7 @@ Future<bool> confirmJobUnlock(BuildContext context, WidgetRef ref, Job job) asyn
   final result = await showModalBottomSheet<bool>(
     context: context,
     isScrollControlled: true,
+    useSafeArea: true,
     shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
     builder: (_) => _UnlockJobSheet(job: job),
   );

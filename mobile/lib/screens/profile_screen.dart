@@ -46,6 +46,18 @@ class ProfileScreen extends ConsumerWidget {
     }
   }
 
+  void _openRoleSwitch(BuildContext context, UserRole currentRole) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) => RoleSwitchSheet(currentRole: currentRole),
+    );
+  }
+
   Future<void> _confirmDeleteAccount(BuildContext context, WidgetRef ref) async {
     final cs = Theme.of(context).colorScheme;
     final confirmed = await showDialog<bool>(
@@ -85,6 +97,16 @@ class ProfileScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(context.l10n.profileTitle),
         actions: [
+          IconButton(
+            icon: Icon(PhosphorIcons.arrowsClockwise(PhosphorIconsStyle.bold)),
+            tooltip: 'Rolni almashtirish',
+            onPressed: () {
+              final role = profileAsync.valueOrNull?.role;
+              if (role != null && role != UserRole.admin) {
+                _openRoleSwitch(context, role);
+              }
+            },
+          ),
           const NotificationBellButton(),
           IconButton(
             icon: Icon(PhosphorIcons.pencilSimple()),
@@ -114,25 +136,63 @@ class ProfileScreen extends ConsumerWidget {
                     const SizedBox(height: 4),
                     Text(profile.phone, style: TextStyle(color: cs.onSurfaceVariant)),
                     const SizedBox(height: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: cs.primary.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        profile.role.label(context),
-                        style: TextStyle(color: cs.primary, fontWeight: FontWeight.w700, fontSize: 12.5),
+                    InkWell(
+                      onTap: profile.role == UserRole.admin ? null : () => _openRoleSwitch(context, profile.role),
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: cs.primary.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: cs.primary.withValues(alpha: 0.3)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              profile.role == UserRole.worker ? PhosphorIcons.hardHat() : PhosphorIcons.briefcase(),
+                              size: 15,
+                              color: cs.primary,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              profile.role.label(context),
+                              style: TextStyle(color: cs.primary, fontWeight: FontWeight.w700, fontSize: 13),
+                            ),
+                            if (profile.role != UserRole.admin) ...[
+                              const SizedBox(width: 8),
+                              Container(
+                                width: 3,
+                                height: 3,
+                                decoration: BoxDecoration(color: cs.primary.withValues(alpha: 0.6), shape: BoxShape.circle),
+                              ),
+                              const SizedBox(width: 6),
+                              Icon(PhosphorIcons.arrowsClockwise(), size: 13, color: cs.primary),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Almashtirish',
+                                style: TextStyle(color: cs.primary, fontWeight: FontWeight.w600, fontSize: 12),
+                              ),
+                            ],
+                          ],
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
+              if (profile.role != UserRole.admin) ...[
+                const SizedBox(height: 18),
+                _RoleSwitchBanner(
+                  role: profile.role,
+                  onTap: () => _openRoleSwitch(context, profile.role),
+                ),
+              ],
               if (walletEnabled) ...[
-                const SizedBox(height: 24),
+                const SizedBox(height: 18),
                 _WalletCard(walletAsync: walletAsync!),
               ],
-              const SizedBox(height: 20),
+              const SizedBox(height: 14),
               const _PublicAnnouncementBanner(),
               const SizedBox(height: 20),
               _SectionCard(
@@ -203,19 +263,27 @@ class ProfileScreen extends ConsumerWidget {
                   if (profile.role != UserRole.admin) ...[
                     const Divider(height: 1),
                     _MenuTile(
-                      icon: PhosphorIcons.arrowsClockwise(),
+                      icon: PhosphorIcons.arrowsClockwise(PhosphorIconsStyle.bold),
                       label: profile.role == UserRole.worker
                           ? context.l10n.switchToEmployerMenu
                           : context.l10n.switchToWorkerMenu,
-                      onTap: () => showModalBottomSheet(
-                        context: context,
-                        isScrollControlled: true,
-                        useSafeArea: true,
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                      color: cs.primary,
+                      trailing: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: cs.primary.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                        builder: (_) => RoleSwitchSheet(currentRole: profile.role),
+                        child: Text(
+                          "O'tish",
+                          style: TextStyle(
+                            color: cs.primary,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 11.5,
+                          ),
+                        ),
                       ),
+                      onTap: () => _openRoleSwitch(context, profile.role),
                     ),
                   ],
                   if (profile.role == UserRole.worker) ...[
@@ -445,12 +513,13 @@ class _AvailableTodayCardState extends ConsumerState<_AvailableTodayCard> {
 }
 
 class _MenuTile extends StatelessWidget {
-  const _MenuTile({required this.icon, required this.label, required this.onTap, this.color});
+  const _MenuTile({required this.icon, required this.label, required this.onTap, this.color, this.trailing});
 
   final IconData icon;
   final String label;
   final VoidCallback onTap;
   final Color? color;
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -465,6 +534,10 @@ class _MenuTile extends StatelessWidget {
             Icon(icon, color: itemColor, size: 20),
             const SizedBox(width: 14),
             Expanded(child: Text(label, style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w500, color: itemColor))),
+            if (trailing != null) ...[
+              trailing!,
+              const SizedBox(width: 8),
+            ],
             Icon(PhosphorIcons.caretRight(), color: color ?? cs.onSurfaceVariant, size: 16),
           ],
         ),
@@ -685,6 +758,200 @@ class _PublicAnnouncementBanner extends StatelessWidget {
                     Icons.arrow_forward_ios_rounded,
                     color: Colors.white,
                     size: 13,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+
+class _RoleSwitchBanner extends StatelessWidget {
+  const _RoleSwitchBanner({required this.role, required this.onTap});
+
+  final UserRole role;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWorker = role == UserRole.worker;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final targetTitle = isWorker ? "Ish beruvchi roliga o'tish" : "Ishchi roliga o'tish";
+    final targetSubtitle = isWorker
+        ? "Ishchilarni qidirish va yangi ish e'lonlari berish"
+        : "Bo'sh ish o'rinlarini ko'rish va takliflar olish";
+
+    final gradientColors = isWorker
+        ? (isDark
+            ? const [
+                Color(0xFF0284C7),
+                Color(0xFF0369A1),
+                Color(0xFF075985),
+              ]
+            : const [
+                Color(0xFF0284C7),
+                Color(0xFF0369A1),
+                Color(0xFF0EA5E9),
+              ])
+        : (isDark
+            ? const [
+                Color(0xFF059669),
+                Color(0xFF047857),
+                Color(0xFF0F766E),
+              ]
+            : const [
+                Color(0xFF10B981),
+                Color(0xFF059669),
+                Color(0xFF047857),
+              ]);
+
+    final shadowColor = isWorker ? const Color(0xFF0284C7) : const Color(0xFF059669);
+    final iconData = isWorker
+        ? PhosphorIcons.briefcase(PhosphorIconsStyle.fill)
+        : PhosphorIcons.hardHat(PhosphorIconsStyle.fill);
+
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+        gradient: LinearGradient(
+          colors: gradientColors,
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: shadowColor.withValues(alpha: isDark ? 0.38 : 0.30),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(22),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+            child: Row(
+              children: [
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.22),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.4),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Center(
+                    child: Icon(
+                      iconData,
+                      color: Colors.white,
+                      size: 26,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              targetTitle,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: -0.2,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  PhosphorIcons.arrowsClockwise(PhosphorIconsStyle.bold),
+                                  size: 10,
+                                  color: shadowColor,
+                                ),
+                                const SizedBox(width: 3),
+                                Text(
+                                  "ROL",
+                                  style: TextStyle(
+                                    color: shadowColor,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 0.4,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        targetSubtitle,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.92),
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        "O'tish",
+                        style: TextStyle(
+                          color: shadowColor,
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(
+                        Icons.arrow_forward_rounded,
+                        color: shadowColor,
+                        size: 15,
+                      ),
+                    ],
                   ),
                 ),
               ],

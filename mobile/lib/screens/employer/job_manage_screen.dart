@@ -116,11 +116,13 @@ class _JobManageScreenState extends ConsumerState<JobManageScreen> {
 
     return Scaffold(
       appBar: AppBar(title: Text(context.l10n.manageJobTitle)),
-      body: AsyncView(
-        value: jobAsync,
-        onRetry: () => ref.invalidate(jobDetailProvider(widget.jobId)),
-        data: (job) => ListView(
-          padding: const EdgeInsets.all(20),
+      body: SafeArea(
+        top: false,
+        child: AsyncView(
+          value: jobAsync,
+          onRetry: () => ref.invalidate(jobDetailProvider(widget.jobId)),
+          data: (job) => ListView(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 36),
           children: [
             Row(
               children: [
@@ -204,6 +206,7 @@ class _JobManageScreenState extends ConsumerState<JobManageScreen> {
               ],
             ),
           ],
+        ),
         ),
       ),
     );

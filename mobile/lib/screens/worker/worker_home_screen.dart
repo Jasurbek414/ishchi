@@ -17,6 +17,8 @@ import '../../widgets/promo_carousel.dart';
 import '../../widgets/app_bottom_nav.dart';
 import '../../widgets/unlock_job_sheet.dart';
 import '../../widgets/notification_bell_button.dart';
+import '../../models/enums.dart';
+import '../../widgets/role_switch_sheet.dart';
 
 class WorkerHomeScreen extends ConsumerStatefulWidget {
   const WorkerHomeScreen({super.key, this.onSeeAllJobs});
@@ -67,6 +69,19 @@ class _WorkerHomeScreenState extends ConsumerState<WorkerHomeScreen> {
       appBar: AppBar(
         title: const Text('Ishchi'),
         actions: [
+          IconButton(
+            icon: Icon(PhosphorIcons.arrowsClockwise(PhosphorIconsStyle.bold)),
+            tooltip: "Ish beruvchi roliga o'tish",
+            onPressed: () => showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              useSafeArea: true,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              builder: (_) => const RoleSwitchSheet(currentRole: UserRole.worker),
+            ),
+          ),
           const NotificationBellButton(),
           IconButton(
             icon: const Icon(Icons.map_outlined),

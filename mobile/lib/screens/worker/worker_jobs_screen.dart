@@ -59,6 +59,7 @@ class _WorkerJobsScreenState extends ConsumerState<WorkerJobsScreen> {
     final result = await showModalBottomSheet<JobFilter>(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       builder: (_) => JobFilterSheet(initial: initial),
     );
     if (result == null) return;
@@ -106,6 +107,7 @@ class _WorkerJobsScreenState extends ConsumerState<WorkerJobsScreen> {
     final applied = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       builder: (sheetContext) => StatefulBuilder(
         builder: (sheetContext, setSheetState) => Padding(
           padding: EdgeInsets.only(
