@@ -161,6 +161,8 @@ class _BannerCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color: Colors.transparent,
+      borderRadius: BorderRadius.circular(20),
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: banner.onTap,
         borderRadius: BorderRadius.circular(20),
@@ -172,9 +174,6 @@ class _BannerCard extends StatelessWidget {
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(color: banner.colors.last.withValues(alpha: 0.28), blurRadius: 14, offset: const Offset(0, 8)),
-            ],
           ),
           child: Stack(
             children: [
