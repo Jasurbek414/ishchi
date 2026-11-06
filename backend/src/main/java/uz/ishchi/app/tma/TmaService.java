@@ -10,11 +10,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uz.ishchi.app.auth.dto.AuthResponse;
 import uz.ishchi.app.common.JobStatus;
+import uz.ishchi.app.common.JobType;
 import uz.ishchi.app.common.PaymentType;
 import uz.ishchi.app.common.Role;
 import uz.ishchi.app.common.exception.ApiException;
@@ -158,15 +160,16 @@ public class TmaService {
                 // Create initial employer profile
                 EmployerProfile ep = new EmployerProfile();
                 ep.setUser(fresh);
-                ep.setCompanyName((firstName + (lastName.isBlank() ? "" : " " + lastName)).trim());
+                ep.setFirstName(firstName);
+                ep.setLastName(lastName);
                 if (!username.isBlank()) {
-                    ep.setDescription("Telegram: @" + username);
+                    ep.setAbout("Telegram: @" + username);
                 }
                 // default to first region & district
                 Region defaultRegion = regionRepository.findAll().stream().findFirst().orElse(null);
                 if (defaultRegion != null) {
                     ep.setRegion(defaultRegion);
-                    District defaultDistrict = districtRepository.findByRegionId(defaultRegion.getId()).stream().findFirst().orElse(null);
+                    District defaultDistrict = districtRepository.findByRegionIdOrderByNameAsc(defaultRegion.getId()).stream().findFirst().orElse(null);
                     if (defaultDistrict != null) {
                         ep.setDistrict(defaultDistrict);
                     }
@@ -181,7 +184,7 @@ public class TmaService {
             throw e;
         } catch (Exception e) {
             log.error("TMA avtorizatsiya xatosi", e);
-            throw ApiException.internal("Tizimga kirishda xatolik yuz berdi");
+            throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Tizimga kirishda xatolik yuz berdi");
         }
     }
 
@@ -255,6 +258,9 @@ public class TmaService {
     }
 
     private TmaJobDto toJobDto(Job j) {
+        String phone = j.getEmployer() != null && j.getEmployer().getUser() != null ? j.getEmployer().getUser().getPhone() : null;
+        String empName = j.getEmployer() != null ? j.getEmployer().getFullName() : null;
+
         return new TmaJobDto(
                 j.getId(),
                 j.getTitle(),
@@ -267,8 +273,8 @@ public class TmaService {
                 j.getRegion() != null ? j.getRegion().getName() : null,
                 j.getDistrict() != null ? j.getDistrict().getId() : null,
                 j.getDistrict() != null ? j.getDistrict().getName() : null,
-                j.getContactPhone() != null ? j.getContactPhone() : (j.getEmployer() != null && j.getEmployer().getUser() != null ? j.getEmployer().getUser().getPhone() : null),
-                j.getEmployer() != null ? j.getEmployer().getCompanyName() : null,
+                phone,
+                empName,
                 j.getCreatedAt(),
                 j.getStatus() != null ? j.getStatus().name() : JobStatus.ACTIVE.name(),
                 j.isUrgent()
@@ -295,7 +301,7 @@ public class TmaService {
             employer = employerProfileRepository.findByUserId(currentUser.getId()).orElseGet(() -> {
                 EmployerProfile ep = new EmployerProfile();
                 ep.setUser(currentUser);
-                ep.setCompanyName(req.employerName() != null ? req.employerName() : "Ish beruvchi");
+                ep.setFirstName(req.employerName() != null ? req.employerName() : "Ish beruvchi");
                 ep.setRegion(region);
                 ep.setDistrict(district);
                 return employerProfileRepository.save(ep);
@@ -309,7 +315,8 @@ public class TmaService {
                 sysUser = userRepository.saveAndFlush(sysUser);
                 EmployerProfile ep = new EmployerProfile();
                 ep.setUser(sysUser);
-                ep.setCompanyName("Telegram Foydalanuvchisi");
+                ep.setFirstName("Telegram");
+                ep.setLastName("Foydalanuvchisi");
                 ep.setRegion(region);
                 ep.setDistrict(district);
                 return employerProfileRepository.save(ep);
@@ -325,8 +332,7 @@ public class TmaService {
         job.setDistrict(district);
         job.setPayment(req.payment() != null ? req.payment() : BigDecimal.ZERO);
         job.setPaymentType(PaymentType.FIXED);
-        job.setContactPhone(req.contactPhone() != null ? req.contactPhone().trim() : (currentUser != null ? currentUser.getPhone() : "+998900000000"));
-        job.setAddress(req.address());
+        job.setJobType(JobType.DAILY);
         job.setStatus(JobStatus.ACTIVE);
         job.setUrgent(req.urgent());
 
@@ -339,7 +345,7 @@ public class TmaService {
      */
     @Transactional(readOnly = true)
     public TmaBootstrapResponse getBootstrap() {
-        List<ProfessionResponse> professions = professionRepository.findByActiveTrueOrderByNameAsc()
+        List<ProfessionResponse> professions = professionRepository.findByActiveTrueOrderByCategoryAscNameAsc()
                 .stream().map(ProfessionResponse::from).toList();
         List<RegionResponse> regions = regionRepository.findAll(Sort.by(Sort.Direction.ASC, "name"))
                 .stream().map(RegionResponse::from).toList();
