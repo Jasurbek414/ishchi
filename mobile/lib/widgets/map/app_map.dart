@@ -110,7 +110,7 @@ class _Attribution extends StatelessWidget {
   Widget build(BuildContext context) {
     final url = tiles.attributionUrl;
     return Align(
-      alignment: Alignment.bottomLeft,
+      alignment: Alignment.bottomRight,
       child: Padding(
         padding: const EdgeInsets.all(6),
         child: GestureDetector(

@@ -70,6 +70,7 @@ class WorkersMapScreen extends ConsumerWidget {
         emptyText: l10n.noWorkersInThisArea,
         filters: [for (final p in professions) MapFilterOption(p.id, p.name)],
         fallbackCenter: home,
+        initialRegionId: profile?.regionId,
       ),
     );
   }

@@ -68,6 +68,7 @@ class EmployersMapScreen extends ConsumerWidget {
         ),
         emptyText: l10n.noEmployersInThisArea,
         fallbackCenter: home,
+        initialRegionId: profile?.regionId,
       ),
     );
   }

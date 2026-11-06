@@ -48,6 +48,7 @@ class ExploreMap<T> extends StatefulWidget {
     this.fallbackCenter,
     this.onItemOpen,
     this.showRegionSelector = true,
+    this.initialRegionId,
   });
 
   final Future<List<T>> Function(MapQuery query) load;
@@ -67,6 +68,7 @@ class ExploreMap<T> extends StatefulWidget {
 
   /// Whether to show the top horizontal region selector chips.
   final bool showRegionSelector;
+  final int? initialRegionId;
 
   /// Where to look when there is nothing to show and the user's position is unknown, e.g. the
   /// place set in their profile.
@@ -113,25 +115,33 @@ class _ExploreMapState<T> extends State<ExploreMap<T>> {
   @override
   void initState() {
     super.initState();
+    if (widget.initialRegionId != null) {
+      try {
+        _selectedRegion = uzbekistanRegionsGeo.firstWhere((r) => r.id == widget.initialRegionId);
+      } catch (_) {}
+    }
     quietUserLocation().then((me) {
       if (!mounted || me == null) return;
       setState(() => _me = me);
-      if (_ready && !_loading && _items.isEmpty) _controller.move(me.point, 12);
+      if (_ready && !_loading && _items.isEmpty && _selectedRegion == null) _controller.move(me.point, 12);
     });
-    _reload(area: false);
+    _reload(area: _selectedRegion != null);
   }
 
   Future<void> _reload({required bool area}) async {
     final generation = ++_generation;
     final camera = _ready ? _controller.camera : null;
+    final region = _selectedRegion;
     setState(() {
       _loading = true;
       _error = null;
     });
     try {
       final items = await widget.load(MapQuery(
-        center: area ? camera?.center : null,
-        radiusDegrees: area && camera != null ? visibleRadiusDegrees(camera) : null,
+        center: area ? camera?.center : (region?.center ?? camera?.center),
+        radiusDegrees: area && camera != null
+            ? visibleRadiusDegrees(camera)
+            : (region != null ? region.radiusKm / 111.0 : null),
         professionId: _professionId,
         urgentOnly: _urgentOnly,
       ));
@@ -158,10 +168,15 @@ class _ExploreMapState<T> extends State<ExploreMap<T>> {
   void _fitIfNeeded() {
     if (!_ready || !_fitPending || _loading) return;
     _fitPending = false;
+    final region = _selectedRegion;
     final points = _items.map(widget.pointOf).toList();
     if (points.isEmpty) {
-      _controller.move(_me?.point ?? widget.fallbackCenter ?? uzbekistanCenter,
-          _me != null || widget.fallbackCenter != null ? 12 : 6);
+      if (region != null) {
+        _controller.move(region.center, region.defaultZoom);
+      } else {
+        _controller.move(_me?.point ?? widget.fallbackCenter ?? uzbekistanCenter,
+            _me != null || widget.fallbackCenter != null ? 12 : 6);
+      }
     } else if (points.length == 1) {
       _controller.move(points.first, 14);
     } else {
@@ -237,31 +252,84 @@ class _ExploreMapState<T> extends State<ExploreMap<T>> {
         AppMap(
           controller: _controller,
           myLocation: _me,
+          attributionPadding: EdgeInsets.only(
+            bottom: 4 + MediaQuery.paddingOf(context).bottom,
+            right: 6,
+          ),
           onMapReady: () {
             _ready = true;
             _fitIfNeeded();
           },
-          onTap: (_, __) {
-            if (_selected != null) setState(() => _selected = null);
+          onTap: (_, tapPoint) {
+            if (_selected != null) {
+              setState(() => _selected = null);
+              return;
+            }
+            final tappedRegion = findRegionAtPoint(tapPoint);
+            if (tappedRegion != null) {
+              _selectRegion(tappedRegion);
+            }
           },
           onPositionChanged: (camera, hasGesture) {
             if (hasGesture && !_moved && !_loading) setState(() => _moved = true);
           },
           layers: [
-            CircleLayer(
-              circles: [
+            PolygonLayer(
+              polygons: [
                 for (final r in uzbekistanRegionsGeo)
-                  CircleMarker(
+                  for (final ring in r.polygons)
+                    Polygon(
+                      points: ring,
+                      isFilled: true,
+                      color: _selectedRegion?.id == r.id
+                          ? cs.primary.withValues(alpha: 0.16)
+                          : Colors.blue.withValues(alpha: 0.02),
+                      borderColor: _selectedRegion?.id == r.id
+                          ? cs.primary
+                          : cs.primary.withValues(alpha: 0.40),
+                      borderStrokeWidth: _selectedRegion?.id == r.id ? 2.8 : 1.2,
+                    ),
+              ],
+            ),
+            MarkerLayer(
+              markers: [
+                for (final r in uzbekistanRegionsGeo)
+                  Marker(
                     point: r.center,
-                    radius: r.radiusKm * 1000,
-                    useRadiusInMeter: true,
-                    color: _selectedRegion?.id == r.id
-                        ? cs.primary.withValues(alpha: 0.12)
-                        : Colors.transparent,
-                    borderColor: _selectedRegion?.id == r.id
-                        ? cs.primary
-                        : cs.primary.withValues(alpha: 0.25),
-                    borderStrokeWidth: _selectedRegion?.id == r.id ? 2.5 : 1.0,
+                    width: 96,
+                    height: 28,
+                    alignment: Alignment.center,
+                    child: GestureDetector(
+                      onTap: () => _selectRegion(r),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: _selectedRegion?.id == r.id
+                              ? cs.primary
+                              : cs.surface.withValues(alpha: 0.90),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: _selectedRegion?.id == r.id
+                                ? cs.primary
+                                : cs.primary.withValues(alpha: 0.35),
+                            width: 1.0,
+                          ),
+                          boxShadow: const [
+                            BoxShadow(color: Colors.black12, blurRadius: 3, offset: Offset(0, 1)),
+                          ],
+                        ),
+                        child: Text(
+                          r.shortName,
+                          textAlign: TextAlign.center,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w700,
+                            color: _selectedRegion?.id == r.id ? Colors.white : cs.onSurface,
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
               ],
             ),
@@ -369,7 +437,9 @@ class _ExploreMapState<T> extends State<ExploreMap<T>> {
                           )
                         : (!_loading && _error == null && _items.isNotEmpty)
                             ? _CountPill(key: const ValueKey('count'), text: context.l10n.mapResultsCount(_items.length))
-                            : const SizedBox.shrink(key: ValueKey('none')),
+                            : (!_loading && _error == null && _items.isEmpty)
+                                ? _CountPill(key: const ValueKey('empty_top'), text: widget.emptyText)
+                                : const SizedBox.shrink(key: ValueKey('none')),
                   ),
                 ),
               ],
@@ -437,9 +507,7 @@ class _ExploreMapState<T> extends State<ExploreMap<T>> {
                         action: context.l10n.retryAction,
                         onAction: () => _reload(area: false),
                       )
-                    : (!_loading && _items.isEmpty)
-                        ? _NoticeCard(key: const ValueKey('empty'), icon: Icons.travel_explore, text: widget.emptyText)
-                        : const SizedBox.shrink(key: ValueKey('nothing')),
+                    : const SizedBox.shrink(key: ValueKey('nothing')),
           ),
         ),
       ],

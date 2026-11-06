@@ -72,6 +72,7 @@ class JobsMapScreen extends ConsumerWidget {
             ? const []
             : [for (final p in profile?.professions ?? const []) MapFilterOption(p.id, p.name)],
         fallbackCenter: home,
+        initialRegionId: profile?.regionId,
       ),
     );
   }
