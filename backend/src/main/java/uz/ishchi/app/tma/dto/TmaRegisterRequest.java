@@ -7,6 +7,8 @@ import java.util.List;
 public record TmaRegisterRequest(
         Role role,
         String phone,
+        String password,
+        String code,
         String firstName,
         String lastName,
         Long regionId,

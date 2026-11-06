@@ -58,9 +58,16 @@ export default function App() {
 
   // Onboarding state
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [onboardingStep, setOnboardingStep] = useState(1); // 1=welcome, 2=role, 3=worker-details, 4=employer-details
-  const [onboardingRole, setOnboardingRole] = useState(null); // 'WORKER' | 'EMPLOYER'
+  const [onboardingStep, setOnboardingStep] = useState(1); // 1=phone/otp/password, 2=role, 3=location/profile
+  const [onboardingRole, setOnboardingRole] = useState('EMPLOYER'); // 'WORKER' | 'EMPLOYER'
+  const [otpSent, setOtpSent] = useState(false);
+  const [isExistingUser, setIsExistingUser] = useState(false);
+  const [otpCountdown, setOtpCountdown] = useState(0);
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [onboardingForm, setOnboardingForm] = useState({
+    phone: '+998',
+    code: '',
+    password: '',
     firstName: tgUser?.first_name || '',
     lastName: tgUser?.last_name || '',
     regionId: '',
@@ -70,6 +77,13 @@ export default function App() {
     about: ''
   });
   const [isRegistering, setIsRegistering] = useState(false);
+
+  useEffect(() => {
+    if (otpCountdown > 0) {
+      const timer = setTimeout(() => setOtpCountdown(otpCountdown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [otpCountdown]);
 
   // Bootstrap data
   const [bootstrap, setBootstrap] = useState({
@@ -216,17 +230,18 @@ export default function App() {
           });
           // Show onboarding for new users
           if (!data.isRegistered) {
-            setOnboardingForm({
-              firstName: data.firstName || tgUser?.first_name || '',
-              lastName: data.lastName || tgUser?.last_name || '',
-              regionId: data.regionId ? String(data.regionId) : '',
-              districtId: data.districtId ? String(data.districtId) : '',
-              professionId: data.professionIds?.[0] ? String(data.professionIds[0]) : '',
-              experienceYears: 2,
-              about: ''
-            });
+            setOnboardingForm((prev) => ({
+              ...prev,
+              phone: prev.phone && prev.phone.length > 4 ? prev.phone : (data.phone && !data.phone.startsWith('+998TG') ? data.phone : '+998'),
+              firstName: prev.firstName || data.firstName || tgUser?.first_name || '',
+              lastName: prev.lastName || data.lastName || tgUser?.last_name || '',
+              regionId: prev.regionId || (data.regionId ? String(data.regionId) : ''),
+              districtId: prev.districtId || (data.districtId ? String(data.districtId) : ''),
+              professionId: prev.professionId || (data.professionIds?.[0] ? String(data.professionIds[0]) : ''),
+              experienceYears: prev.experienceYears || 2,
+              about: prev.about || ''
+            }));
             setOnboardingStep(1);
-            setOnboardingRole(null);
             setShowOnboarding(true);
           } else {
             setShowOnboarding(false);
@@ -466,11 +481,97 @@ export default function App() {
     }
   };
 
-  // ===== ONBOARDING HANDLER =====
+  // ===== ONBOARDING HANDLERS =====
+  const handleSendOtp = async () => {
+    let raw = onboardingForm.phone.trim();
+    if (!raw.startsWith('+')) raw = '+' + raw;
+    if (!/^\+998\d{9}$/.test(raw)) {
+      alert("Iltimos, telefon raqamni to'g'ri kiriting (+998XXXXXXXXX)");
+      return;
+    }
+    setIsSendingOtp(true);
+    triggerHaptic('medium');
+    try {
+      const res = await fetch(`${API_BASE}/tma/send-otp`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authToken}`
+        },
+        body: JSON.stringify({ phone: raw })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        if (data.existingUser) {
+          setIsExistingUser(true);
+          alert(data.message || "Ushbu raqam allaqachon mavjud. Parolingizni kiriting.");
+        } else {
+          setOtpSent(true);
+          setIsExistingUser(false);
+          setOtpCountdown(60);
+          triggerHaptic('heavy');
+          alert(data.message || "Tasdiqlash kodi Telegram botingizga yuborildi!");
+        }
+      } else {
+        alert(data.message || "Kodni yuborishda xatolik yuz berdi");
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Aloqa xatosi yuz berdi');
+    } finally {
+      setIsSendingOtp(false);
+    }
+  };
+
+  const handleLinkExisting = async () => {
+    if (!onboardingForm.password || onboardingForm.password.length < 6) {
+      alert("Iltimos, parolingizni kiriting (kamida 6 ta belgi)");
+      return;
+    }
+    setIsRegistering(true);
+    triggerHaptic('medium');
+    try {
+      let raw = onboardingForm.phone.trim();
+      if (!raw.startsWith('+')) raw = '+' + raw;
+      const res = await fetch(`${API_BASE}/tma/link-account`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authToken}`
+        },
+        body: JSON.stringify({ phone: raw, password: onboardingForm.password })
+      });
+      if (res.ok) {
+        const authData = await res.json();
+        if (authData?.accessToken) {
+          setAuthToken(authData.accessToken);
+          try { localStorage.setItem(storageKey, authData.accessToken); } catch (_) {}
+          fetchProfile(authData.accessToken);
+        }
+        setShowOnboarding(false);
+        triggerHaptic('heavy');
+        alert("Akkountingiz muvaffaqiyatli ulandi!");
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err.message || "Parol noto'g'ri");
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Aloqa xatosi yuz berdi');
+    } finally {
+      setIsRegistering(false);
+    }
+  };
+
   const handleCompleteOnboarding = async () => {
     if (!authToken) return;
-    if (!onboardingRole) {
-      alert("Iltimos, rolingizni tanlang!");
+    if (!onboardingForm.phone || !onboardingForm.code || !onboardingForm.password) {
+      alert("Telefon raqam, tasdiqlash kodi va parolni to'ldiring!");
+      setOnboardingStep(1);
+      return;
+    }
+    if (!onboardingForm.regionId || !onboardingForm.districtId) {
+      alert("Iltimos, viloyat va tumanni tanlang!");
       return;
     }
     if (onboardingRole === 'WORKER' && !onboardingForm.professionId) {
@@ -480,12 +581,17 @@ export default function App() {
     setIsRegistering(true);
     triggerHaptic('medium');
     try {
+      let raw = onboardingForm.phone.trim();
+      if (!raw.startsWith('+')) raw = '+' + raw;
       const body = {
         role: onboardingRole,
+        phone: raw,
+        password: onboardingForm.password,
+        code: onboardingForm.code.trim(),
         firstName: onboardingForm.firstName || tgUser?.first_name || '',
         lastName: onboardingForm.lastName || tgUser?.last_name || '',
-        regionId: onboardingForm.regionId ? Number(onboardingForm.regionId) : null,
-        districtId: onboardingForm.districtId ? Number(onboardingForm.districtId) : null,
+        regionId: Number(onboardingForm.regionId),
+        districtId: Number(onboardingForm.districtId),
         professionIds: onboardingRole === 'WORKER' && onboardingForm.professionId
           ? [Number(onboardingForm.professionId)]
           : null,
@@ -537,91 +643,208 @@ export default function App() {
           <div className="h-1 bg-slate-100">
             <div
               className="h-full bg-emerald-500 transition-all duration-500"
-              style={{ width: `${(onboardingStep / (onboardingRole === 'WORKER' ? 3 : 2)) * 100}%` }}
+              style={{ width: `${(onboardingStep / 3) * 100}%` }}
             />
           </div>
 
           <div className="flex-1 overflow-y-auto">
 
-            {/* STEP 1: Welcome */}
+            {/* STEP 1: Phone, OTP, Password */}
             {onboardingStep === 1 && (
-              <div className="flex flex-col items-center justify-center min-h-full px-6 py-12 text-center">
-                <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white font-extrabold text-4xl shadow-xl mb-6 ring-4 ring-emerald-100">
-                  {tgUser?.first_name ? tgUser.first_name[0].toUpperCase() : 'I'}
-                </div>
-                <h1 className="text-2xl font-extrabold text-slate-900 mb-2">
-                  Xush kelibsiz, {tgUser?.first_name || 'Foydalanuvchi'}! 👋
-                </h1>
-                <p className="text-slate-500 text-sm max-w-xs mb-8">
-                  Ishchi ilovasiga hush kelibsiz! Sizga eng yaxshi tajribani taqdim etish uchun bir nechta savol beramiz.
-                </p>
-                <div className="w-full space-y-3">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1 text-left">Ismingiz</label>
-                    <input
-                      type="text"
-                      value={onboardingForm.firstName}
-                      onChange={e => setOnboardingForm(p => ({...p, firstName: e.target.value}))}
-                      placeholder="Ismingizni kiriting"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm focus:outline-none focus:border-emerald-500 focus:bg-white transition-all"
-                    />
+              <div className="flex flex-col px-6 py-8 min-h-full">
+                <div className="text-center mb-6">
+                  <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white font-extrabold text-2xl flex items-center justify-center mx-auto mb-3 shadow-md ring-4 ring-emerald-50">
+                    {onboardingForm.firstName ? onboardingForm.firstName[0].toUpperCase() : 'I'}
                   </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1 text-left">Familiyangiz (ixtiyoriy)</label>
-                    <input
-                      type="text"
-                      value={onboardingForm.lastName}
-                      onChange={e => setOnboardingForm(p => ({...p, lastName: e.target.value}))}
-                      placeholder="Familiyangizni kiriting"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm focus:outline-none focus:border-emerald-500 focus:bg-white transition-all"
-                    />
-                  </div>
+                  <h1 className="text-xl font-extrabold text-slate-900">
+                    Ro'yxatdan o'tish
+                  </h1>
+                  <p className="text-slate-500 text-xs mt-1">
+                    Telefon raqamingizni tasdiqlang va akkauntingiz uchun parol o'rnating
+                  </p>
                 </div>
-                <button
-                  onClick={() => { triggerHaptic(); setOnboardingStep(2); }}
-                  className="mt-8 w-full py-4 bg-emerald-600 text-white font-extrabold rounded-2xl text-base shadow-lg hover:bg-emerald-700 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
-                >
-                  Davom etish <ArrowRight className="w-5 h-5" />
-                </button>
+
+                <div className="space-y-3.5 max-w-sm mx-auto w-full">
+                  {/* Name fields */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-600 mb-1">Ism *</label>
+                      <input
+                        type="text"
+                        value={onboardingForm.firstName}
+                        onChange={e => setOnboardingForm(p => ({...p, firstName: e.target.value}))}
+                        placeholder="Ismingiz"
+                        className="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-xs focus:outline-none focus:border-emerald-500 focus:bg-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-600 mb-1">Familiya</label>
+                      <input
+                        type="text"
+                        value={onboardingForm.lastName}
+                        onChange={e => setOnboardingForm(p => ({...p, lastName: e.target.value}))}
+                        placeholder="Familiyangiz"
+                        className="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-xs focus:outline-none focus:border-emerald-500 focus:bg-white"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Phone number */}
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 mb-1">Telefon raqam *</label>
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                        <input
+                          type="tel"
+                          value={onboardingForm.phone}
+                          onChange={e => setOnboardingForm(p => ({...p, phone: e.target.value}))}
+                          placeholder="+998901234567"
+                          className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-xs font-semibold focus:outline-none focus:border-emerald-500 focus:bg-white"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleSendOtp}
+                        disabled={isSendingOtp || otpCountdown > 0}
+                        className="px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-200 disabled:text-slate-400 text-white text-xs font-bold rounded-xl whitespace-nowrap active:scale-95 transition-all shadow-sm"
+                      >
+                        {isSendingOtp ? "..." : (otpCountdown > 0 ? `${otpCountdown}s` : (otpSent ? "Qayta" : "Kodni olish"))}
+                      </button>
+                    </div>
+                    <p className="text-[10px] text-slate-400 mt-1">Tasdiqlash kodi ushbu Telegram botingizga yuboriladi</p>
+                  </div>
+
+                  {/* If existing user: ask password only */}
+                  {isExistingUser && (
+                    <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-left">
+                      <p className="text-xs text-amber-900 font-semibold mb-2">
+                        Bu raqam bilan avval ro'yxatdan o'tilgan. Akkauntingizni ushbu Telegramga ulash uchun parolni kiriting:
+                      </p>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">Parol</label>
+                      <input
+                        type="password"
+                        value={onboardingForm.password}
+                        onChange={e => setOnboardingForm(p => ({...p, password: e.target.value}))}
+                        placeholder="Parolingizni kiriting"
+                        className="w-full px-3 py-2.5 rounded-xl border border-amber-300 bg-white text-xs focus:outline-none focus:border-amber-500"
+                      />
+                      <button
+                        onClick={handleLinkExisting}
+                        disabled={isRegistering || !onboardingForm.password}
+                        className="mt-3 w-full py-2.5 bg-amber-600 text-white font-bold text-xs rounded-xl shadow hover:bg-amber-700 active:scale-95 transition-all"
+                      >
+                        {isRegistering ? "Ulanmoqda..." : "Akkauntni ulash va kirish"}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* If new user & OTP sent: show code and password fields */}
+                  {!isExistingUser && otpSent && (
+                    <div className="space-y-3 pt-1 border-t border-slate-100">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-600 mb-1">
+                          Tasdiqlash kodi * (Botdan kelgan 4 xonali kod)
+                        </label>
+                        <input
+                          type="text"
+                          maxLength={4}
+                          value={onboardingForm.code}
+                          onChange={e => setOnboardingForm(p => ({...p, code: e.target.value}))}
+                          placeholder="1234"
+                          className="w-full px-3 py-2.5 text-center text-lg tracking-widest font-extrabold rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-emerald-500 focus:bg-white"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-600 mb-1">
+                          Parol yarating * (kamida 6 ta belgi)
+                        </label>
+                        <div className="relative">
+                          <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                          <input
+                            type="password"
+                            value={onboardingForm.password}
+                            onChange={e => setOnboardingForm(p => ({...p, password: e.target.value}))}
+                            placeholder="••••••••"
+                            className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-xs focus:outline-none focus:border-emerald-500 focus:bg-white"
+                          />
+                        </div>
+                        <p className="text-[10px] text-slate-400 mt-1">Bu parol bilan keyinchalik mobil ilovaga ham kira olasiz</p>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!onboardingForm.firstName.trim()) {
+                            alert("Iltimos, ismingizni kiriting!");
+                            return;
+                          }
+                          if (!onboardingForm.code || onboardingForm.code.trim().length !== 4) {
+                            alert("Iltimos, 4 xonali tasdiqlash kodini kiriting!");
+                            return;
+                          }
+                          if (!onboardingForm.password || onboardingForm.password.length < 6) {
+                            alert("Iltimos, kamida 6 ta belgidan iborat parol kiriting!");
+                            return;
+                          }
+                          triggerHaptic();
+                          setOnboardingStep(2);
+                        }}
+                        className="mt-2 w-full py-3.5 bg-emerald-600 text-white font-extrabold rounded-2xl text-sm shadow-md hover:bg-emerald-700 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                      >
+                        Davom etish: Rol tanlash <ArrowRight className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+
+                  {!isExistingUser && !otpSent && (
+                    <div className="pt-4 text-center">
+                      <p className="text-xs text-slate-400">
+                        Davom etish uchun avval telefon raqamingizni kiritib <strong>"Kodni olish"</strong> tugmasini bosing
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
             {/* STEP 2: Role Choice */}
             {onboardingStep === 2 && (
-              <div className="flex flex-col px-6 py-10 min-h-full">
+              <div className="flex flex-col px-6 py-8 min-h-full">
                 <button
                   onClick={() => { triggerHaptic(); setOnboardingStep(1); }}
-                  className="self-start text-slate-400 text-sm font-semibold mb-6 flex items-center gap-1 active:opacity-70"
+                  className="self-start text-slate-400 text-xs font-semibold mb-4 flex items-center gap-1 active:opacity-70"
                 >
                   ← Orqaga
                 </button>
-                <h2 className="text-xl font-extrabold text-slate-900 mb-2">Siz kimсiz?</h2>
-                <p className="text-slate-500 text-sm mb-8">Ilovadan foydalanish usulini tanlang</p>
+                <div className="text-center mb-6">
+                  <h2 className="text-xl font-extrabold text-slate-900">Siz kimsiz?</h2>
+                  <p className="text-slate-500 text-xs mt-1">Ilovadan foydalanish maqsadingizni tanlang</p>
+                </div>
 
-                <div className="space-y-4">
+                <div className="space-y-3.5 max-w-sm mx-auto w-full">
                   {/* Employer card */}
                   <button
                     onClick={() => { triggerHaptic(); setOnboardingRole('EMPLOYER'); }}
-                    className={`w-full p-5 rounded-2xl border-2 text-left transition-all active:scale-[0.98] ${
+                    className={`w-full p-4 rounded-2xl border-2 text-left transition-all active:scale-[0.98] ${
                       onboardingRole === 'EMPLOYER'
-                        ? 'border-emerald-500 bg-emerald-50 shadow-md'
-                        : 'border-slate-200 bg-white hover:border-emerald-300'
+                        ? 'border-emerald-500 bg-emerald-50/70 shadow-sm'
+                        : 'border-slate-200 bg-white hover:border-emerald-200'
                     }`}
                   >
-                    <div className="flex items-start gap-4">
-                      <div className="w-14 h-14 rounded-2xl bg-emerald-100 flex items-center justify-center text-2xl flex-shrink-0">
+                    <div className="flex items-center gap-3.5">
+                      <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center text-2xl flex-shrink-0">
                         👔
                       </div>
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-extrabold text-slate-900 text-base">Ish beruvchi</h3>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-extrabold text-slate-900 text-sm">Ish beruvchi / Buyurtmachi</h3>
                           {onboardingRole === 'EMPLOYER' && (
-                            <span className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
-                              <Check className="w-3 h-3 text-white" />
-                            </span>
+                            <Check className="w-4 h-4 text-emerald-600 font-bold" />
                           )}
                         </div>
-                        <p className="text-xs text-slate-500">Usta va ishchilarni topish, e'lon berish</p>
+                        <p className="text-[11px] text-slate-500 mt-0.5">Usta va ishchilarni topish, ish e'lonlari berish</p>
                       </div>
                     </div>
                   </button>
@@ -629,97 +852,83 @@ export default function App() {
                   {/* Worker card */}
                   <button
                     onClick={() => { triggerHaptic(); setOnboardingRole('WORKER'); }}
-                    className={`w-full p-5 rounded-2xl border-2 text-left transition-all active:scale-[0.98] ${
+                    className={`w-full p-4 rounded-2xl border-2 text-left transition-all active:scale-[0.98] ${
                       onboardingRole === 'WORKER'
-                        ? 'border-amber-500 bg-amber-50 shadow-md'
-                        : 'border-slate-200 bg-white hover:border-amber-300'
+                        ? 'border-amber-500 bg-amber-50/70 shadow-sm'
+                        : 'border-slate-200 bg-white hover:border-amber-200'
                     }`}
                   >
-                    <div className="flex items-start gap-4">
-                      <div className="w-14 h-14 rounded-2xl bg-amber-100 flex items-center justify-center text-2xl flex-shrink-0">
+                    <div className="flex items-center gap-3.5">
+                      <div className="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center text-2xl flex-shrink-0">
                         🛠
                       </div>
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-extrabold text-slate-900 text-base">Usta / Ishchi</h3>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-extrabold text-slate-900 text-sm">Usta / Mutaxassis / Ishchi</h3>
                           {onboardingRole === 'WORKER' && (
-                            <span className="w-5 h-5 rounded-full bg-amber-500 flex items-center justify-center flex-shrink-0">
-                              <Check className="w-3 h-3 text-white" />
-                            </span>
+                            <Check className="w-4 h-4 text-amber-600 font-bold" />
                           )}
                         </div>
-                        <p className="text-xs text-slate-500">Ish topish, o'z xizmatlaringizni taklif qilish</p>
+                        <p className="text-[11px] text-slate-500 mt-0.5">Buyurtmalar olish, xizmat ko'rsatish va ish topish</p>
                       </div>
                     </div>
                   </button>
                 </div>
 
-                <div className="mt-auto pt-8">
-                  {onboardingRole === 'EMPLOYER' && (
-                    <button
-                      onClick={() => { triggerHaptic(); handleCompleteOnboarding(); }}
-                      disabled={isRegistering}
-                      className="w-full py-4 bg-emerald-600 text-white font-extrabold rounded-2xl text-base shadow-lg hover:bg-emerald-700 active:scale-[0.98] transition-all disabled:opacity-70 flex items-center justify-center gap-2"
-                    >
-                      {isRegistering ? (
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      ) : (
-                        <>Boshlash <ArrowRight className="w-5 h-5" /></>
-                      )}
-                    </button>
-                  )}
-                  {onboardingRole === 'WORKER' && (
-                    <button
-                      onClick={() => { triggerHaptic(); setOnboardingStep(3); }}
-                      className="w-full py-4 bg-amber-500 text-white font-extrabold rounded-2xl text-base shadow-lg hover:bg-amber-600 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
-                    >
-                      Davom etish <ArrowRight className="w-5 h-5" />
-                    </button>
-                  )}
-                  {!onboardingRole && (
-                    <button disabled className="w-full py-4 bg-slate-200 text-slate-400 font-extrabold rounded-2xl text-base cursor-not-allowed">
-                      Rolingizni tanlang
-                    </button>
-                  )}
+                <div className="mt-auto pt-6 max-w-sm mx-auto w-full">
+                  <button
+                    onClick={() => { triggerHaptic(); setOnboardingStep(3); }}
+                    className={`w-full py-3.5 font-extrabold rounded-2xl text-sm shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-white ${
+                      onboardingRole === 'WORKER' ? 'bg-amber-500 hover:bg-amber-600' : 'bg-emerald-600 hover:bg-emerald-700'
+                    }`}
+                  >
+                    Davom etish: Hudud tanlash <ArrowRight className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
             )}
 
-            {/* STEP 3: Worker Details */}
-            {onboardingStep === 3 && onboardingRole === 'WORKER' && (
-              <div className="flex flex-col px-6 py-10 min-h-full">
+            {/* STEP 3: Location & Details */}
+            {onboardingStep === 3 && (
+              <div className="flex flex-col px-6 py-8 min-h-full">
                 <button
                   onClick={() => { triggerHaptic(); setOnboardingStep(2); }}
-                  className="self-start text-slate-400 text-sm font-semibold mb-6 flex items-center gap-1 active:opacity-70"
+                  className="self-start text-slate-400 text-xs font-semibold mb-4 flex items-center gap-1 active:opacity-70"
                 >
                   ← Orqaga
                 </button>
-                <h2 className="text-xl font-extrabold text-slate-900 mb-2">🛠 Usta ma'lumotlari</h2>
-                <p className="text-slate-500 text-sm mb-6">Quyidagi ma'lumotlarni to'ldiring</p>
+                <div className="text-center mb-6">
+                  <h2 className="text-xl font-extrabold text-slate-900">
+                    {onboardingRole === 'WORKER' ? "🛠 Usta ma'lumotlari" : "👔 Manzilingiz"}
+                  </h2>
+                  <p className="text-slate-500 text-xs mt-1">Hududingizni tanlang va ro'yxatdan o'tishni yakunlang</p>
+                </div>
 
-                <div className="space-y-4">
-                  {/* Profession */}
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">Kasb / Mutaxassislik *</label>
-                    <select
-                      value={onboardingForm.professionId}
-                      onChange={e => setOnboardingForm(p => ({...p, professionId: e.target.value}))}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm focus:outline-none focus:border-amber-500 focus:bg-white transition-all"
-                    >
-                      <option value="">— Kasb tanlang —</option>
-                      {bootstrap.professions.map(p => (
-                        <option key={p.id} value={p.id}>{p.name}</option>
-                      ))}
-                    </select>
-                  </div>
+                <div className="space-y-3.5 max-w-sm mx-auto w-full">
+                  {/* Profession if Worker */}
+                  {onboardingRole === 'WORKER' && (
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">Kasb / Mutaxassislik *</label>
+                      <select
+                        value={onboardingForm.professionId}
+                        onChange={e => setOnboardingForm(p => ({...p, professionId: e.target.value}))}
+                        className="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-xs focus:outline-none focus:border-amber-500 focus:bg-white"
+                      >
+                        <option value="">— Kasb tanlang —</option>
+                        {bootstrap.professions.map(p => (
+                          <option key={p.id} value={p.id}>{p.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
 
                   {/* Region */}
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">Viloyat</label>
+                    <label className="block text-[11px] font-bold text-slate-700 mb-1">Viloyat *</label>
                     <select
                       value={onboardingForm.regionId}
                       onChange={e => setOnboardingForm(p => ({...p, regionId: e.target.value, districtId: ''}))}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm focus:outline-none focus:border-amber-500 focus:bg-white transition-all"
+                      className="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-xs focus:outline-none focus:border-emerald-500 focus:bg-white"
                     >
                       <option value="">— Viloyat tanlang —</option>
                       {bootstrap.regions.map(r => (
@@ -729,63 +938,69 @@ export default function App() {
                   </div>
 
                   {/* District */}
-                  {onboardingRegionDistricts.length > 0 && (
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-700 mb-1">Tuman</label>
-                      <select
-                        value={onboardingForm.districtId}
-                        onChange={e => setOnboardingForm(p => ({...p, districtId: e.target.value}))}
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm focus:outline-none focus:border-amber-500 focus:bg-white transition-all"
-                      >
-                        <option value="">— Tuman tanlang —</option>
-                        {onboardingRegionDistricts.map(d => (
-                          <option key={d.id} value={d.id}>{d.name}</option>
-                        ))}
-                      </select>
-                    </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 mb-1">Tuman / Shahar *</label>
+                    <select
+                      value={onboardingForm.districtId}
+                      disabled={!onboardingForm.regionId}
+                      onChange={e => setOnboardingForm(p => ({...p, districtId: e.target.value}))}
+                      className="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-xs focus:outline-none focus:border-emerald-500 focus:bg-white disabled:opacity-50"
+                    >
+                      <option value="">— Tuman tanlang —</option>
+                      {onboardingRegionDistricts.map(d => (
+                        <option key={d.id} value={d.id}>{d.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Experience if Worker */}
+                  {onboardingRole === 'WORKER' && (
+                    <>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                          Ish tajribasi: <span className="text-amber-600 font-extrabold">{onboardingForm.experienceYears} yil</span>
+                        </label>
+                        <input
+                          type="range"
+                          min={1} max={30}
+                          value={onboardingForm.experienceYears}
+                          onChange={e => setOnboardingForm(p => ({...p, experienceYears: Number(e.target.value)}))}
+                          className="w-full accent-amber-500"
+                        />
+                        <div className="flex justify-between text-[10px] text-slate-400 mt-0.5">
+                          <span>1 yil</span><span>30 yil</span>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">O'zingiz haqingizda (ixtiyoriy)</label>
+                        <textarea
+                          rows={2}
+                          value={onboardingForm.about}
+                          onChange={e => setOnboardingForm(p => ({...p, about: e.target.value}))}
+                          placeholder="Bajaradigan ishlaringiz haqida qisqacha..."
+                          className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs focus:outline-none focus:border-amber-500 focus:bg-white resize-none"
+                        />
+                      </div>
+                    </>
                   )}
-
-                  {/* Experience */}
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Tajriba: <span className="text-amber-600 font-bold">{onboardingForm.experienceYears} yil</span>
-                    </label>
-                    <input
-                      type="range"
-                      min={1} max={30}
-                      value={onboardingForm.experienceYears}
-                      onChange={e => setOnboardingForm(p => ({...p, experienceYears: Number(e.target.value)}))}
-                      className="w-full accent-amber-500"
-                    />
-                    <div className="flex justify-between text-[11px] text-slate-400 mt-0.5">
-                      <span>1 yil</span><span>30 yil</span>
-                    </div>
-                  </div>
-
-                  {/* About */}
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">O'zingiz haqida (ixtiyoriy)</label>
-                    <textarea
-                      rows={3}
-                      value={onboardingForm.about}
-                      onChange={e => setOnboardingForm(p => ({...p, about: e.target.value}))}
-                      placeholder="Qisqacha o'zingiz haqida yozing..."
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm focus:outline-none focus:border-amber-500 focus:bg-white transition-all resize-none"
-                    />
-                  </div>
                 </div>
 
-                <button
-                  onClick={handleCompleteOnboarding}
-                  disabled={isRegistering || !onboardingForm.professionId}
-                  className="mt-6 w-full py-4 bg-amber-500 text-white font-extrabold rounded-2xl text-base shadow-lg hover:bg-amber-600 active:scale-[0.98] transition-all disabled:opacity-60 flex items-center justify-center gap-2"
-                >
-                  {isRegistering ? (
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <>✅ Boshlash — Ro'yxatdan o'tish</>
-                  )}
-                </button>
+                <div className="mt-auto pt-6 max-w-sm mx-auto w-full">
+                  <button
+                    onClick={handleCompleteOnboarding}
+                    disabled={isRegistering || !onboardingForm.regionId || !onboardingForm.districtId || (onboardingRole === 'WORKER' && !onboardingForm.professionId)}
+                    className={`w-full py-3.5 text-white font-extrabold rounded-2xl text-sm shadow-md active:scale-[0.98] transition-all disabled:opacity-60 flex items-center justify-center gap-2 ${
+                      onboardingRole === 'WORKER' ? 'bg-amber-500 hover:bg-amber-600' : 'bg-emerald-600 hover:bg-emerald-700'
+                    }`}
+                  >
+                    {isRegistering ? (
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <>✅ Ro'yxatdan o'tishni yakunlash</>
+                    )}
+                  </button>
+                </div>
               </div>
             )}
 

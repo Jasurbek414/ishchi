@@ -86,6 +86,28 @@ public class TmaController {
         return tmaService.switchRole(principal.getId(), request);
     }
 
+    @PostMapping("/send-otp")
+    public TmaSendOtpResponse sendOtp(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestBody TmaSendOtpRequest request
+    ) {
+        if (principal == null) {
+            throw uz.ishchi.app.common.exception.ApiException.unauthorized("Tizimga kirish talab qilinadi");
+        }
+        return tmaService.sendOtp(principal.getId(), request);
+    }
+
+    @PostMapping("/link-account")
+    public AuthResponse linkAccount(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestBody TmaLinkAccountRequest request
+    ) {
+        if (principal == null) {
+            throw uz.ishchi.app.common.exception.ApiException.unauthorized("Tizimga kirish talab qilinadi");
+        }
+        return tmaService.linkAccount(principal.getId(), request);
+    }
+
     @PostMapping("/register")
     public AuthResponse register(
             @AuthenticationPrincipal UserPrincipal principal,

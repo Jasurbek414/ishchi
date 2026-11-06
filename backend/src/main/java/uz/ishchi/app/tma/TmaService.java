@@ -14,9 +14,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uz.ishchi.app.auth.OtpCode;
+import uz.ishchi.app.auth.OtpCodeRepository;
 import uz.ishchi.app.auth.dto.AuthResponse;
 import uz.ishchi.app.common.JobStatus;
 import uz.ishchi.app.common.JobType;
+import uz.ishchi.app.common.OtpPurpose;
 import uz.ishchi.app.common.PaymentType;
 import uz.ishchi.app.common.Role;
 import uz.ishchi.app.common.exception.ApiException;
@@ -37,9 +40,11 @@ import uz.ishchi.app.profile.WorkerProfile;
 import uz.ishchi.app.profile.WorkerProfileRepository;
 import uz.ishchi.app.security.JwtService;
 import uz.ishchi.app.settings.AppSettingsService;
+import uz.ishchi.app.telegram.TelegramService;
 import uz.ishchi.app.tma.dto.*;
 import uz.ishchi.app.user.User;
 import uz.ishchi.app.user.UserRepository;
+import uz.ishchi.app.wallet.WalletService;
 import uz.ishchi.app.worker.WorkerSpecifications;
 
 import javax.crypto.Mac;
@@ -48,6 +53,9 @@ import java.math.BigDecimal;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.security.SecureRandom;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Service
@@ -55,6 +63,7 @@ import java.util.*;
 public class TmaService {
 
     private static final Logger log = LoggerFactory.getLogger(TmaService.class);
+    private static final SecureRandom RANDOM = new SecureRandom();
 
     private final AppSettingsService appSettingsService;
     private final UserRepository userRepository;
@@ -66,6 +75,9 @@ public class TmaService {
     private final DistrictRepository districtRepository;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
+    private final OtpCodeRepository otpCodeRepository;
+    private final TelegramService telegramService;
+    private final WalletService walletService;
     private final ObjectMapper mapper = new ObjectMapper();
 
     /**
@@ -461,17 +473,135 @@ public class TmaService {
         }
     }
 
+    private String normalizePhone(String raw) {
+        if (raw == null) return null;
+        String digits = raw.replaceAll("[^0-9]", "");
+        String candidate = "+" + digits;
+        return candidate.matches("^\\+998\\d{9}$") ? candidate : null;
+    }
+
     /**
-     * Complete onboarding / registration for a new TMA user.
-     * Sets their real role, name, region, profession, and marks them as registered.
+     * Sends a 4-digit OTP code directly to the user's Telegram chat via the bot.
+     * Checks if the phone already belongs to an existing registered user.
+     */
+    @Transactional
+    public TmaSendOtpResponse sendOtp(Long userId, TmaSendOtpRequest req) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> ApiException.notFound("Foydalanuvchi topilmadi"));
+
+        String phone = normalizePhone(req.phone());
+        if (phone == null) {
+            throw ApiException.badRequest("Telefon raqam +998XXXXXXXXX formatida bo'lishi kerak");
+        }
+
+        // Check if phone belongs to an existing registered user
+        Optional<User> existingUserOpt = userRepository.findByPhone(phone);
+        if (existingUserOpt.isPresent() && !existingUserOpt.get().getId().equals(user.getId())) {
+            User existing = existingUserOpt.get();
+            if (existing.isRegistered() && !existing.getPhone().startsWith("+998TG")) {
+                return new TmaSendOtpResponse(true, "Ushbu raqam allaqachon ro'yxatdan o'tgan. Akkauntni ulash uchun parolingizni kiriting.");
+            }
+        }
+
+        Long chatId = user.getTelegramChatId();
+        if (chatId == null) {
+            throw ApiException.badRequest("Telegram akkauntingiz aniqlanmadi");
+        }
+
+        String code = String.valueOf(1000 + RANDOM.nextInt(9000));
+        OtpCode otp = new OtpCode(phone, code, OtpPurpose.REGISTER,
+                Instant.now().plus(5, ChronoUnit.MINUTES));
+        otpCodeRepository.save(otp);
+        telegramService.sendOtp(chatId, code);
+
+        return new TmaSendOtpResponse(false, "Tasdiqlash kodi Telegram botingizga yuborildi");
+    }
+
+    /**
+     * Link an existing user account (from mobile app) to this Telegram account using password.
+     */
+    @Transactional
+    public AuthResponse linkAccount(Long userId, TmaLinkAccountRequest req) {
+        User placeholderUser = userRepository.findById(userId)
+                .orElseThrow(() -> ApiException.notFound("Foydalanuvchi topilmadi"));
+
+        String phone = normalizePhone(req.phone());
+        if (phone == null) {
+            throw ApiException.badRequest("Telefon raqam formati noto'g'ri");
+        }
+
+        User existingUser = userRepository.findByPhone(phone)
+                .orElseThrow(() -> ApiException.badRequest("Ushbu telefon raqamli foydalanuvchi topilmadi"));
+
+        if (!passwordEncoder.matches(req.password(), existingUser.getPasswordHash())) {
+            throw ApiException.badRequest("Parol noto'g'ri");
+        }
+
+        Long chatId = placeholderUser.getTelegramChatId();
+        if (chatId != null) {
+            if (!placeholderUser.getId().equals(existingUser.getId())) {
+                placeholderUser.setTelegramChatId(null);
+                userRepository.saveAndFlush(placeholderUser);
+            }
+            existingUser.setTelegramChatId(chatId);
+        }
+        existingUser.setVerified(true);
+        existingUser.setRegistered(true);
+        userRepository.save(existingUser);
+
+        String newToken = jwtService.generateAccessToken(existingUser.getId(), existingUser.getPhone(), existingUser.getRole());
+        return new AuthResponse(newToken, null, existingUser.getId(), existingUser.getRole());
+    }
+
+    /**
+     * Complete onboarding / registration for a new TMA user with Phone, OTP code and Password.
+     * Sets their real phone, encrypted password, role, name, region, profession, and marks as registered.
      */
     @Transactional
     public AuthResponse register(Long userId, TmaRegisterRequest req) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> ApiException.notFound("Foydalanuvchi topilmadi"));
 
+        String phone = normalizePhone(req.phone());
+        if (phone == null) {
+            throw ApiException.badRequest("Telefon raqam +998XXXXXXXXX formatida bo'lishi kerak");
+        }
+
+        if (req.password() == null || req.password().trim().length() < 6) {
+            throw ApiException.badRequest("Parol kamida 6 ta belgidan iborat bo'lishi kerak");
+        }
+
+        if (req.code() == null || req.code().trim().isBlank()) {
+            throw ApiException.badRequest("Tasdiqlash kodi kiritilishi shart");
+        }
+
+        // Verify OTP code
+        OtpCode otp = otpCodeRepository.findTopByPhoneAndPurposeAndUsedFalseOrderByCreatedAtDesc(phone, OtpPurpose.REGISTER)
+                .orElseThrow(() -> ApiException.badRequest("Tasdiqlash kodi topilmadi, qaytadan kod so'rang"));
+        if (otp.getExpiresAt().isBefore(Instant.now())) {
+            throw ApiException.badRequest("Tasdiqlash kodi muddati tugagan, qaytadan kod so'rang");
+        }
+        if (!otp.getCode().equals(req.code().trim())) {
+            throw ApiException.badRequest("Tasdiqlash kodi noto'g'ri");
+        }
+        otp.setUsed(true);
+        otpCodeRepository.save(otp);
+
+        // Remove any other incomplete account with this phone
+        userRepository.findByPhone(phone).ifPresent(other -> {
+            if (!other.getId().equals(user.getId())) {
+                userRepository.deleteUserById(other.getId());
+            }
+        });
+
+        user.setPhone(phone);
+        user.setPasswordHash(passwordEncoder.encode(req.password().trim()));
+        user.setVerified(true);
+        user.setRegistered(true);
+
         // Determine target role
         Role target = req.role() != null ? req.role() : Role.EMPLOYER;
+        user.setRole(target);
 
         if (target == Role.WORKER) {
             WorkerProfile wp = workerProfileRepository.findByUserId(userId).orElseGet(() -> {
@@ -508,7 +638,6 @@ public class TmaService {
                         .stream().findFirst().ifPresent(p -> wp.setProfessions(new HashSet<>(Set.of(p))));
             }
             workerProfileRepository.save(wp);
-            user.setRole(Role.WORKER);
         } else {
             EmployerProfile ep = employerProfileRepository.findByUserId(userId).orElseGet(() -> {
                 EmployerProfile fresh = new EmployerProfile();
@@ -532,12 +661,9 @@ public class TmaService {
                         .stream().findFirst().ifPresent(ep::setDistrict);
             }
             employerProfileRepository.save(ep);
-            user.setRole(Role.EMPLOYER);
         }
 
-        // Mark as registered
-        user.setRegistered(true);
-        user.setVerified(true);
+        walletService.createForUser(user);
         userRepository.save(user);
 
         String newToken = jwtService.generateAccessToken(user.getId(), user.getPhone(), user.getRole());
