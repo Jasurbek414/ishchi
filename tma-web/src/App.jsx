@@ -22,7 +22,13 @@ import {
   User,
   ArrowRight,
   ShieldCheck,
-  RefreshCw
+  RefreshCw,
+  Award,
+  ToggleLeft,
+  ToggleRight,
+  Edit3,
+  Lock,
+  Check
 } from 'lucide-react';
 
 const API_BASE = '/api';
@@ -32,8 +38,20 @@ export default function App() {
   const tg = typeof window !== 'undefined' ? window.Telegram?.WebApp : null;
   const tgUser = tg?.initDataUnsafe?.user;
 
-  // Tabs: 'workers' | 'jobs' | 'post' | 'map' | 'info'
+  // Tabs: 'workers' | 'jobs' | 'post' | 'profile' | 'info'
   const [activeTab, setActiveTab] = useState('workers');
+
+  // Auth & Profile
+  const [authToken, setAuthToken] = useState(() => {
+    try {
+      return localStorage.getItem('tma_token') || '';
+    } catch (_) {
+      return '';
+    }
+  });
+  const [userProfile, setUserProfile] = useState(null);
+  const [isSwitchingRole, setIsSwitchingRole] = useState(false);
+  const [showWorkerModal, setShowWorkerModal] = useState(false);
 
   // Bootstrap data
   const [bootstrap, setBootstrap] = useState({
@@ -77,6 +95,18 @@ export default function App() {
   const [isPosting, setIsPosting] = useState(false);
   const [postSuccess, setPostSuccess] = useState(false);
 
+  // Worker Register / Edit Form State
+  const [workerFormData, setWorkerFormData] = useState({
+    firstName: tgUser?.first_name || '',
+    lastName: tgUser?.last_name || '',
+    professionId: '',
+    regionId: '',
+    districtId: '',
+    experienceYears: 2,
+    about: '',
+    available: true
+  });
+
   // Haptic feedback helper
   const triggerHaptic = (type = 'light') => {
     try {
@@ -100,6 +130,28 @@ export default function App() {
     }
   }, [tg]);
 
+  // Auth using Telegram initData
+  useEffect(() => {
+    if (tg?.initData) {
+      fetch(`${API_BASE}/tma/auth`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ initData: tg.initData })
+      })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data?.accessToken) {
+            setAuthToken(data.accessToken);
+            try {
+              localStorage.setItem('tma_token', data.accessToken);
+            } catch (_) {}
+            fetchProfile(data.accessToken);
+          }
+        })
+        .catch((err) => console.warn('TMA auth error', err));
+    }
+  }, [tg?.initData]);
+
   // Load Bootstrap
   useEffect(() => {
     fetch(`${API_BASE}/tma/bootstrap`)
@@ -108,7 +160,6 @@ export default function App() {
         if (data) {
           setBootstrap(data);
           if (data.regions?.length > 0 && !selectedRegionId) {
-            // Default to Tashkent or first region
             const defaultReg = data.regions.find((r) => r.name.toLowerCase().includes('toshkent')) || data.regions[0];
             setSelectedRegionId(String(defaultReg.id));
           }
@@ -116,6 +167,37 @@ export default function App() {
       })
       .catch((err) => console.error('Bootstrap error', err));
   }, []);
+
+  // Fetch Profile
+  const fetchProfile = (token = authToken) => {
+    if (!token) return;
+    fetch(`${API_BASE}/tma/profile`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data) {
+          setUserProfile(data);
+          setWorkerFormData({
+            firstName: data.firstName || tgUser?.first_name || '',
+            lastName: data.lastName || tgUser?.last_name || '',
+            regionId: data.regionId ? String(data.regionId) : '',
+            districtId: data.districtId ? String(data.districtId) : '',
+            professionId: data.professionIds?.[0] ? String(data.professionIds[0]) : '',
+            experienceYears: data.experienceYears || 2,
+            about: data.about || '',
+            available: data.available !== false
+          });
+        }
+      })
+      .catch((err) => console.warn('Fetch profile error', err));
+  };
+
+  useEffect(() => {
+    if (authToken && !userProfile) {
+      fetchProfile(authToken);
+    }
+  }, [authToken]);
 
   // Fetch Workers
   const fetchWorkers = () => {
@@ -165,6 +247,11 @@ export default function App() {
     return bootstrap.regions.find((r) => String(r.id) === String(selectedRegionId));
   }, [bootstrap.regions, selectedRegionId]);
 
+  // Districts for worker form
+  const workerFormRegion = useMemo(() => {
+    return bootstrap.regions.find((r) => String(r.id) === String(workerFormData.regionId));
+  }, [bootstrap.regions, workerFormData.regionId]);
+
   // Handle Post Job Submit
   const handlePostJob = async (e) => {
     e.preventDefault();
@@ -176,9 +263,12 @@ export default function App() {
     triggerHaptic('medium');
 
     try {
+      const headers = { 'Content-Type': 'application/json' };
+      if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+
       const res = await fetch(`${API_BASE}/tma/jobs`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           ...postForm,
           payment: postForm.payment ? Number(postForm.payment) : 0,
@@ -217,37 +307,179 @@ export default function App() {
     }
   };
 
+  // Switch to Employer
+  const handleSwitchToEmployer = async () => {
+    if (!authToken) {
+      alert("Telegram orqali tizimga kirilmoqda, biroz kuting...");
+      return;
+    }
+    setIsSwitchingRole(true);
+    triggerHaptic('medium');
+    try {
+      const res = await fetch(`${API_BASE}/tma/switch-role`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authToken}`
+        },
+        body: JSON.stringify({
+          targetRole: 'EMPLOYER',
+          firstName: userProfile?.firstName || tgUser?.first_name || 'Buyurtmachi'
+        })
+      });
+      if (res.ok) {
+        const authData = await res.json();
+        if (authData?.accessToken) {
+          setAuthToken(authData.accessToken);
+          try {
+            localStorage.setItem('tma_token', authData.accessToken);
+          } catch (_) {}
+          fetchProfile(authData.accessToken);
+        }
+        triggerHaptic('heavy');
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsSwitchingRole(false);
+    }
+  };
+
+  // Switch to Worker (Save Worker Profile)
+  const handleSaveWorkerProfile = async (e) => {
+    e?.preventDefault();
+    if (!authToken) {
+      alert("Telegram orqali tizimga kirilmoqda, biroz kuting...");
+      return;
+    }
+    if (!workerFormData.professionId) {
+      alert("Iltimos, kasbingizni tanlang!");
+      return;
+    }
+    setIsSwitchingRole(true);
+    triggerHaptic('medium');
+    try {
+      const res = await fetch(`${API_BASE}/tma/switch-role`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authToken}`
+        },
+        body: JSON.stringify({
+          targetRole: 'WORKER',
+          firstName: workerFormData.firstName || tgUser?.first_name || 'Usta',
+          lastName: workerFormData.lastName || tgUser?.last_name || '',
+          professionIds: [Number(workerFormData.professionId)],
+          regionId: workerFormData.regionId ? Number(workerFormData.regionId) : null,
+          districtId: workerFormData.districtId ? Number(workerFormData.districtId) : null,
+          experienceYears: Number(workerFormData.experienceYears) || 2,
+          about: workerFormData.about || '',
+          available: workerFormData.available
+        })
+      });
+
+      if (res.ok) {
+        const authData = await res.json();
+        if (authData?.accessToken) {
+          setAuthToken(authData.accessToken);
+          try {
+            localStorage.setItem('tma_token', authData.accessToken);
+          } catch (_) {}
+          fetchProfile(authData.accessToken);
+        }
+        setShowWorkerModal(false);
+        triggerHaptic('heavy');
+        fetchWorkers();
+      } else {
+        alert("Saqlashda xatolik yuz berdi");
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Aloqa xatosi');
+    } finally {
+      setIsSwitchingRole(false);
+    }
+  };
+
+  // Toggle Availability
+  const handleToggleAvailability = async () => {
+    if (!authToken) return;
+    triggerHaptic('light');
+    try {
+      const res = await fetch(`${API_BASE}/tma/toggle-availability`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authToken}`
+        }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setUserProfile((prev) => (prev ? { ...prev, available: data.available } : prev));
+        triggerHaptic('heavy');
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col pb-24 text-slate-900">
       {/* Top Header */}
       <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-4 py-3">
         <div className="flex items-center justify-between gap-3">
           {/* User profile / greeting */}
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center text-white font-bold text-base shadow-sm ring-2 ring-emerald-100 flex-shrink-0">
+          <div
+            onClick={() => {
+              triggerHaptic();
+              setActiveTab('profile');
+            }}
+            className="flex items-center gap-2.5 min-w-0 cursor-pointer active:scale-95 transition-transform"
+          >
+            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white font-bold text-base shadow-sm ring-2 ring-emerald-100 flex-shrink-0">
               {tgUser?.first_name ? tgUser.first_name[0].toUpperCase() : 'I'}
             </div>
             <div className="min-w-0">
-              <div className="text-xs text-slate-500 font-medium">Xush kelibsiz</div>
+              <div className="text-[11px] text-slate-500 font-medium flex items-center gap-1">
+                <span>{userProfile?.role === 'WORKER' ? '🛠 Usta' : '👔 Buyurtmachi'}</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              </div>
               <div className="text-sm font-bold text-slate-900 truncate">
-                {tgUser?.first_name || 'Ishchi Foydalanuvchisi'}
+                {tgUser?.first_name || 'Ishchi'}
               </div>
             </div>
           </div>
 
-          {/* Region selector pill */}
-          <button
-            onClick={() => {
-              triggerHaptic();
-              setIsRegionModalOpen(true);
-            }}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 text-xs font-semibold rounded-full border border-slate-200/80 transition-all flex-shrink-0"
-          >
-            <MapPin className="w-3.5 h-3.5 text-emerald-600" />
-            <span className="truncate max-w-[110px]">
-              {currentRegion ? currentRegion.name : 'Barcha hududlar'}
-            </span>
-          </button>
+          <div className="flex items-center gap-1.5">
+            {/* Quick role switch pill */}
+            <button
+              onClick={() => {
+                triggerHaptic();
+                setActiveTab('profile');
+              }}
+              className={`px-2.5 py-1 text-[11px] font-bold rounded-full border transition-all flex items-center gap-1 ${
+                userProfile?.role === 'WORKER'
+                  ? 'bg-amber-50 text-amber-800 border-amber-200'
+                  : 'bg-emerald-50 text-emerald-800 border-emerald-200'
+              }`}
+            >
+              {userProfile?.role === 'WORKER' ? '🛠 Usta' : '👔 Ish beruvchi'}
+            </button>
+
+            {/* Region selector pill */}
+            <button
+              onClick={() => {
+                triggerHaptic();
+                setIsRegionModalOpen(true);
+              }}
+              className="flex items-center gap-1 px-2.5 py-1 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 text-xs font-semibold rounded-full border border-slate-200/80 transition-all flex-shrink-0"
+            >
+              <MapPin className="w-3.5 h-3.5 text-emerald-600" />
+              <span className="truncate max-w-[85px]">
+                {currentRegion ? currentRegion.name : 'Viloyat'}
+              </span>
+            </button>
+          </div>
         </div>
 
         {/* Search bar (visible in Workers and Jobs tabs) */}
@@ -298,7 +530,9 @@ export default function App() {
                   key={prof.id}
                   onClick={() => {
                     triggerHaptic();
-                    setSelectedProfessionId(selectedProfessionId === String(prof.id) ? '' : String(prof.id));
+                    setSelectedProfessionId(
+                      String(prof.id) === selectedProfessionId ? '' : String(prof.id)
+                    );
                   }}
                   className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
                     selectedProfessionId === String(prof.id)
@@ -311,133 +545,130 @@ export default function App() {
               ))}
             </div>
 
-            {/* Workers Count & Quick Refresh */}
-            <div className="flex items-center justify-between mb-3 text-xs text-slate-500 px-1 font-medium">
-              <span>Topilgan mutaxassislar: {workers.length} nafar</span>
+            {/* Sub-header info */}
+            <div className="flex items-center justify-between text-xs text-slate-500 mb-3 px-1">
+              <span>Topilgan mutaxassislar: <strong className="text-slate-800">{workers.length}</strong></span>
               <button
-                onClick={fetchWorkers}
-                className="flex items-center gap-1 text-emerald-600 font-semibold hover:underline"
+                onClick={() => {
+                  setSelectedProfessionId('');
+                  setSelectedDistrictId('');
+                  setSearchQuery('');
+                  fetchWorkers();
+                }}
+                className="text-emerald-600 font-semibold flex items-center gap-1 active:scale-95"
               >
-                <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} /> Yangilash
+                <RefreshCw className="w-3 h-3" /> Yangilash
               </button>
             </div>
 
             {/* Workers List */}
-            {loading && workers.length === 0 ? (
-              <div className="py-16 text-center text-slate-400 text-sm">
-                <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-2 text-emerald-600" />
-                Mutaxassislar yuklanmoqda...
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-16 gap-3">
+                <div className="w-8 h-8 border-3 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-xs text-slate-400">Ustalar yuklanmoqda...</span>
               </div>
             ) : workers.length === 0 ? (
-              <div className="bg-white rounded-2xl p-8 text-center border border-slate-200/80 shadow-sm my-6">
-                <Users className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                <h4 className="text-base font-bold text-slate-800">Mutaxassislar topilmadi</h4>
-                <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto">
-                  Tanlangan hudud yoki kasb bo'yicha hozircha ishchilar yo'q. Filtrni o'zgartirib ko'ring.
+              <div className="text-center py-16 bg-white rounded-2xl border border-dashed border-slate-300 p-6">
+                <Users className="w-12 h-12 text-slate-300 mx-auto mb-2" />
+                <h3 className="font-bold text-slate-700 text-sm">Hozircha ustalar topilmadi</h3>
+                <p className="text-xs text-slate-400 mt-1 max-w-xs mx-auto">
+                  Tanlangan hudud yoki kasb bo'yicha usta yo'q. Qidiruv parametrlarini o'zgartirib ko'ring yoki birinchi bo'lib usta anketasini qo'shing.
                 </p>
                 <button
                   onClick={() => {
-                    setSelectedProfessionId('');
-                    setSelectedDistrictId('');
-                    setSearchQuery('');
+                    triggerHaptic();
+                    setActiveTab('profile');
+                    setShowWorkerModal(true);
                   }}
-                  className="mt-4 px-4 py-2 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-xl hover:bg-emerald-100 transition-colors"
+                  className="mt-4 px-4 py-2 bg-emerald-600 text-white text-xs font-bold rounded-xl shadow-sm hover:bg-emerald-700 transition-colors inline-flex items-center gap-1.5"
                 >
-                  Filtrlarni tozalash
+                  <PlusCircle className="w-4 h-4" /> Usta sifatida ro'yxatdan o'tish
                 </button>
               </div>
             ) : (
-              <div className="space-y-3">
-                {workers.map((w) => (
+              <div className="grid grid-cols-1 gap-3">
+                {workers.map((worker) => (
                   <div
-                    key={w.id}
+                    key={worker.id}
                     onClick={() => {
                       triggerHaptic();
-                      setDetailWorker(w);
+                      setDetailWorker(worker);
                     }}
-                    className="bg-white rounded-2xl p-3.5 border border-slate-200/80 shadow-sm active:scale-[0.99] transition-all hover:border-emerald-200 cursor-pointer"
+                    className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm hover:border-emerald-300 active:scale-[0.99] transition-all cursor-pointer relative"
                   >
                     <div className="flex items-start gap-3">
                       {/* Avatar */}
-                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center text-white font-extrabold text-lg shadow-sm flex-shrink-0">
-                        {w.avatarUrl ? (
-                          <img src={w.avatarUrl} alt={w.fullName} className="w-full h-full rounded-2xl object-cover" />
+                      <div className="w-12 h-12 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600 font-bold text-base flex-shrink-0 relative overflow-hidden">
+                        {worker.avatarUrl ? (
+                          <img src={worker.avatarUrl} alt={worker.fullName} className="w-full h-full object-cover" />
                         ) : (
-                          w.fullName?.[0]?.toUpperCase() || 'U'
+                          <span>{worker.fullName ? worker.fullName[0].toUpperCase() : 'U'}</span>
+                        )}
+                        {worker.available && (
+                          <span className="absolute bottom-0.5 right-0.5 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></span>
                         )}
                       </div>
 
                       {/* Info */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-1">
-                          <h3 className="font-bold text-slate-900 text-sm truncate flex items-center gap-1">
-                            {w.fullName}
-                            {w.verified && (
-                              <CheckCircle2 className="w-3.5 h-3.5 text-blue-500 fill-blue-50 flex-shrink-0" />
-                            )}
-                          </h3>
-                          {w.ratingAverage && (
-                            <span className="flex items-center gap-0.5 text-xs font-bold text-amber-500 bg-amber-50 px-1.5 py-0.5 rounded-md">
+                          <h3 className="font-bold text-slate-900 text-sm truncate">{worker.fullName}</h3>
+                          {worker.ratingAverage ? (
+                            <div className="flex items-center gap-1 bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full text-xs font-bold flex-shrink-0">
                               <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                              {w.ratingAverage.toFixed(1)}
-                            </span>
-                          )}
+                              <span>{worker.ratingAverage.toFixed(1)}</span>
+                            </div>
+                          ) : null}
                         </div>
 
-                        {/* Professions tags */}
+                        {/* Professions chips */}
                         <div className="flex flex-wrap gap-1 mt-1">
-                          {w.professions?.slice(0, 2).map((p, idx) => (
+                          {worker.professions?.slice(0, 2).map((prof, idx) => (
                             <span
                               key={idx}
-                              className="text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md"
+                              className="px-2 py-0.5 bg-emerald-50 text-emerald-800 text-[11px] font-semibold rounded-md"
                             >
-                              {p}
+                              {prof}
                             </span>
                           ))}
-                          {w.professions?.length > 2 && (
+                          {worker.professions?.length > 2 && (
                             <span className="text-[10px] text-slate-400 self-center">
-                              +{w.professions.length - 2}
+                              +{worker.professions.length - 2}
                             </span>
                           )}
                         </div>
 
-                        {/* Location and experience */}
-                        <div className="flex items-center gap-3 mt-2 text-xs text-slate-500">
-                          <span className="flex items-center gap-1 truncate">
-                            <MapPin className="w-3 h-3 text-slate-400" />
-                            {w.regionName} {w.districtName ? `, ${w.districtName}` : ''}
+                        {/* Region & District */}
+                        <div className="flex items-center gap-1 text-xs text-slate-500 mt-2">
+                          <MapPin className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+                          <span className="truncate">
+                            {worker.regionName} {worker.districtName ? `• ${worker.districtName}` : ''}
                           </span>
-                          {w.experienceYears && (
-                            <span>{w.experienceYears} yil tajriba</span>
-                          )}
                         </div>
                       </div>
                     </div>
 
-                    {/* Action buttons */}
-                    <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between gap-2">
-                      <div className="text-xs text-slate-500">
-                        {w.available ? (
-                          <span className="inline-flex items-center gap-1 text-emerald-600 font-semibold">
-                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Bugun bo'sh
-                          </span>
-                        ) : (
-                          <span className="text-slate-400">Band</span>
-                        )}
-                      </div>
+                    {/* Action Footer */}
+                    <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                      <span className={`font-semibold ${worker.available ? 'text-emerald-600' : 'text-slate-400'}`}>
+                        {worker.available ? '● Bugun bo\'sh' : '○ Hozir band'}
+                      </span>
                       <div className="flex items-center gap-2">
-                        {w.phone && (
+                        {worker.phone && (
                           <a
-                            href={`tel:${w.phone}`}
+                            href={`tel:${worker.phone}`}
                             onClick={(e) => {
                               e.stopPropagation();
                               triggerHaptic('medium');
                             }}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-sm active:bg-emerald-700 transition-colors"
+                            className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg font-bold text-xs flex items-center gap-1 shadow-sm active:scale-95"
                           >
-                            <Phone className="w-3 h-3" /> Qo'ng'iroq
+                            <Phone className="w-3 h-3" /> Bog'lanish
                           </a>
                         )}
+                        <span className="text-slate-400 flex items-center">
+                          <ChevronRight className="w-4 h-4" />
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -450,28 +681,30 @@ export default function App() {
         {/* ===================== TAB 2: JOBS (BUYURTMALAR) ===================== */}
         {activeTab === 'jobs' && (
           <div>
-            {/* Header info */}
-            <div className="flex items-center justify-between mb-3 text-xs text-slate-500 px-1 font-medium">
-              <span>Faol e'lonlar: {jobs.length} ta</span>
-              <button
-                onClick={fetchJobs}
-                className="flex items-center gap-1 text-emerald-600 font-semibold hover:underline"
-              >
-                <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} /> Yangilash
-              </button>
+            {/* Top Stats Banner */}
+            <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-4 rounded-2xl mb-4 shadow-sm relative overflow-hidden">
+              <div className="relative z-10">
+                <span className="text-[11px] uppercase tracking-wider font-semibold opacity-90">Tezkor buyurtmalar</span>
+                <h3 className="font-extrabold text-lg mt-0.5">Yangi ishlar va buyurtmalar</h3>
+                <p className="text-xs text-emerald-100 mt-1 max-w-xs">
+                  Ish beruvchilar to'g'ridan-to'g'ri o'z e'lonlarini qoldirishgan. Darhol bog'laning!
+                </p>
+              </div>
+              <Briefcase className="w-24 h-24 text-white/10 absolute -right-4 -bottom-4" />
             </div>
 
-            {loading && jobs.length === 0 ? (
-              <div className="py-16 text-center text-slate-400 text-sm">
-                <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-2 text-emerald-600" />
-                Buyurtmalar yuklanmoqda...
+            {/* Jobs List */}
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-16 gap-3">
+                <div className="w-8 h-8 border-3 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-xs text-slate-400">Buyurtmalar yuklanmoqda...</span>
               </div>
             ) : jobs.length === 0 ? (
-              <div className="bg-white rounded-2xl p-8 text-center border border-slate-200/80 shadow-sm my-6">
-                <Briefcase className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                <h4 className="text-base font-bold text-slate-800">Buyurtmalar topilmadi</h4>
-                <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto">
-                  Hozircha ushbu hududda yangi ishlar yo'q. Birinchi bo'lib o'zingiz buyurtma qo'shishingiz mumkin!
+              <div className="text-center py-16 bg-white rounded-2xl border border-dashed border-slate-300 p-6">
+                <Briefcase className="w-12 h-12 text-slate-300 mx-auto mb-2" />
+                <h3 className="font-bold text-slate-700 text-sm">Hozircha buyurtmalar yo'q</h3>
+                <p className="text-xs text-slate-400 mt-1 max-w-xs mx-auto">
+                  Tanlangan parametrlar bo'yicha buyurtma topilmadi. O'zingiz birinchi bo'lib e'lon bering.
                 </p>
                 <button
                   onClick={() => {
@@ -480,11 +713,11 @@ export default function App() {
                   }}
                   className="mt-4 px-4 py-2 bg-emerald-600 text-white text-xs font-bold rounded-xl shadow-sm hover:bg-emerald-700 transition-colors"
                 >
-                  + E'lon joylashtirish
+                  Yangi e'lon berish
                 </button>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="grid grid-cols-1 gap-3">
                 {jobs.map((job) => (
                   <div
                     key={job.id}
@@ -492,50 +725,38 @@ export default function App() {
                       triggerHaptic();
                       setDetailJob(job);
                     }}
-                    className="bg-white rounded-2xl p-3.5 border border-slate-200/80 shadow-sm active:scale-[0.99] transition-all hover:border-emerald-200 cursor-pointer"
+                    className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm hover:border-emerald-300 active:scale-[0.99] transition-all cursor-pointer"
                   >
                     <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5 mb-1">
-                          {job.urgent && (
-                            <span className="flex items-center gap-0.5 px-2 py-0.5 bg-rose-50 text-rose-600 font-bold text-[10px] rounded-md">
-                              <Flame className="w-3 h-3 text-rose-500" /> Tezkor
-                            </span>
-                          )}
-                          <span className="px-2 py-0.5 bg-slate-100 text-slate-700 font-semibold text-[11px] rounded-md truncate max-w-[140px]">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-1.5 mb-1.5">
+                          <span className="px-2 py-0.5 bg-emerald-50 text-emerald-800 text-[11px] font-bold rounded-md">
                             {job.professionName || 'Turli ishlar'}
                           </span>
+                          {job.urgent && (
+                            <span className="px-2 py-0.5 bg-red-50 text-red-600 text-[10px] font-bold rounded-md flex items-center gap-0.5">
+                              <Flame className="w-3 h-3 fill-red-500 text-red-500" /> Shoshilinch
+                            </span>
+                          )}
                         </div>
                         <h3 className="font-bold text-slate-900 text-sm line-clamp-1">{job.title}</h3>
-                        <p className="text-xs text-slate-500 line-clamp-2 mt-1">{job.description}</p>
-                      </div>
-
-                      {/* Payment */}
-                      <div className="text-right flex-shrink-0">
-                        <div className="text-xs font-extrabold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-lg">
-                          {job.payment > 0 ? `${Number(job.payment).toLocaleString()} so'm` : 'Kelishilgan'}
-                        </div>
+                        <p className="text-xs text-slate-500 mt-1 line-clamp-2">{job.description}</p>
                       </div>
                     </div>
 
-                    {/* Footer */}
-                    <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-                      <span className="flex items-center gap-1 truncate max-w-[200px]">
-                        <MapPin className="w-3 h-3 text-slate-400" />
-                        {job.regionName} {job.districtName ? `, ${job.districtName}` : ''}
-                      </span>
-                      {job.contactPhone && (
-                        <a
-                          href={`tel:${job.contactPhone}`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            triggerHaptic('medium');
-                          }}
-                          className="flex items-center gap-1 text-emerald-600 font-bold hover:underline"
-                        >
-                          <Phone className="w-3 h-3" /> Bog'lanish
-                        </a>
-                      )}
+                    <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-1 text-slate-500">
+                        <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                        <span className="truncate max-w-[130px]">
+                          {job.regionName} {job.districtName ? `• ${job.districtName}` : ''}
+                        </span>
+                      </div>
+
+                      <div className="text-right">
+                        <span className="font-extrabold text-emerald-600 text-sm">
+                          {job.payment > 0 ? `${Number(job.payment).toLocaleString()} so'm` : 'Kelishilgan'}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -546,293 +767,385 @@ export default function App() {
 
         {/* ===================== TAB 3: POST JOB (E'LON BERISH) ===================== */}
         {activeTab === 'post' && (
-          <div className="max-w-lg mx-auto bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm">
-            <div className="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
-              <PlusCircle className="w-5 h-5 text-emerald-600" />
-              <div>
-                <h2 className="font-bold text-slate-900 text-base">Buyurtma / Ish joylashtirish</h2>
-                <p className="text-xs text-slate-500">Usta yoki ishchi topish uchun ma'lumotlarni kiriting</p>
-              </div>
-            </div>
-
-            {postSuccess ? (
-              <div className="py-12 text-center">
-                <CheckCircle2 className="w-16 h-16 text-emerald-500 mx-auto mb-3 animate-bounce" />
-                <h3 className="text-lg font-bold text-slate-900">E'loningiz qabul qilindi!</h3>
-                <p className="text-xs text-slate-500 mt-1">
-                  E'lon platformada chop etildi va tez orada ustalar siz bilan bog'lanishadi.
-                </p>
-              </div>
-            ) : (
-              <form onSubmit={handlePostJob} className="space-y-3.5">
-                {/* Profession */}
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Kerakli kasb / Mutaxassislik <span className="text-rose-500">*</span>
-                  </label>
-                  <select
-                    value={postForm.professionId}
-                    onChange={(e) => setPostForm({ ...postForm, professionId: e.target.value })}
-                    required
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:border-emerald-500"
-                  >
-                    <option value="">Kasbni tanlang...</option>
-                    {bootstrap.professions.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.name}
-                      </option>
-                    ))}
-                  </select>
+          <div className="max-w-md mx-auto">
+            <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+                  <PlusCircle className="w-5 h-5" />
                 </div>
+                <div>
+                  <h3 className="font-extrabold text-slate-900 text-base">Yangi ish e'loni</h3>
+                  <p className="text-xs text-slate-500">O'zingizga kerakli usta yoki ishchini tezda toping</p>
+                </div>
+              </div>
 
-                {/* Region & District */}
-                <div className="grid grid-cols-2 gap-2">
+              {postSuccess ? (
+                <div className="py-12 text-center">
+                  <div className="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <CheckCircle2 className="w-8 h-8" />
+                  </div>
+                  <h4 className="font-extrabold text-slate-900 text-base">E'lon muvaffaqiyatli qabul qilindi!</h4>
+                  <p className="text-xs text-slate-500 mt-1">
+                    E'loningiz buyurtmalar ro'yxatida va Telegram kanalida e'lon qilinadi.
+                  </p>
+                </div>
+              ) : (
+                <form onSubmit={handlePostJob} className="space-y-3.5">
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Viloyat <span className="text-rose-500">*</span>
+                      E'lon sarlavhasi <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Masalan: Uyga santexnik usta kerak"
+                      value={postForm.title}
+                      onChange={(e) => setPostForm({ ...postForm, title: e.target.value })}
+                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 focus:border-emerald-500 focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Kasb / Mutaxassislik <span className="text-red-500">*</span>
                     </label>
                     <select
-                      value={postForm.regionId}
-                      onChange={(e) => {
-                        setPostForm({ ...postForm, regionId: e.target.value, districtId: '' });
-                      }}
                       required
-                      className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:border-emerald-500"
+                      value={postForm.professionId}
+                      onChange={(e) => setPostForm({ ...postForm, professionId: e.target.value })}
+                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 focus:border-emerald-500 focus:outline-none bg-white"
                     >
-                      <option value="">Viloyat...</option>
-                      {bootstrap.regions.map((r) => (
-                        <option key={r.id} value={r.id}>
-                          {r.name}
-                        </option>
+                      <option value="">Kasbni tanlang</option>
+                      {bootstrap.professions.map((p) => (
+                        <option key={p.id} value={p.id}>{p.name}</option>
                       ))}
                     </select>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Tuman / Shahar <span className="text-rose-500">*</span>
-                    </label>
-                    <select
-                      value={postForm.districtId}
-                      onChange={(e) => setPostForm({ ...postForm, districtId: e.target.value })}
-                      required
-                      disabled={!postForm.regionId}
-                      className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:border-emerald-500 disabled:opacity-50"
-                    >
-                      <option value="">Tuman...</option>
-                      {bootstrap.regions
-                        .find((r) => String(r.id) === String(postForm.regionId))
-                        ?.districts?.map((d) => (
-                          <option key={d.id} value={d.id}>
-                            {d.name}
-                          </option>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Viloyat <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        required
+                        value={postForm.regionId}
+                        onChange={(e) => setPostForm({ ...postForm, regionId: e.target.value, districtId: '' })}
+                        className="w-full px-3 py-2.5 text-xs rounded-xl border border-slate-200 focus:border-emerald-500 focus:outline-none bg-white"
+                      >
+                        <option value="">Viloyat</option>
+                        {bootstrap.regions.map((r) => (
+                          <option key={r.id} value={r.id}>{r.name}</option>
                         ))}
-                    </select>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Tuman <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        required
+                        disabled={!postForm.regionId}
+                        value={postForm.districtId}
+                        onChange={(e) => setPostForm({ ...postForm, districtId: e.target.value })}
+                        className="w-full px-3 py-2.5 text-xs rounded-xl border border-slate-200 focus:border-emerald-500 focus:outline-none bg-white disabled:opacity-50"
+                      >
+                        <option value="">Tuman</option>
+                        {bootstrap.regions
+                          .find((r) => String(r.id) === String(postForm.regionId))
+                          ?.districts?.map((d) => (
+                            <option key={d.id} value={d.id}>{d.name}</option>
+                          ))}
+                      </select>
+                    </div>
                   </div>
-                </div>
 
-                {/* Title */}
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Buyurtma sarlavhasi <span className="text-rose-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={postForm.title}
-                    onChange={(e) => setPostForm({ ...postForm, title: e.target.value })}
-                    placeholder="Masalan: Kafel yotqizish kerak, 40 kv.m"
-                    required
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-emerald-500"
-                  />
-                </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Taklif qilinadigan summa (so'm)</label>
+                      <input
+                        type="number"
+                        placeholder="Masalan: 200000"
+                        value={postForm.payment}
+                        onChange={(e) => setPostForm({ ...postForm, payment: e.target.value })}
+                        className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 focus:border-emerald-500 focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Aloqa telefoni</label>
+                      <input
+                        type="tel"
+                        placeholder="+998901234567"
+                        value={postForm.contactPhone}
+                        onChange={(e) => setPostForm({ ...postForm, contactPhone: e.target.value })}
+                        className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 focus:border-emerald-500 focus:outline-none"
+                      />
+                    </div>
+                  </div>
 
-                {/* Description */}
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Qo'shimcha tavsif</label>
-                  <textarea
-                    rows={3}
-                    value={postForm.description}
-                    onChange={(e) => setPostForm({ ...postForm, description: e.target.value })}
-                    placeholder="Ish haqida batafsil ma'lumot, manzil mo'ljali..."
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-emerald-500"
-                  />
-                </div>
-
-                {/* Payment & Phone */}
-                <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Taklif narxi (so'm)</label>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Ish tavsifi va talablar</label>
+                    <textarea
+                      rows={3}
+                      placeholder="Ish nimalardan iborat, qachon boshlanadi..."
+                      value={postForm.description}
+                      onChange={(e) => setPostForm({ ...postForm, description: e.target.value })}
+                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 focus:border-emerald-500 focus:outline-none resize-none"
+                    ></textarea>
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-1">
                     <input
-                      type="number"
-                      value={postForm.payment}
-                      onChange={(e) => setPostForm({ ...postForm, payment: e.target.value })}
-                      placeholder="Masalan: 300000"
-                      className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-emerald-500"
+                      type="checkbox"
+                      id="urgentCheckbox"
+                      checked={postForm.urgent}
+                      onChange={(e) => setPostForm({ ...postForm, urgent: e.target.checked })}
+                      className="w-4 h-4 text-emerald-600 rounded accent-emerald-600"
                     />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      Telefon raqamingiz <span className="text-rose-500">*</span>
+                    <label htmlFor="urgentCheckbox" className="text-xs font-bold text-slate-700 cursor-pointer">
+                      🔥 Shoshilinch e'lon (ustalar tezroq e'tibor qaratadi)
                     </label>
-                    <input
-                      type="tel"
-                      value={postForm.contactPhone}
-                      onChange={(e) => setPostForm({ ...postForm, contactPhone: e.target.value })}
-                      placeholder="+998 90 123 45 67"
-                      required
-                      className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-emerald-500"
-                    />
                   </div>
-                </div>
 
-                {/* Urgent toggle */}
-                <label className="flex items-center gap-2 cursor-pointer pt-1">
-                  <input
-                    type="checkbox"
-                    checked={postForm.urgent}
-                    onChange={(e) => setPostForm({ ...postForm, urgent: e.target.checked })}
-                    className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-slate-300"
-                  />
-                  <span className="text-xs font-bold text-rose-600 flex items-center gap-1">
-                    <Flame className="w-3.5 h-3.5" /> Shoshilinch buyurtma (tezkor ijrochi kerak)
-                  </span>
-                </label>
-
-                {/* Submit button */}
-                <button
-                  type="submit"
-                  disabled={isPosting}
-                  className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] text-white font-bold text-sm rounded-xl shadow-md transition-all flex items-center justify-center gap-2 mt-4 disabled:opacity-50"
-                >
-                  {isPosting ? (
-                    <>
-                      <RefreshCw className="w-4 h-4 animate-spin" /> Joylanmoqda...
-                    </>
-                  ) : (
-                    <>
-                      <Send className="w-4 h-4" /> E'lonni joylashtirish
-                    </>
-                  )}
-                </button>
-              </form>
-            )}
+                  <button
+                    type="submit"
+                    disabled={isPosting}
+                    className="w-full mt-2 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 active:scale-[0.99] text-white font-extrabold text-xs rounded-xl shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    {isPosting ? 'E\'lon joylanmoqda...' : 'E\'lonni bepul joylash 🚀'}
+                  </button>
+                </form>
+              )}
+            </div>
           </div>
         )}
 
-        {/* ===================== TAB 4: MAP & REGIONS (XARITA) ===================== */}
-        {activeTab === 'map' && (
-          <div>
-            <div className="bg-gradient-to-r from-emerald-600 to-teal-700 rounded-2xl p-4 text-white shadow-md mb-4">
-              <h2 className="text-base font-bold flex items-center gap-2">
-                <MapPin className="w-5 h-5 text-emerald-200" /> O'zbekiston viloyatlari
-              </h2>
-              <p className="text-xs text-emerald-100 mt-1">
-                Kerakli viloyatni tanlang va o'sha yerdagi barcha ishchilar va buyurtmalarni ko'ring.
-              </p>
+        {/* ===================== TAB 4: PROFILE & ROLE SWITCH ===================== */}
+        {activeTab === 'profile' && (
+          <div className="max-w-md mx-auto space-y-4">
+            {/* User Main Card */}
+            <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm">
+              <div className="flex items-center gap-3.5">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center font-extrabold text-xl shadow-md ring-4 ring-emerald-50 flex-shrink-0">
+                  {userProfile?.fullName ? userProfile.fullName[0].toUpperCase() : (tgUser?.first_name ? tgUser.first_name[0].toUpperCase() : 'U')}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <h3 className="font-extrabold text-slate-900 text-base truncate">
+                      {userProfile?.fullName || [tgUser?.first_name, tgUser?.last_name].filter(Boolean).join(' ') || 'Foydalanuvchi'}
+                    </h3>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-0.5 truncate">
+                    {tgUser?.username ? `@${tgUser.username}` : (userProfile?.phone ? userProfile.phone : 'Telegram hisob')}
+                  </p>
+                  <div className="mt-1.5 inline-flex items-center gap-1 px-2.5 py-0.5 bg-blue-50 text-blue-700 text-[10px] font-bold rounded-full border border-blue-200">
+                    <ShieldCheck className="w-3 h-3 text-blue-600" /> Telegram orqali tasdiqlangan
+                  </div>
+                </div>
+              </div>
+
+              {/* Role Switch Section */}
+              <div className="mt-5 pt-4 border-t border-slate-100">
+                <div className="text-xs font-bold text-slate-700 mb-2 flex items-center justify-between">
+                  <span>Joriy rolingiz:</span>
+                  <span className={`px-2 py-0.5 rounded-md text-[11px] font-bold ${
+                    userProfile?.role === 'WORKER' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
+                  }`}>
+                    {userProfile?.role === 'WORKER' ? '🛠 Usta / Ishchi' : '👔 Ish beruvchi / Buyurtmachi'}
+                  </span>
+                </div>
+
+                {/* Role Switcher Tabs */}
+                <div className="grid grid-cols-2 gap-2 bg-slate-100 p-1 rounded-2xl">
+                  <button
+                    onClick={() => {
+                      if (userProfile?.role === 'WORKER') {
+                        handleSwitchToEmployer();
+                      }
+                    }}
+                    disabled={isSwitchingRole}
+                    className={`py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                      userProfile?.role !== 'WORKER'
+                        ? 'bg-white text-slate-900 shadow-sm'
+                        : 'text-slate-500 hover:text-slate-700'
+                    }`}
+                  >
+                    <span>👔 Ish beruvchi</span>
+                    {userProfile?.role !== 'WORKER' && <Check className="w-3.5 h-3.5 text-emerald-600" />}
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      if (userProfile?.role !== 'WORKER') {
+                        if (userProfile?.hasWorkerProfile) {
+                          handleSaveWorkerProfile();
+                        } else {
+                          setShowWorkerModal(true);
+                        }
+                      }
+                    }}
+                    disabled={isSwitchingRole}
+                    className={`py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                      userProfile?.role === 'WORKER'
+                        ? 'bg-white text-slate-900 shadow-sm'
+                        : 'text-slate-500 hover:text-slate-700'
+                    }`}
+                  >
+                    <span>🛠 Usta / Ishchi</span>
+                    {userProfile?.role === 'WORKER' && <Check className="w-3.5 h-3.5 text-amber-600" />}
+                  </button>
+                </div>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {bootstrap.regions.map((reg) => (
-                <div
-                  key={reg.id}
-                  onClick={() => {
-                    triggerHaptic();
-                    setSelectedRegionId(String(reg.id));
-                    setSelectedDistrictId('');
-                    setActiveTab('workers');
-                  }}
-                  className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
-                    String(selectedRegionId) === String(reg.id)
-                      ? 'bg-emerald-50/80 border-emerald-500 shadow-sm'
-                      : 'bg-white border-slate-200/80 hover:border-emerald-300'
-                  }`}
-                >
-                  <div className="min-w-0">
-                    <h3 className="font-bold text-slate-900 text-sm truncate">{reg.name}</h3>
+            {/* Worker Status & Controls (when in WORKER role) */}
+            {userProfile?.role === 'WORKER' && (
+              <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-extrabold text-slate-900 text-sm">Buyurtmalarni qabul qilish</h4>
                     <p className="text-xs text-slate-500 mt-0.5">
-                      {reg.districts?.length || 0} ta tuman va shahar
+                      {userProfile.available ? '🟢 Siz "Bugun bo\'shman" ro\'yxatidasiz' : '⚪ Hozir yangi buyurtma qabul qilmaysiz'}
                     </p>
                   </div>
-                  <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
-                    <ChevronRight className="w-4 h-4" />
+                  <button
+                    onClick={handleToggleAvailability}
+                    className={`p-1.5 rounded-full transition-colors ${
+                      userProfile.available ? 'text-emerald-600' : 'text-slate-400'
+                    }`}
+                  >
+                    {userProfile.available ? (
+                      <ToggleRight className="w-9 h-9 fill-emerald-100" />
+                    ) : (
+                      <ToggleLeft className="w-9 h-9" />
+                    )}
+                  </button>
+                </div>
+
+                {/* Worker Details Card */}
+                <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-100 space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-slate-500">Kasb:</span>
+                    <span className="font-bold text-slate-800">
+                      {userProfile.professionNames?.join(', ') || 'Ko\'rsatilmagan'}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-slate-500">Hudud:</span>
+                    <span className="font-bold text-slate-800">
+                      {userProfile.regionName} {userProfile.districtName ? `, ${userProfile.districtName}` : ''}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-slate-500">Tajriba:</span>
+                    <span className="font-bold text-slate-800">
+                      {userProfile.experienceYears || 1} yil
+                    </span>
+                  </div>
+                  {userProfile.about && (
+                    <div className="pt-2 border-t border-slate-200 text-xs">
+                      <span className="text-slate-500 block mb-0.5">Tavsif:</span>
+                      <p className="text-slate-700">{userProfile.about}</p>
+                    </div>
+                  )}
+                </div>
+
+                <button
+                  onClick={() => setShowWorkerModal(true)}
+                  className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-colors"
+                >
+                  <Edit3 className="w-4 h-4 text-slate-600" /> Usta anketasini tahrirlash
+                </button>
+              </div>
+            )}
+
+            {/* Prompt to become a worker if in EMPLOYER role */}
+            {userProfile?.role !== 'WORKER' && (
+              <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-3xl p-5 border border-amber-200">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold flex-shrink-0 shadow-sm">
+                    <Award className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-extrabold text-amber-900 text-sm">Usta sifatida pul toping</h4>
+                    <p className="text-xs text-amber-800 mt-1 leading-relaxed">
+                      O'z kasbingiz va xizmatlaringiz bo'yicha anketani to'ldirib, minglab mijozlardan buyurtmalar qabul qiling!
+                    </p>
+                    <button
+                      onClick={() => setShowWorkerModal(true)}
+                      className="mt-3 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl shadow-sm flex items-center gap-1.5 active:scale-95 transition-transform"
+                    >
+                      <PlusCircle className="w-4 h-4" /> Usta bo'lish anketasi
+                    </button>
                   </div>
                 </div>
-              ))}
+              </div>
+            )}
+
+            {/* Security Info Card */}
+            <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-3">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-emerald-600" />
+                <h4 className="font-extrabold text-slate-900 text-sm">Xavfsizlik va Himoya</h4>
+              </div>
+
+              <div className="space-y-2 text-xs text-slate-600">
+                <div className="flex items-start gap-2 p-2.5 bg-slate-50 rounded-xl">
+                  <Lock className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="text-slate-800">Telegram Kriptografik Himoyasi:</strong>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      Sessiyangiz Telegram bot tokeni bilan HMAC-SHA256 algoritmi orqali tekshirilgan. Soxta profil ochish imkonsiz.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-2 p-2.5 bg-slate-50 rounded-xl">
+                  <CheckCircle2 className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="text-slate-800">Bog'langan Telegram Chat ID:</strong>
+                    <p className="text-[11px] text-slate-500 mt-0.5 font-mono">
+                      ID: {userProfile?.telegramChatId || tgUser?.id || 'Mavjud'}
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}
 
-        {/* ===================== TAB 5: APP INFO & DOWNLOAD ===================== */}
+        {/* ===================== TAB 5: APP INFO ===================== */}
         {activeTab === 'info' && (
-          <div className="space-y-4 max-w-lg mx-auto">
-            {/* Promo Card */}
-            <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-5 text-white shadow-lg relative overflow-hidden">
-              <div className="absolute -right-6 -bottom-6 w-32 h-32 rounded-full bg-emerald-500/20 blur-2xl"></div>
-              <div className="relative z-10">
-                <span className="px-2.5 py-1 bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-[11px] font-bold rounded-full">
-                  Mobil Ilova
-                </span>
-                <h2 className="text-lg font-extrabold mt-2">Ishchi Android Ilovasi</h2>
-                <p className="text-xs text-slate-300 mt-1 leading-relaxed">
-                  To'liq xarita, tezkor bildirishnomalar va barcha imkoniyatlardan foydalanish uchun rasmiy ilovani yuklab oling.
-                </p>
-
-                <div className="mt-4 flex flex-col gap-2">
-                  <a
-                    href={bootstrap.appDownloadUrl}
-                    download="ishchi.apk"
-                    onClick={() => triggerHaptic('medium')}
-                    className="w-full py-2.5 bg-emerald-500 hover:bg-emerald-600 active:scale-[0.99] text-white text-xs font-bold rounded-xl shadow flex items-center justify-center gap-2 transition-all"
-                  >
-                    <Download className="w-4 h-4" /> APK faylni to'g'ridan-to'g'ri yuklab olish
-                  </a>
-                  <a
-                    href={bootstrap.playStoreUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    onClick={() => triggerHaptic('light')}
-                    className="w-full py-2.5 bg-white/10 hover:bg-white/20 active:scale-[0.99] text-white text-xs font-bold rounded-xl border border-white/20 flex items-center justify-center gap-2 transition-all"
-                  >
-                    Google Play Market orqali ochish
-                  </a>
-                </div>
+          <div className="max-w-md mx-auto space-y-4">
+            <div className="bg-gradient-to-br from-emerald-600 via-teal-600 to-emerald-800 text-white p-6 rounded-3xl shadow-lg relative overflow-hidden text-center">
+              <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-inner">
+                <Sparkles className="w-9 h-9 text-emerald-200" />
               </div>
-            </div>
-
-            {/* About platform */}
-            <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm space-y-3">
-              <h3 className="font-bold text-slate-900 text-sm">Platforma haqida</h3>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                "Ishchi" — O'zbekiston bo'ylab ish beruvchi va ishchini bevosita, vositachisiz bog'laydigan bepul platforma.
-                Kunlik ishlar, malakali ustalar, santexnik, elektrik, quruvchilar va barcha xizmatlar.
+              <h2 className="text-xl font-extrabold">Ishchi Platformasi</h2>
+              <p className="text-xs text-emerald-100 mt-1 max-w-xs mx-auto">
+                O'zbekistondagi barcha ishchilar, ustalar va buyurtmachilar uchun qulay va tezkor ekotizim.
               </p>
 
-              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 text-center">
-                <div className="p-2.5 bg-slate-50 rounded-xl">
-                  <div className="text-lg font-black text-emerald-600">{bootstrap.totalWorkers}+</div>
-                  <div className="text-[11px] text-slate-500 font-medium">Ustalar</div>
-                </div>
-                <div className="p-2.5 bg-slate-50 rounded-xl">
-                  <div className="text-lg font-black text-teal-600">{bootstrap.totalJobs}+</div>
-                  <div className="text-[11px] text-slate-500 font-medium">Buyurtmalar</div>
-                </div>
-              </div>
-            </div>
+              <div className="mt-5 flex flex-col gap-2">
+                <a
+                  href={bootstrap.appDownloadUrl}
+                  onClick={() => triggerHaptic('medium')}
+                  className="w-full py-3 bg-white hover:bg-emerald-50 active:scale-[0.99] text-emerald-800 font-extrabold text-xs rounded-xl shadow-md flex items-center justify-center gap-2 transition-all"
+                >
+                  <Download className="w-4 h-4" /> To'liq APK ilovani yuklab olish (v1.0.66)
+                </a>
 
-            {/* Support */}
-            <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex items-center justify-between">
-              <div>
-                <h4 className="text-xs font-bold text-slate-900">Yordam va Aloqa</h4>
-                <p className="text-[11px] text-slate-500">Savollar yoki takliflar bo'yicha bog'laning</p>
+                <a
+                  href={bootstrap.playStoreUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={() => triggerHaptic()}
+                  className="w-full py-3 bg-emerald-950/40 hover:bg-emerald-950/60 active:scale-[0.99] text-white font-bold text-xs rounded-xl border border-white/20 flex items-center justify-center gap-2 transition-all"
+                >
+                  Google Play Store'da ko'rish
+                </a>
               </div>
-              <a
-                href="https://t.me/uzbishchi_support"
-                target="_blank"
-                rel="noreferrer"
-                className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl"
-              >
-                Telegram Support
-              </a>
             </div>
           </div>
         )}
@@ -885,18 +1198,18 @@ export default function App() {
             </span>
           </button>
 
-          {/* Xarita */}
+          {/* Profil va Rol almashtirish */}
           <button
             onClick={() => {
               triggerHaptic();
-              setActiveTab('map');
+              setActiveTab('profile');
             }}
             className={`flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all ${
-              activeTab === 'map' ? 'text-emerald-600 font-bold scale-105' : 'text-slate-400 hover:text-slate-600'
+              activeTab === 'profile' ? 'text-emerald-600 font-bold scale-105' : 'text-slate-400 hover:text-slate-600'
             }`}
           >
-            <MapPin className="w-5 h-5" />
-            <span className="text-[10px]">Viloyatlar</span>
+            <User className="w-5 h-5" />
+            <span className="text-[10px]">Profil</span>
           </button>
 
           {/* Ilova */}
@@ -915,6 +1228,130 @@ export default function App() {
         </div>
       </nav>
 
+      {/* ===================== WORKER REGISTER / EDIT MODAL ===================== */}
+      {showWorkerModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl max-h-[90vh] overflow-y-auto p-5 animate-in slide-in-from-bottom duration-200">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <Award className="w-5 h-5 text-emerald-600" />
+                <h3 className="font-extrabold text-slate-900 text-base">Usta anketasini to'ldirish</h3>
+              </div>
+              <button
+                onClick={() => setShowWorkerModal(false)}
+                className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveWorkerProfile} className="space-y-3.5 mt-4">
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Ism <span className="text-red-500">*</span></label>
+                  <input
+                    type="text"
+                    required
+                    value={workerFormData.firstName}
+                    onChange={(e) => setWorkerFormData({ ...workerFormData, firstName: e.target.value })}
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:border-emerald-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Familiya</label>
+                  <input
+                    type="text"
+                    value={workerFormData.lastName}
+                    onChange={(e) => setWorkerFormData({ ...workerFormData, lastName: e.target.value })}
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:border-emerald-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Asosiy kasbingiz <span className="text-red-500">*</span>
+                </label>
+                <select
+                  required
+                  value={workerFormData.professionId}
+                  onChange={(e) => setWorkerFormData({ ...workerFormData, professionId: e.target.value })}
+                  className="w-full px-3 py-2.5 text-xs rounded-xl border border-slate-200 focus:border-emerald-500 focus:outline-none bg-white"
+                >
+                  <option value="">Kasbni tanlang</option>
+                  {bootstrap.professions.map((p) => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Viloyat</label>
+                  <select
+                    value={workerFormData.regionId}
+                    onChange={(e) => setWorkerFormData({ ...workerFormData, regionId: e.target.value, districtId: '' })}
+                    className="w-full px-3 py-2.5 text-xs rounded-xl border border-slate-200 focus:border-emerald-500 focus:outline-none bg-white"
+                  >
+                    <option value="">Tanlang</option>
+                    {bootstrap.regions.map((r) => (
+                      <option key={r.id} value={r.id}>{r.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Tuman</label>
+                  <select
+                    value={workerFormData.districtId}
+                    disabled={!workerFormData.regionId}
+                    onChange={(e) => setWorkerFormData({ ...workerFormData, districtId: e.target.value })}
+                    className="w-full px-3 py-2.5 text-xs rounded-xl border border-slate-200 focus:border-emerald-500 focus:outline-none bg-white disabled:opacity-50"
+                  >
+                    <option value="">Tanlang</option>
+                    {workerFormRegion?.districts?.map((d) => (
+                      <option key={d.id} value={d.id}>{d.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Tajribangiz (yil)</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="50"
+                  value={workerFormData.experienceYears}
+                  onChange={(e) => setWorkerFormData({ ...workerFormData, experienceYears: e.target.value })}
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:border-emerald-500 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">O'zingiz haqingizda / Xizmatlar</label>
+                <textarea
+                  rows={3}
+                  placeholder="Qanday ishlarni bajarasiz, qanday asboblaringiz bor..."
+                  value={workerFormData.about}
+                  onChange={(e) => setWorkerFormData({ ...workerFormData, about: e.target.value })}
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:border-emerald-500 focus:outline-none resize-none"
+                ></textarea>
+              </div>
+
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  disabled={isSwitchingRole}
+                  className="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-extrabold text-xs rounded-xl shadow-md flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                >
+                  {isSwitchingRole ? 'Saqlanmoqda...' : 'Usta anketasini tasdiqlash va saqlash ✅'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* ===================== REGION SELECT MODAL ===================== */}
       {isRegionModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
@@ -929,7 +1366,7 @@ export default function App() {
               </button>
             </div>
 
-            <div className="p-2 overflow-y-auto flex-1 space-y-1">
+            <div className="p-4 overflow-y-auto space-y-1">
               <button
                 onClick={() => {
                   setSelectedRegionId('');
@@ -937,30 +1374,31 @@ export default function App() {
                   setIsRegionModalOpen(false);
                   triggerHaptic();
                 }}
-                className={`w-full text-left px-4 py-3 rounded-xl text-xs font-bold transition-all ${
-                  selectedRegionId === '' ? 'bg-emerald-50 text-emerald-700' : 'hover:bg-slate-50 text-slate-800'
+                className={`w-full p-3 text-left rounded-xl text-xs font-semibold flex items-center justify-between ${
+                  !selectedRegionId ? 'bg-emerald-50 text-emerald-800' : 'hover:bg-slate-50 text-slate-700'
                 }`}
               >
-                Barcha O'zbekiston hududlari
+                <span>Barcha viloyatlar</span>
+                {!selectedRegionId && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
               </button>
 
-              {bootstrap.regions.map((r) => (
+              {bootstrap.regions.map((reg) => (
                 <button
-                  key={r.id}
+                  key={reg.id}
                   onClick={() => {
-                    setSelectedRegionId(String(r.id));
+                    setSelectedRegionId(String(reg.id));
                     setSelectedDistrictId('');
                     setIsRegionModalOpen(false);
                     triggerHaptic();
                   }}
-                  className={`w-full text-left px-4 py-3 rounded-xl text-xs font-bold transition-all flex items-center justify-between ${
-                    String(selectedRegionId) === String(r.id)
-                      ? 'bg-emerald-50 text-emerald-700'
-                      : 'hover:bg-slate-50 text-slate-800'
+                  className={`w-full p-3 text-left rounded-xl text-xs font-semibold flex items-center justify-between ${
+                    String(selectedRegionId) === String(reg.id)
+                      ? 'bg-emerald-50 text-emerald-800'
+                      : 'hover:bg-slate-50 text-slate-700'
                   }`}
                 >
-                  <span>{r.name}</span>
-                  {String(selectedRegionId) === String(r.id) && (
+                  <span>{reg.name}</span>
+                  {String(selectedRegionId) === String(reg.id) && (
                     <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                   )}
                 </button>
@@ -976,20 +1414,15 @@ export default function App() {
           <div className="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl max-h-[90vh] overflow-y-auto p-5 animate-in slide-in-from-bottom duration-200">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center text-white font-extrabold text-xl shadow-md">
+                <div className="w-14 h-14 rounded-2xl bg-emerald-600 flex items-center justify-center text-white font-extrabold text-xl shadow-md">
                   {detailWorker.avatarUrl ? (
-                    <img src={detailWorker.avatarUrl} alt="" className="w-full h-full rounded-2xl object-cover" />
+                    <img src={detailWorker.avatarUrl} alt="" className="w-full h-full object-cover rounded-2xl" />
                   ) : (
-                    detailWorker.fullName?.[0]?.toUpperCase() || 'U'
+                    <span>{detailWorker.fullName ? detailWorker.fullName[0].toUpperCase() : 'U'}</span>
                   )}
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-slate-900 text-base flex items-center gap-1.5">
-                    {detailWorker.fullName}
-                    {detailWorker.verified && (
-                      <CheckCircle2 className="w-4 h-4 text-blue-500 fill-blue-50" />
-                    )}
-                  </h3>
+                  <h3 className="font-extrabold text-slate-900 text-base">{detailWorker.fullName}</h3>
                   <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
                     <MapPin className="w-3.5 h-3.5 text-slate-400" />
                     {detailWorker.regionName} {detailWorker.districtName ? `, ${detailWorker.districtName}` : ''}

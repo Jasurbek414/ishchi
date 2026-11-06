@@ -363,4 +363,222 @@ public class TmaService {
                 "https://play.google.com/store/apps/details?id=uz.ecos.ishchi.app"
         );
     }
+
+    @Transactional(readOnly = true)
+    public TmaProfileDto getProfile(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> ApiException.notFound("Foydalanuvchi topilmadi"));
+
+        Optional<WorkerProfile> workerOpt = workerProfileRepository.findByUserId(userId);
+        Optional<EmployerProfile> employerOpt = employerProfileRepository.findByUserId(userId);
+
+        boolean hasWorker = workerOpt.isPresent();
+        boolean hasEmployer = employerOpt.isPresent();
+
+        if (user.getRole() == Role.WORKER && hasWorker) {
+            WorkerProfile wp = workerOpt.get();
+            List<Long> professionIds = wp.getProfessions().stream().map(Profession::getId).toList();
+            List<String> professionNames = wp.getProfessions().stream().map(Profession::getName).toList();
+            return new TmaProfileDto(
+                    user.getId(),
+                    user.getPhone(),
+                    user.getRole(),
+                    user.getTelegramChatId(),
+                    wp.getFirstName(),
+                    wp.getLastName(),
+                    wp.getFullName(),
+                    wp.getAvatarUrl(),
+                    wp.getAbout(),
+                    wp.getRegion() != null ? wp.getRegion().getId() : null,
+                    wp.getRegion() != null ? wp.getRegion().getName() : null,
+                    wp.getDistrict() != null ? wp.getDistrict().getId() : null,
+                    wp.getDistrict() != null ? wp.getDistrict().getName() : null,
+                    professionIds,
+                    professionNames,
+                    wp.getExperienceYears(),
+                    wp.isAvailable(),
+                    wp.getRatingAverage(),
+                    wp.getRatingCount(),
+                    hasWorker,
+                    hasEmployer
+            );
+        } else if (hasEmployer) {
+            EmployerProfile ep = employerOpt.get();
+            return new TmaProfileDto(
+                    user.getId(),
+                    user.getPhone(),
+                    user.getRole(),
+                    user.getTelegramChatId(),
+                    ep.getFirstName(),
+                    ep.getLastName(),
+                    ep.getFullName(),
+                    null,
+                    ep.getAbout(),
+                    ep.getRegion() != null ? ep.getRegion().getId() : null,
+                    ep.getRegion() != null ? ep.getRegion().getName() : null,
+                    ep.getDistrict() != null ? ep.getDistrict().getId() : null,
+                    ep.getDistrict() != null ? ep.getDistrict().getName() : null,
+                    List.of(),
+                    List.of(),
+                    null,
+                    null,
+                    null,
+                    0,
+                    hasWorker,
+                    hasEmployer
+            );
+        } else {
+            return new TmaProfileDto(
+                    user.getId(),
+                    user.getPhone(),
+                    user.getRole(),
+                    user.getTelegramChatId(),
+                    "Foydalanuvchi",
+                    "",
+                    "Foydalanuvchi",
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    List.of(),
+                    List.of(),
+                    null,
+                    null,
+                    null,
+                    0,
+                    hasWorker,
+                    hasEmployer
+            );
+        }
+    }
+
+    @Transactional
+    public AuthResponse switchRole(Long userId, TmaSwitchRoleRequest req) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> ApiException.notFound("Foydalanuvchi topilmadi"));
+
+        Role target = req.targetRole() != null ? req.targetRole() : (user.getRole() == Role.WORKER ? Role.EMPLOYER : Role.WORKER);
+
+        if (target == Role.WORKER) {
+            WorkerProfile wp = workerProfileRepository.findByUserId(userId).orElseGet(() -> {
+                WorkerProfile fresh = new WorkerProfile();
+                fresh.setUser(user);
+                return fresh;
+            });
+
+            if (req.firstName() != null && !req.firstName().isBlank()) {
+                wp.setFirstName(req.firstName());
+            } else if (wp.getFirstName() == null || wp.getFirstName().isBlank()) {
+                wp.setFirstName("Usta");
+            }
+
+            if (req.lastName() != null) {
+                wp.setLastName(req.lastName());
+            } else if (wp.getLastName() == null) {
+                wp.setLastName("");
+            }
+
+            if (req.about() != null) {
+                wp.setAbout(req.about());
+            }
+
+            if (req.experienceYears() != null) {
+                wp.setExperienceYears(req.experienceYears());
+            } else if (wp.getExperienceYears() == null) {
+                wp.setExperienceYears(1);
+            }
+
+            if (req.available() != null) {
+                wp.setAvailable(req.available());
+            }
+
+            if (req.regionId() != null) {
+                Region region = regionRepository.findById(req.regionId()).orElse(null);
+                if (region != null) wp.setRegion(region);
+            }
+            if (wp.getRegion() == null) {
+                Region defaultRegion = regionRepository.findAll().stream().findFirst().orElse(null);
+                wp.setRegion(defaultRegion);
+            }
+
+            if (req.districtId() != null) {
+                District district = districtRepository.findById(req.districtId()).orElse(null);
+                if (district != null) wp.setDistrict(district);
+            }
+            if (wp.getDistrict() == null && wp.getRegion() != null) {
+                District defaultDistrict = districtRepository.findByRegionIdOrderByNameAsc(wp.getRegion().getId()).stream().findFirst().orElse(null);
+                wp.setDistrict(defaultDistrict);
+            }
+
+            if (req.professionIds() != null && !req.professionIds().isEmpty()) {
+                List<Profession> profs = professionRepository.findAllById(req.professionIds());
+                wp.setProfessions(new HashSet<>(profs));
+            } else if (wp.getProfessions().isEmpty()) {
+                Profession defaultProf = professionRepository.findByActiveTrueOrderByCategoryAscNameAsc().stream().findFirst().orElse(null);
+                if (defaultProf != null) {
+                    wp.setProfessions(new HashSet<>(Set.of(defaultProf)));
+                }
+            }
+
+            workerProfileRepository.save(wp);
+            user.setRole(Role.WORKER);
+        } else {
+            EmployerProfile ep = employerProfileRepository.findByUserId(userId).orElseGet(() -> {
+                EmployerProfile fresh = new EmployerProfile();
+                fresh.setUser(user);
+                return fresh;
+            });
+
+            if (req.firstName() != null && !req.firstName().isBlank()) {
+                ep.setFirstName(req.firstName());
+            } else if (ep.getFirstName() == null || ep.getFirstName().isBlank()) {
+                ep.setFirstName("Buyurtmachi");
+            }
+            if (req.lastName() != null) {
+                ep.setLastName(req.lastName());
+            } else if (ep.getLastName() == null) {
+                ep.setLastName("");
+            }
+            if (req.about() != null) {
+                ep.setAbout(req.about());
+            }
+
+            if (req.regionId() != null) {
+                Region region = regionRepository.findById(req.regionId()).orElse(null);
+                if (region != null) ep.setRegion(region);
+            }
+            if (ep.getRegion() == null) {
+                Region defaultRegion = regionRepository.findAll().stream().findFirst().orElse(null);
+                ep.setRegion(defaultRegion);
+            }
+
+            if (req.districtId() != null) {
+                District district = districtRepository.findById(req.districtId()).orElse(null);
+                if (district != null) ep.setDistrict(district);
+            }
+            if (ep.getDistrict() == null && ep.getRegion() != null) {
+                District defaultDistrict = districtRepository.findByRegionIdOrderByNameAsc(ep.getRegion().getId()).stream().findFirst().orElse(null);
+                ep.setDistrict(defaultDistrict);
+            }
+
+            employerProfileRepository.save(ep);
+            user.setRole(Role.EMPLOYER);
+        }
+
+        userRepository.save(user);
+
+        String newToken = jwtService.generateAccessToken(user.getId(), user.getPhone(), user.getRole());
+        return new AuthResponse(newToken, null, user.getId(), user.getRole());
+    }
+
+    @Transactional
+    public boolean toggleAvailability(Long userId) {
+        WorkerProfile wp = workerProfileRepository.findByUserId(userId)
+                .orElseThrow(() -> ApiException.badRequest("Usta profili topilmadi"));
+        wp.setAvailable(!wp.isAvailable());
+        workerProfileRepository.save(wp);
+        return wp.isAvailable();
+    }
 }

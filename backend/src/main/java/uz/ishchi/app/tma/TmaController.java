@@ -66,4 +66,32 @@ public class TmaController {
     ) {
         return tmaService.postJob(request, principal != null ? principal.getUser() : null);
     }
+
+    @GetMapping("/profile")
+    public TmaProfileDto getProfile(@AuthenticationPrincipal UserPrincipal principal) {
+        if (principal == null) {
+            throw uz.ishchi.app.common.exception.ApiException.unauthorized("Tizimga kirish talab qilinadi");
+        }
+        return tmaService.getProfile(principal.getId());
+    }
+
+    @PostMapping("/switch-role")
+    public AuthResponse switchRole(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestBody TmaSwitchRoleRequest request
+    ) {
+        if (principal == null) {
+            throw uz.ishchi.app.common.exception.ApiException.unauthorized("Tizimga kirish talab qilinadi");
+        }
+        return tmaService.switchRole(principal.getId(), request);
+    }
+
+    @PostMapping("/toggle-availability")
+    public java.util.Map<String, Object> toggleAvailability(@AuthenticationPrincipal UserPrincipal principal) {
+        if (principal == null) {
+            throw uz.ishchi.app.common.exception.ApiException.unauthorized("Tizimga kirish talab qilinadi");
+        }
+        boolean available = tmaService.toggleAvailability(principal.getId());
+        return java.util.Map.of("available", available);
+    }
 }
