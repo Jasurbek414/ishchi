@@ -154,7 +154,8 @@ public class TmaService {
                 fresh.setRole(Role.EMPLOYER);
                 fresh.setTelegramChatId(telegramId);
                 fresh.setActive(true);
-                fresh.setVerified(false); // Will be set true after onboarding
+                fresh.setVerified(true);
+                fresh.setRegistered(false); // Brand new user, needs onboarding
                 fresh = userRepository.saveAndFlush(fresh);
 
                 // Create initial employer profile
@@ -375,11 +376,8 @@ public class TmaService {
         boolean hasWorker = workerOpt.isPresent();
         boolean hasEmployer = employerOpt.isPresent();
 
-        // isRegistered = false only for brand-new TMA users who haven't completed onboarding.
-        // New users are created with verified=false (set by authenticate()).
-        // After register() is called, verified is set to true.
-        // Existing users (created before this feature) already have verified=true → they skip onboarding.
-        boolean isRegistered = user.isVerified();
+        // isRegistered = true if user has completed onboarding/registration
+        boolean isRegistered = user.isRegistered();
 
         if (user.getRole() == Role.WORKER && hasWorker) {
             WorkerProfile wp = workerOpt.get();
@@ -538,7 +536,7 @@ public class TmaService {
         }
 
         // Mark as registered
-        // Keep the +998TG placeholder as is (don't change phone, just mark verified)
+        user.setRegistered(true);
         user.setVerified(true);
         userRepository.save(user);
 
@@ -659,6 +657,7 @@ public class TmaService {
             user.setRole(Role.EMPLOYER);
         }
 
+        user.setRegistered(true);
         userRepository.save(user);
 
         String newToken = jwtService.generateAccessToken(user.getId(), user.getPhone(), user.getRole());

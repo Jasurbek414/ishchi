@@ -38,6 +38,9 @@ public class User {
     @Column(name = "is_verified", nullable = false)
     private boolean verified = false;
 
+    @Column(name = "is_registered", nullable = false)
+    private boolean registered = false;
+
     @Column(name = "telegram_chat_id")
     private Long telegramChatId;
 

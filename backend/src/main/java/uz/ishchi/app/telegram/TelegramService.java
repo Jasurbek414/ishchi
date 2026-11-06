@@ -303,6 +303,7 @@ public class TelegramService {
                 User tmaUser = tmaUserOpt.get();
                 tmaUser.setPhone(phone);
                 tmaUser.setVerified(true);
+                tmaUser.setRegistered(true);
                 userRepository.saveAndFlush(tmaUser);
                 telegramClient.sendMessage(token, chatId,
                         "\u2705 Telefon raqamingiz ulandi! Endi to'liq akkountingiz faol.");

@@ -42,9 +42,12 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('workers');
 
   // Auth & Profile
+  const storageKey = tgUser?.id ? `tma_token_${tgUser.id}` : 'tma_token';
+
   const [authToken, setAuthToken] = useState(() => {
     try {
-      return localStorage.getItem('tma_token') || '';
+      const key = tgUser?.id ? `tma_token_${tgUser.id}` : 'tma_token';
+      return localStorage.getItem(key) || '';
     } catch (_) {
       return '';
     }
@@ -158,7 +161,7 @@ export default function App() {
           if (data?.accessToken) {
             setAuthToken(data.accessToken);
             try {
-              localStorage.setItem('tma_token', data.accessToken);
+              localStorage.setItem(storageKey, data.accessToken);
             } catch (_) {}
             fetchProfile(data.accessToken);
           }
@@ -189,7 +192,15 @@ export default function App() {
     fetch(`${API_BASE}/tma/profile`, {
       headers: { Authorization: `Bearer ${token}` }
     })
-      .then((res) => (res.ok ? res.json() : null))
+      .then((res) => {
+        if (res.status === 401) {
+          try { localStorage.removeItem(storageKey); } catch (_) {}
+          setAuthToken('');
+          setUserProfile(null);
+          return null;
+        }
+        return res.ok ? res.json() : null;
+      })
       .then((data) => {
         if (data) {
           setUserProfile(data);
@@ -217,6 +228,8 @@ export default function App() {
             setOnboardingStep(1);
             setOnboardingRole(null);
             setShowOnboarding(true);
+          } else {
+            setShowOnboarding(false);
           }
         }
       })
@@ -362,7 +375,7 @@ export default function App() {
         if (authData?.accessToken) {
           setAuthToken(authData.accessToken);
           try {
-            localStorage.setItem('tma_token', authData.accessToken);
+            localStorage.setItem(storageKey, authData.accessToken);
           } catch (_) {}
           fetchProfile(authData.accessToken);
         }
@@ -413,7 +426,7 @@ export default function App() {
         if (authData?.accessToken) {
           setAuthToken(authData.accessToken);
           try {
-            localStorage.setItem('tma_token', authData.accessToken);
+            localStorage.setItem(storageKey, authData.accessToken);
           } catch (_) {}
           fetchProfile(authData.accessToken);
         }
@@ -491,7 +504,7 @@ export default function App() {
         const authData = await res.json();
         if (authData?.accessToken) {
           setAuthToken(authData.accessToken);
-          try { localStorage.setItem('tma_token', authData.accessToken); } catch (_) {}
+          try { localStorage.setItem(storageKey, authData.accessToken); } catch (_) {}
           fetchProfile(authData.accessToken);
         }
         setShowOnboarding(false);
