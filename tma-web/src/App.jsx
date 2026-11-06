@@ -1149,82 +1149,92 @@ export default function App() {
         )}
       </main>
 
-      {/* ===================== BOTTOM NAVIGATION (Spacious, safe from navigation bar) ===================== */}
+      {/* ===================== BOTTOM NAVIGATION (5 EQUAL COLUMNS) ===================== */}
       <nav
-        className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-lg border-t border-slate-200/80 px-2 pt-1.5 pb-4"
+        className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-lg border-t border-slate-200/80 pt-1.5 pb-4"
         style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom, 16px))' }}
       >
-        <div className="flex items-center justify-around max-w-md mx-auto">
-          {/* Ustalar */}
+        <div className="grid grid-cols-5 items-end max-w-md mx-auto w-full px-1">
+          {/* 1. Ustalar */}
           <button
             onClick={() => {
               triggerHaptic();
               setActiveTab('workers');
             }}
-            className={`flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl transition-all ${
-              activeTab === 'workers' ? 'text-emerald-600 font-bold scale-105' : 'text-slate-400 hover:text-slate-600'
+            className={`flex flex-col items-center justify-center py-1 w-full transition-all ${
+              activeTab === 'workers' ? 'text-emerald-600 font-bold' : 'text-slate-400 hover:text-slate-600'
             }`}
           >
-            <Users className="w-5 h-5" />
-            <span className="text-[10px]">Ustalar</span>
+            <div className={`p-1 rounded-xl transition-all ${activeTab === 'workers' ? 'scale-110' : ''}`}>
+              <Users className="w-5 h-5" />
+            </div>
+            <span className="text-[10px] leading-tight">Ustalar</span>
           </button>
 
-          {/* Buyurtmalar */}
+          {/* 2. Buyurtmalar */}
           <button
             onClick={() => {
               triggerHaptic();
               setActiveTab('jobs');
             }}
-            className={`flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl transition-all ${
-              activeTab === 'jobs' ? 'text-emerald-600 font-bold scale-105' : 'text-slate-400 hover:text-slate-600'
+            className={`flex flex-col items-center justify-center py-1 w-full transition-all ${
+              activeTab === 'jobs' ? 'text-emerald-600 font-bold' : 'text-slate-400 hover:text-slate-600'
             }`}
           >
-            <Briefcase className="w-5 h-5" />
-            <span className="text-[10px]">Buyurtmalar</span>
+            <div className={`p-1 rounded-xl transition-all ${activeTab === 'jobs' ? 'scale-110' : ''}`}>
+              <Briefcase className="w-5 h-5" />
+            </div>
+            <span className="text-[10px] leading-tight">Buyurtmalar</span>
           </button>
 
-          {/* E'lon berish (Center Elevated Button) */}
+          {/* 3. E'lon berish (Center elevated button) */}
           <button
             onClick={() => {
               triggerHaptic('medium');
               setActiveTab('post');
             }}
-            className="flex flex-col items-center gap-1 -mt-5"
+            className="flex flex-col items-center justify-center w-full -mt-6 group"
           >
-            <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/30 active:scale-95 transition-transform ring-4 ring-white">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/30 active:scale-95 transition-transform ring-4 ring-white mb-0.5">
               <PlusCircle className="w-6 h-6" />
             </div>
-            <span className={`text-[10px] ${activeTab === 'post' ? 'text-emerald-600 font-bold' : 'text-slate-500'}`}>
+            <span className={`text-[10px] leading-tight font-semibold ${
+              activeTab === 'post' ? 'text-emerald-600 font-bold' : 'text-slate-500'
+            }`}>
               E'lon berish
             </span>
           </button>
 
-          {/* Profil */}
+          {/* 4. Profil */}
           <button
             onClick={() => {
               triggerHaptic();
               setActiveTab('profile');
             }}
-            className={`flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl transition-all ${
-              activeTab === 'profile' ? 'text-emerald-600 font-bold scale-105' : 'text-slate-400 hover:text-slate-600'
+            className={`flex flex-col items-center justify-center py-1 w-full transition-all ${
+              activeTab === 'profile' ? 'text-emerald-600 font-bold' : 'text-slate-400 hover:text-slate-600'
             }`}
           >
-            <User className="w-5 h-5" />
-            <span className="text-[10px]">Profil</span>
+            <div className={`p-1 rounded-xl transition-all ${activeTab === 'profile' ? 'scale-110' : ''}`}>
+              <User className="w-5 h-5" />
+            </div>
+            <span className="text-[10px] leading-tight">Profil</span>
           </button>
 
-          {/* Ilova */}
+          {/* 5. Ilova */}
           <button
             onClick={() => {
               triggerHaptic();
               setActiveTab('info');
             }}
-            className={`flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl transition-all ${
-              activeTab === 'info' ? 'text-emerald-600 font-bold scale-105' : 'text-slate-400 hover:text-slate-600'
+            className={`flex flex-col items-center justify-center py-1 w-full transition-all ${
+              activeTab === 'info' ? 'text-emerald-600 font-bold' : 'text-slate-400 hover:text-slate-600'
             }`}
           >
-            <Download className="w-5 h-5" />
-            <span className="text-[10px]">Ilova</span>
+            <div className={`p-1 rounded-xl transition-all ${activeTab === 'info' ? 'scale-110' : ''}`}>
+              <Download className="w-5 h-5" />
+            </div>
+            <span className="text-[10px] leading-tight">Ilova</span>
           </button>
         </div>
       </nav>
