@@ -1,7 +1,7 @@
-name: Build APK
+name: Build APK and App Bundle
 
-# Builds and signs the APK using the official release keystore stored in repository secrets.
-# All builds share the identical signature so phones can update seamlessly.
+# Builds and signs both the APK and App Bundle (.aab) for Google Play Market
+# using the official release keystore stored in repository secrets.
 on:
   push:
     paths:
@@ -13,10 +13,10 @@ permissions:
   contents: write
 
 jobs:
-  apk:
-    name: Build APK
+  bundle_and_apk:
+    name: Build App Bundle & APK
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
 
@@ -47,19 +47,37 @@ jobs:
             echo "::warning::No release keystore secret found, falling back to debug key."
           fi
 
+      - name: Set up Google Services
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
+        run: |
+          if [ -n "$GOOGLE_SERVICES_JSON" ]; then
+            echo "$GOOGLE_SERVICES_JSON" | base64 -d > mobile/android/app/google-services.json
+            echo "google-services.json configured."
+          fi
+
       - name: Build
         working-directory: mobile
         run: |
           flutter pub get
-          # Obfuscated so class and function names cannot be read back out of the APK; the
-          # symbol map stays on the runner and is discarded with it.
+          # 1. Build App Bundle (.aab) for Google Play Console
+          flutter build appbundle --release --no-tree-shake-icons --obfuscate --split-debug-info=build/symbols
+          # 2. Build APK (.apk) for direct install / server distribution
           flutter build apk --release --no-tree-shake-icons --obfuscate --split-debug-info=build/symbols
           version=$(sed -n 's/^version: *//p' pubspec.yaml | tr '+' '-')
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+          echo "AAB_NAME=ishchi-$version-release" >> "$GITHUB_ENV"
           echo "APK_NAME=ishchi-$version-release" >> "$GITHUB_ENV"
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.APK_NAME }}
+          name: ${{ env.AAB_NAME }}-bundle
+          path: mobile/build/app/outputs/bundle/release/app-release.aab
+          retention-days: 14
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.APK_NAME }}-apk
           path: mobile/build/app/outputs/flutter-apk/app-release.apk
           retention-days: 14
 
@@ -67,10 +85,12 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          tag="release-apk-${{ github.run_number }}"
+          tag="release-${VERSION}-${{ github.run_number }}"
+          cp mobile/build/app/outputs/bundle/release/app-release.aab "$AAB_NAME.aab"
           cp mobile/build/app/outputs/flutter-apk/app-release.apk "$APK_NAME.apk"
-          gh release create "$tag" "$APK_NAME.apk" \
+          gh release create "$tag" "$AAB_NAME.aab" "$APK_NAME.apk" \
             --target "$GITHUB_SHA" --prerelease \
-            --title "Release APK ${APK_NAME#ishchi-} (${GITHUB_SHA::7})" \
-            --notes "Build from ${GITHUB_REF_NAME}. Signed with official release key."
-          echo "url=https://github.com/${GITHUB_REPOSITORY}/releases/download/$tag/$APK_NAME.apk" >> "$GITHUB_STEP_SUMMARY"
+            --title "Release ${VERSION} (${GITHUB_SHA::7})" \
+            --notes "Production build from ${GITHUB_REF_NAME}. Signed with official release key."
+          echo "aab_url=https://github.com/${GITHUB_REPOSITORY}/releases/download/$tag/$AAB_NAME.aab" >> "$GITHUB_STEP_SUMMARY"
+          echo "apk_url=https://github.com/${GITHUB_REPOSITORY}/releases/download/$tag/$APK_NAME.apk" >> "$GITHUB_STEP_SUMMARY"
