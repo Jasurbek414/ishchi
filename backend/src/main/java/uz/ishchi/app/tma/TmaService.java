@@ -388,8 +388,8 @@ public class TmaService {
         boolean hasWorker = workerOpt.isPresent();
         boolean hasEmployer = employerOpt.isPresent();
 
-        // isRegistered = true if user has completed onboarding/registration
-        boolean isRegistered = user.isRegistered();
+        // isRegistered = true ONLY if user has completed onboarding AND has a real phone number
+        boolean isRegistered = user.isRegistered() && user.getPhone() != null && !user.getPhone().startsWith("+998TG");
 
         if (user.getRole() == Role.WORKER && hasWorker) {
             WorkerProfile wp = workerOpt.get();
