@@ -41,12 +41,7 @@ jobs:
           if [ -n "$KEYSTORE_BASE64" ]; then
             mkdir -p mobile/android/keystore
             echo "$KEYSTORE_BASE64" | base64 -d > mobile/android/keystore/ishchi-release.jks
-            cat <<EOF > mobile/android/key.properties
-storePassword=$STORE_PASS
-keyPassword=$KEY_PASS
-keyAlias=$KEY_ALIAS
-storeFile=../keystore/ishchi-release.jks
-EOF
+            printf "storePassword=%s\nkeyPassword=%s\nkeyAlias=%s\nstoreFile=../keystore/ishchi-release.jks\n" "$STORE_PASS" "$KEY_PASS" "$KEY_ALIAS" > mobile/android/key.properties
             echo "Release keystore configured successfully."
           else
             echo "::warning::No release keystore secret found, falling back to debug key."
