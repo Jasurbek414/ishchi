@@ -343,10 +343,10 @@ public class TelegramService {
 
     void sendMainMenu(String token, long chatId) {
         String welcome = "Assalomu alaykum! \"Ishchi\" botiga xush kelibsiz.\n\n"
-                + "Ish beruvchi va ishchini bog'laydigan platforma. Qulay va tezkor foydalanish uchun quyidagi \"🚀 Ishchi ilovasini ochish\" tugmasini bosing:";
+                + "Ish beruvchi va ishchini bog'laydigan platforma. Qulay va tezkor foydalanish uchun quyidagi \"Ishchi ilovasi\" tugmasini bosing:";
         String tmaUrl = (baseUrl.endsWith("/") ? baseUrl : baseUrl + "/") + "tma/";
         telegramClient.sendMessageWithKeyboard(token, chatId, welcome, List.of(
-                List.of(TelegramClient.KeyboardButton.webApp("🚀 Ishchi ilovasini ochish", tmaUrl)),
+                List.of(TelegramClient.KeyboardButton.webApp("Ishchi ilovasi", tmaUrl)),
                 List.of(TelegramClient.KeyboardButton.contactRequest(BTN_SHARE_PHONE)),
                 List.of(TelegramClient.KeyboardButton.of(BTN_JOB_MENU)),
                 List.of(TelegramClient.KeyboardButton.of(BTN_ABOUT)),

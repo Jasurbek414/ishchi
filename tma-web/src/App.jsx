@@ -424,79 +424,70 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col pb-24 text-slate-900">
-      {/* Top Header */}
-      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-4 py-3">
-        <div className="flex items-center justify-between gap-3">
-          {/* User profile / greeting */}
+    <div className="min-h-screen bg-slate-50 flex flex-col pb-28 text-slate-900 font-sans">
+      {/* Top Header - Clean, spacious, uncluttered */}
+      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-4 py-2.5">
+        <div className="flex items-center justify-between gap-2.5">
+          {/* Left: User profile & greeting */}
           <div
             onClick={() => {
               triggerHaptic();
               setActiveTab('profile');
             }}
-            className="flex items-center gap-2.5 min-w-0 cursor-pointer active:scale-95 transition-transform"
+            className="flex items-center gap-2.5 min-w-0 cursor-pointer active:opacity-75 transition-opacity"
           >
-            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white font-bold text-base shadow-sm ring-2 ring-emerald-100 flex-shrink-0">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white font-extrabold text-base shadow-sm ring-2 ring-emerald-100 flex-shrink-0">
               {tgUser?.first_name ? tgUser.first_name[0].toUpperCase() : 'I'}
             </div>
             <div className="min-w-0">
-              <div className="text-[11px] text-slate-500 font-medium flex items-center gap-1">
-                <span>{userProfile?.role === 'WORKER' ? '🛠 Usta' : '👔 Buyurtmachi'}</span>
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-sm font-extrabold text-slate-900 truncate">
+                  {tgUser?.first_name || 'Foydalanuvchi'}
+                </span>
+                <span
+                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full inline-flex items-center gap-0.5 flex-shrink-0 ${
+                    userProfile?.role === 'WORKER'
+                      ? 'bg-amber-100 text-amber-800'
+                      : 'bg-emerald-100 text-emerald-800'
+                  }`}
+                >
+                  {userProfile?.role === 'WORKER' ? '🛠 Usta' : '👔 Buyurtmachi'}
+                </span>
               </div>
-              <div className="text-sm font-bold text-slate-900 truncate">
-                {tgUser?.first_name || 'Ishchi'}
-              </div>
+              <p className="text-[11px] text-slate-400 font-medium">Bosh sahifa</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5">
-            {/* Quick role switch pill */}
-            <button
-              onClick={() => {
-                triggerHaptic();
-                setActiveTab('profile');
-              }}
-              className={`px-2.5 py-1 text-[11px] font-bold rounded-full border transition-all flex items-center gap-1 ${
-                userProfile?.role === 'WORKER'
-                  ? 'bg-amber-50 text-amber-800 border-amber-200'
-                  : 'bg-emerald-50 text-emerald-800 border-emerald-200'
-              }`}
-            >
-              {userProfile?.role === 'WORKER' ? '🛠 Usta' : '👔 Ish beruvchi'}
-            </button>
-
-            {/* Region selector pill */}
-            <button
-              onClick={() => {
-                triggerHaptic();
-                setIsRegionModalOpen(true);
-              }}
-              className="flex items-center gap-1 px-2.5 py-1 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 text-xs font-semibold rounded-full border border-slate-200/80 transition-all flex-shrink-0"
-            >
-              <MapPin className="w-3.5 h-3.5 text-emerald-600" />
-              <span className="truncate max-w-[85px]">
-                {currentRegion ? currentRegion.name : 'Viloyat'}
-              </span>
-            </button>
-          </div>
+          {/* Right: Region selector pill */}
+          <button
+            onClick={() => {
+              triggerHaptic();
+              setIsRegionModalOpen(true);
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 text-xs font-semibold rounded-full border border-slate-200/80 transition-all flex-shrink-0 max-w-[140px]"
+          >
+            <MapPin className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
+            <span className="truncate">
+              {currentRegion ? currentRegion.name : 'Barcha hududlar'}
+            </span>
+          </button>
         </div>
 
         {/* Search bar (visible in Workers and Jobs tabs) */}
         {(activeTab === 'workers' || activeTab === 'jobs') && (
-          <div className="mt-3 relative">
+          <div className="mt-2.5 relative">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={activeTab === 'workers' ? "Usta, santexnik, kasb izlash..." : "Buyurtma, ish izlash..."}
-              className="w-full pl-9 pr-8 py-2 bg-slate-100/90 text-sm rounded-xl border border-transparent focus:border-emerald-500 focus:bg-white focus:outline-none transition-all"
+              placeholder={activeTab === 'workers' ? "Kasb yoki usta izlash..." : "Buyurtma yoki ish izlash..."}
+              className="w-full pl-9 pr-8 py-2 bg-slate-100/90 text-xs rounded-xl border border-transparent focus:border-emerald-500 focus:bg-white focus:outline-none transition-all"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 p-0.5"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 p-0.5 hover:text-slate-600"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -511,7 +502,7 @@ export default function App() {
         {activeTab === 'workers' && (
           <div>
             {/* Horizontal Profession Chips */}
-            <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2 -mx-4 px-4 mb-3">
+            <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1.5 -mx-4 px-4 mb-2.5">
               <button
                 onClick={() => {
                   triggerHaptic();
@@ -597,22 +588,22 @@ export default function App() {
                     className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm hover:border-emerald-300 active:scale-[0.99] transition-all cursor-pointer relative"
                   >
                     <div className="flex items-start gap-3">
-                      {/* Avatar */}
-                      <div className="w-12 h-12 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600 font-bold text-base flex-shrink-0 relative overflow-hidden">
+                      {/* Avatar with cleanly positioned online dot */}
+                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-slate-100 to-slate-200 border border-slate-200 flex items-center justify-center text-slate-700 font-extrabold text-base flex-shrink-0 relative">
                         {worker.avatarUrl ? (
-                          <img src={worker.avatarUrl} alt={worker.fullName} className="w-full h-full object-cover" />
+                          <img src={worker.avatarUrl} alt={worker.fullName} className="w-full h-full object-cover rounded-2xl" />
                         ) : (
                           <span>{worker.fullName ? worker.fullName[0].toUpperCase() : 'U'}</span>
                         )}
                         {worker.available && (
-                          <span className="absolute bottom-0.5 right-0.5 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></span>
+                          <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full shadow-sm"></span>
                         )}
                       </div>
 
                       {/* Info */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-1">
-                          <h3 className="font-bold text-slate-900 text-sm truncate">{worker.fullName}</h3>
+                          <h3 className="font-extrabold text-slate-900 text-sm truncate">{worker.fullName}</h3>
                           {worker.ratingAverage ? (
                             <div className="flex items-center gap-1 bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full text-xs font-bold flex-shrink-0">
                               <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
@@ -623,14 +614,20 @@ export default function App() {
 
                         {/* Professions chips */}
                         <div className="flex flex-wrap gap-1 mt-1">
-                          {worker.professions?.slice(0, 2).map((prof, idx) => (
-                            <span
-                              key={idx}
-                              className="px-2 py-0.5 bg-emerald-50 text-emerald-800 text-[11px] font-semibold rounded-md"
-                            >
-                              {prof}
+                          {worker.professions && worker.professions.length > 0 ? (
+                            worker.professions.slice(0, 2).map((prof, idx) => (
+                              <span
+                                key={idx}
+                                className="px-2 py-0.5 bg-emerald-50 text-emerald-800 text-[11px] font-semibold rounded-md"
+                              >
+                                {prof}
+                              </span>
+                            ))
+                          ) : (
+                            <span className="px-2 py-0.5 bg-slate-100 text-slate-600 text-[11px] font-medium rounded-md">
+                              Usta
                             </span>
-                          ))}
+                          )}
                           {worker.professions?.length > 2 && (
                             <span className="text-[10px] text-slate-400 self-center">
                               +{worker.professions.length - 2}
@@ -650,26 +647,27 @@ export default function App() {
 
                     {/* Action Footer */}
                     <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                      <span className={`font-semibold ${worker.available ? 'text-emerald-600' : 'text-slate-400'}`}>
-                        {worker.available ? '● Bugun bo\'sh' : '○ Hozir band'}
+                      <span className={`font-semibold flex items-center gap-1.5 ${worker.available ? 'text-emerald-600' : 'text-slate-400'}`}>
+                        <span className={`w-2 h-2 rounded-full ${worker.available ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}`}></span>
+                        {worker.available ? "Bugun bo'sh" : "Hozir band"}
                       </span>
-                      <div className="flex items-center gap-2">
-                        {worker.phone && (
-                          <a
-                            href={`tel:${worker.phone}`}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              triggerHaptic('medium');
-                            }}
-                            className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg font-bold text-xs flex items-center gap-1 shadow-sm active:scale-95"
-                          >
-                            <Phone className="w-3 h-3" /> Bog'lanish
-                          </a>
-                        )}
-                        <span className="text-slate-400 flex items-center">
-                          <ChevronRight className="w-4 h-4" />
+
+                      {worker.phone ? (
+                        <a
+                          href={`tel:${worker.phone}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            triggerHaptic('medium');
+                          }}
+                          className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs flex items-center gap-1.5 shadow-sm active:scale-95 transition-all"
+                        >
+                          <Phone className="w-3 h-3" /> Bog'lanish
+                        </a>
+                      ) : (
+                        <span className="text-slate-400 flex items-center gap-0.5">
+                          Tafsilotlar <ChevronRight className="w-3.5 h-3.5" />
                         </span>
-                      </div>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -947,17 +945,17 @@ export default function App() {
 
               {/* Role Switch Section */}
               <div className="mt-5 pt-4 border-t border-slate-100">
-                <div className="text-xs font-bold text-slate-700 mb-2 flex items-center justify-between">
+                <div className="text-xs font-bold text-slate-700 mb-2.5 flex items-center justify-between">
                   <span>Joriy rolingiz:</span>
-                  <span className={`px-2 py-0.5 rounded-md text-[11px] font-bold ${
+                  <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-extrabold ${
                     userProfile?.role === 'WORKER' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
                   }`}>
-                    {userProfile?.role === 'WORKER' ? '🛠 Usta / Ishchi' : '👔 Ish beruvchi / Buyurtmachi'}
+                    {userProfile?.role === 'WORKER' ? '🛠 Usta / Ishchi' : '👔 Buyurtmachi'}
                   </span>
                 </div>
 
                 {/* Role Switcher Tabs */}
-                <div className="grid grid-cols-2 gap-2 bg-slate-100 p-1 rounded-2xl">
+                <div className="grid grid-cols-2 gap-2 bg-slate-100 p-1.5 rounded-2xl">
                   <button
                     onClick={() => {
                       if (userProfile?.role === 'WORKER') {
@@ -965,7 +963,7 @@ export default function App() {
                       }
                     }}
                     disabled={isSwitchingRole}
-                    className={`py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                    className={`py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
                       userProfile?.role !== 'WORKER'
                         ? 'bg-white text-slate-900 shadow-sm'
                         : 'text-slate-500 hover:text-slate-700'
@@ -986,7 +984,7 @@ export default function App() {
                       }
                     }}
                     disabled={isSwitchingRole}
-                    className={`py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                    className={`py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
                       userProfile?.role === 'WORKER'
                         ? 'bg-white text-slate-900 shadow-sm'
                         : 'text-slate-500 hover:text-slate-700'
@@ -1068,7 +1066,7 @@ export default function App() {
                     <Award className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className="font-extrabold text-amber-900 text-sm">Usta sifatida pul toping</h4>
+                    <h4 className="font-extrabold text-amber-900 text-sm">Usta sifatida daromad qiling</h4>
                     <p className="text-xs text-amber-800 mt-1 leading-relaxed">
                       O'z kasbingiz va xizmatlaringiz bo'yicha anketani to'ldirib, minglab mijozlardan buyurtmalar qabul qiling!
                     </p>
@@ -1151,8 +1149,11 @@ export default function App() {
         )}
       </main>
 
-      {/* ===================== BOTTOM NAVIGATION ===================== */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-lg border-t border-slate-200/80 px-2 py-1.5 safe-area-pb">
+      {/* ===================== BOTTOM NAVIGATION (Spacious, safe from navigation bar) ===================== */}
+      <nav
+        className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-lg border-t border-slate-200/80 px-2 pt-1.5 pb-4"
+        style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom, 16px))' }}
+      >
         <div className="flex items-center justify-around max-w-md mx-auto">
           {/* Ustalar */}
           <button
@@ -1160,7 +1161,7 @@ export default function App() {
               triggerHaptic();
               setActiveTab('workers');
             }}
-            className={`flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all ${
+            className={`flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl transition-all ${
               activeTab === 'workers' ? 'text-emerald-600 font-bold scale-105' : 'text-slate-400 hover:text-slate-600'
             }`}
           >
@@ -1174,7 +1175,7 @@ export default function App() {
               triggerHaptic();
               setActiveTab('jobs');
             }}
-            className={`flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all ${
+            className={`flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl transition-all ${
               activeTab === 'jobs' ? 'text-emerald-600 font-bold scale-105' : 'text-slate-400 hover:text-slate-600'
             }`}
           >
@@ -1182,15 +1183,15 @@ export default function App() {
             <span className="text-[10px]">Buyurtmalar</span>
           </button>
 
-          {/* E'lon berish (Center Accent) */}
+          {/* E'lon berish (Center Elevated Button) */}
           <button
             onClick={() => {
               triggerHaptic('medium');
               setActiveTab('post');
             }}
-            className="flex flex-col items-center gap-0.5 -mt-4"
+            className="flex flex-col items-center gap-1 -mt-5"
           >
-            <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/30 active:scale-95 transition-transform">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/30 active:scale-95 transition-transform ring-4 ring-white">
               <PlusCircle className="w-6 h-6" />
             </div>
             <span className={`text-[10px] ${activeTab === 'post' ? 'text-emerald-600 font-bold' : 'text-slate-500'}`}>
@@ -1198,13 +1199,13 @@ export default function App() {
             </span>
           </button>
 
-          {/* Profil va Rol almashtirish */}
+          {/* Profil */}
           <button
             onClick={() => {
               triggerHaptic();
               setActiveTab('profile');
             }}
-            className={`flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all ${
+            className={`flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl transition-all ${
               activeTab === 'profile' ? 'text-emerald-600 font-bold scale-105' : 'text-slate-400 hover:text-slate-600'
             }`}
           >
@@ -1218,7 +1219,7 @@ export default function App() {
               triggerHaptic();
               setActiveTab('info');
             }}
-            className={`flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all ${
+            className={`flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl transition-all ${
               activeTab === 'info' ? 'text-emerald-600 font-bold scale-105' : 'text-slate-400 hover:text-slate-600'
             }`}
           >
