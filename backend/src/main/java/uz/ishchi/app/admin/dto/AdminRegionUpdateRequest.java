@@ -9,6 +9,8 @@ public record AdminRegionUpdateRequest(
         Boolean allowJobs,
         Boolean allowWorkers,
         Long minSalaryRate,
+        Long maxSalaryRate,
+        String operationMode,
         String notes
 ) {
 }

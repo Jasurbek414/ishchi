@@ -12,6 +12,8 @@ public record AdminRegionDetailResponse(
         boolean allowJobs,
         boolean allowWorkers,
         Long minSalaryRate,
+        Long maxSalaryRate,
+        String operationMode,
         String notes,
         long districtCount,
         long jobsCount,

@@ -106,6 +106,8 @@ public class AdminMapService {
                     region.isAllowJobs(),
                     region.isAllowWorkers(),
                     region.getMinSalaryRate(),
+                    region.getMaxSalaryRate(),
+                    region.getOperationMode() != null ? region.getOperationMode() : "FULL_ACCESS",
                     region.getNotes(),
                     districtSummaries.size(),
                     jobsByRegion.getOrDefault(region.getId(), 0L),
@@ -145,13 +147,19 @@ public class AdminMapService {
         if (request.minSalaryRate() != null) {
             region.setMinSalaryRate(request.minSalaryRate() <= 0 ? null : request.minSalaryRate());
         }
+        if (request.maxSalaryRate() != null) {
+            region.setMaxSalaryRate(request.maxSalaryRate() <= 0 ? null : request.maxSalaryRate());
+        }
+        if (request.operationMode() != null && !request.operationMode().isBlank()) {
+            region.setOperationMode(request.operationMode().trim());
+        }
         if (request.notes() != null) {
             region.setNotes(request.notes().trim());
         }
 
         regionRepository.save(region);
-        log.info("Region ID {} updated by admin: name={}, active={}, radius={}km",
-                region.getId(), region.getName(), region.isActive(), region.getRadiusKm());
+        log.info("Region ID {} updated by admin: name={}, active={}, radius={}km, mode={}",
+                region.getId(), region.getName(), region.isActive(), region.getRadiusKm(), region.getOperationMode());
 
         List<District> regionDistricts = districtRepository.findByRegionIdOrderByNameAsc(region.getId());
         List<AdminRegionDetailResponse.AdminDistrictSummary> districtSummaries = regionDistricts.stream()
@@ -168,6 +176,8 @@ public class AdminMapService {
                 region.isAllowJobs(),
                 region.isAllowWorkers(),
                 region.getMinSalaryRate(),
+                region.getMaxSalaryRate(),
+                region.getOperationMode() != null ? region.getOperationMode() : "FULL_ACCESS",
                 region.getNotes(),
                 districtSummaries.size(),
                 0L,

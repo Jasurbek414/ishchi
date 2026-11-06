@@ -40,6 +40,12 @@ public class Region {
     @Column(name = "min_salary_rate")
     private Long minSalaryRate;
 
+    @Column(name = "max_salary_rate")
+    private Long maxSalaryRate;
+
+    @Column(name = "operation_mode", length = 30)
+    private String operationMode = "FULL_ACCESS";
+
     @Column(name = "notes")
     private String notes;
 }
