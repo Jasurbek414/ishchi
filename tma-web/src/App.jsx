@@ -53,6 +53,21 @@ export default function App() {
   const [isSwitchingRole, setIsSwitchingRole] = useState(false);
   const [showWorkerModal, setShowWorkerModal] = useState(false);
 
+  // Onboarding state
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [onboardingStep, setOnboardingStep] = useState(1); // 1=welcome, 2=role, 3=worker-details, 4=employer-details
+  const [onboardingRole, setOnboardingRole] = useState(null); // 'WORKER' | 'EMPLOYER'
+  const [onboardingForm, setOnboardingForm] = useState({
+    firstName: tgUser?.first_name || '',
+    lastName: tgUser?.last_name || '',
+    regionId: '',
+    districtId: '',
+    professionId: '',
+    experienceYears: 2,
+    about: ''
+  });
+  const [isRegistering, setIsRegistering] = useState(false);
+
   // Bootstrap data
   const [bootstrap, setBootstrap] = useState({
     professions: [],
@@ -188,6 +203,21 @@ export default function App() {
             about: data.about || '',
             available: data.available !== false
           });
+          // Show onboarding for new users
+          if (!data.isRegistered) {
+            setOnboardingForm({
+              firstName: data.firstName || tgUser?.first_name || '',
+              lastName: data.lastName || tgUser?.last_name || '',
+              regionId: data.regionId ? String(data.regionId) : '',
+              districtId: data.districtId ? String(data.districtId) : '',
+              professionId: data.professionIds?.[0] ? String(data.professionIds[0]) : '',
+              experienceYears: 2,
+              about: ''
+            });
+            setOnboardingStep(1);
+            setOnboardingRole(null);
+            setShowOnboarding(true);
+          }
         }
       })
       .catch((err) => console.warn('Fetch profile error', err));
@@ -423,8 +453,333 @@ export default function App() {
     }
   };
 
+  // ===== ONBOARDING HANDLER =====
+  const handleCompleteOnboarding = async () => {
+    if (!authToken) return;
+    if (!onboardingRole) {
+      alert("Iltimos, rolingizni tanlang!");
+      return;
+    }
+    if (onboardingRole === 'WORKER' && !onboardingForm.professionId) {
+      alert("Iltimos, kasbingizni tanlang!");
+      return;
+    }
+    setIsRegistering(true);
+    triggerHaptic('medium');
+    try {
+      const body = {
+        role: onboardingRole,
+        firstName: onboardingForm.firstName || tgUser?.first_name || '',
+        lastName: onboardingForm.lastName || tgUser?.last_name || '',
+        regionId: onboardingForm.regionId ? Number(onboardingForm.regionId) : null,
+        districtId: onboardingForm.districtId ? Number(onboardingForm.districtId) : null,
+        professionIds: onboardingRole === 'WORKER' && onboardingForm.professionId
+          ? [Number(onboardingForm.professionId)]
+          : null,
+        experienceYears: onboardingRole === 'WORKER' ? Number(onboardingForm.experienceYears) || 2 : null,
+        about: onboardingForm.about || null
+      };
+      const res = await fetch(`${API_BASE}/tma/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authToken}`
+        },
+        body: JSON.stringify(body)
+      });
+      if (res.ok) {
+        const authData = await res.json();
+        if (authData?.accessToken) {
+          setAuthToken(authData.accessToken);
+          try { localStorage.setItem('tma_token', authData.accessToken); } catch (_) {}
+          fetchProfile(authData.accessToken);
+        }
+        setShowOnboarding(false);
+        triggerHaptic('heavy');
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err?.message || "Ro'yxatdan o'tishda xatolik yuz berdi");
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Aloqa xatosi yuz berdi');
+    } finally {
+      setIsRegistering(false);
+    }
+  };
+
+  // Onboarding: districts for selected region
+  const onboardingRegionDistricts = useMemo(() => {
+    const reg = bootstrap.regions.find(r => String(r.id) === String(onboardingForm.regionId));
+    return reg?.districts || [];
+  }, [bootstrap.regions, onboardingForm.regionId]);
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col pb-28 text-slate-900 font-sans">
+
+      {/* ========== ONBOARDING MODAL ========== */}
+      {showOnboarding && (
+        <div className="fixed inset-0 z-[200] bg-white flex flex-col overflow-hidden">
+          {/* Progress bar */}
+          <div className="h-1 bg-slate-100">
+            <div
+              className="h-full bg-emerald-500 transition-all duration-500"
+              style={{ width: `${(onboardingStep / (onboardingRole === 'WORKER' ? 3 : 2)) * 100}%` }}
+            />
+          </div>
+
+          <div className="flex-1 overflow-y-auto">
+
+            {/* STEP 1: Welcome */}
+            {onboardingStep === 1 && (
+              <div className="flex flex-col items-center justify-center min-h-full px-6 py-12 text-center">
+                <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white font-extrabold text-4xl shadow-xl mb-6 ring-4 ring-emerald-100">
+                  {tgUser?.first_name ? tgUser.first_name[0].toUpperCase() : 'I'}
+                </div>
+                <h1 className="text-2xl font-extrabold text-slate-900 mb-2">
+                  Xush kelibsiz, {tgUser?.first_name || 'Foydalanuvchi'}! 👋
+                </h1>
+                <p className="text-slate-500 text-sm max-w-xs mb-8">
+                  Ishchi ilovasiga hush kelibsiz! Sizga eng yaxshi tajribani taqdim etish uchun bir nechta savol beramiz.
+                </p>
+                <div className="w-full space-y-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 mb-1 text-left">Ismingiz</label>
+                    <input
+                      type="text"
+                      value={onboardingForm.firstName}
+                      onChange={e => setOnboardingForm(p => ({...p, firstName: e.target.value}))}
+                      placeholder="Ismingizni kiriting"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm focus:outline-none focus:border-emerald-500 focus:bg-white transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 mb-1 text-left">Familiyangiz (ixtiyoriy)</label>
+                    <input
+                      type="text"
+                      value={onboardingForm.lastName}
+                      onChange={e => setOnboardingForm(p => ({...p, lastName: e.target.value}))}
+                      placeholder="Familiyangizni kiriting"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm focus:outline-none focus:border-emerald-500 focus:bg-white transition-all"
+                    />
+                  </div>
+                </div>
+                <button
+                  onClick={() => { triggerHaptic(); setOnboardingStep(2); }}
+                  className="mt-8 w-full py-4 bg-emerald-600 text-white font-extrabold rounded-2xl text-base shadow-lg hover:bg-emerald-700 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                >
+                  Davom etish <ArrowRight className="w-5 h-5" />
+                </button>
+              </div>
+            )}
+
+            {/* STEP 2: Role Choice */}
+            {onboardingStep === 2 && (
+              <div className="flex flex-col px-6 py-10 min-h-full">
+                <button
+                  onClick={() => { triggerHaptic(); setOnboardingStep(1); }}
+                  className="self-start text-slate-400 text-sm font-semibold mb-6 flex items-center gap-1 active:opacity-70"
+                >
+                  ← Orqaga
+                </button>
+                <h2 className="text-xl font-extrabold text-slate-900 mb-2">Siz kimсiz?</h2>
+                <p className="text-slate-500 text-sm mb-8">Ilovadan foydalanish usulini tanlang</p>
+
+                <div className="space-y-4">
+                  {/* Employer card */}
+                  <button
+                    onClick={() => { triggerHaptic(); setOnboardingRole('EMPLOYER'); }}
+                    className={`w-full p-5 rounded-2xl border-2 text-left transition-all active:scale-[0.98] ${
+                      onboardingRole === 'EMPLOYER'
+                        ? 'border-emerald-500 bg-emerald-50 shadow-md'
+                        : 'border-slate-200 bg-white hover:border-emerald-300'
+                    }`}
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="w-14 h-14 rounded-2xl bg-emerald-100 flex items-center justify-center text-2xl flex-shrink-0">
+                        👔
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="font-extrabold text-slate-900 text-base">Ish beruvchi</h3>
+                          {onboardingRole === 'EMPLOYER' && (
+                            <span className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
+                              <Check className="w-3 h-3 text-white" />
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-slate-500">Usta va ishchilarni topish, e'lon berish</p>
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* Worker card */}
+                  <button
+                    onClick={() => { triggerHaptic(); setOnboardingRole('WORKER'); }}
+                    className={`w-full p-5 rounded-2xl border-2 text-left transition-all active:scale-[0.98] ${
+                      onboardingRole === 'WORKER'
+                        ? 'border-amber-500 bg-amber-50 shadow-md'
+                        : 'border-slate-200 bg-white hover:border-amber-300'
+                    }`}
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="w-14 h-14 rounded-2xl bg-amber-100 flex items-center justify-center text-2xl flex-shrink-0">
+                        🛠
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="font-extrabold text-slate-900 text-base">Usta / Ishchi</h3>
+                          {onboardingRole === 'WORKER' && (
+                            <span className="w-5 h-5 rounded-full bg-amber-500 flex items-center justify-center flex-shrink-0">
+                              <Check className="w-3 h-3 text-white" />
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-slate-500">Ish topish, o'z xizmatlaringizni taklif qilish</p>
+                      </div>
+                    </div>
+                  </button>
+                </div>
+
+                <div className="mt-auto pt-8">
+                  {onboardingRole === 'EMPLOYER' && (
+                    <button
+                      onClick={() => { triggerHaptic(); handleCompleteOnboarding(); }}
+                      disabled={isRegistering}
+                      className="w-full py-4 bg-emerald-600 text-white font-extrabold rounded-2xl text-base shadow-lg hover:bg-emerald-700 active:scale-[0.98] transition-all disabled:opacity-70 flex items-center justify-center gap-2"
+                    >
+                      {isRegistering ? (
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <>Boshlash <ArrowRight className="w-5 h-5" /></>
+                      )}
+                    </button>
+                  )}
+                  {onboardingRole === 'WORKER' && (
+                    <button
+                      onClick={() => { triggerHaptic(); setOnboardingStep(3); }}
+                      className="w-full py-4 bg-amber-500 text-white font-extrabold rounded-2xl text-base shadow-lg hover:bg-amber-600 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                    >
+                      Davom etish <ArrowRight className="w-5 h-5" />
+                    </button>
+                  )}
+                  {!onboardingRole && (
+                    <button disabled className="w-full py-4 bg-slate-200 text-slate-400 font-extrabold rounded-2xl text-base cursor-not-allowed">
+                      Rolingizni tanlang
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* STEP 3: Worker Details */}
+            {onboardingStep === 3 && onboardingRole === 'WORKER' && (
+              <div className="flex flex-col px-6 py-10 min-h-full">
+                <button
+                  onClick={() => { triggerHaptic(); setOnboardingStep(2); }}
+                  className="self-start text-slate-400 text-sm font-semibold mb-6 flex items-center gap-1 active:opacity-70"
+                >
+                  ← Orqaga
+                </button>
+                <h2 className="text-xl font-extrabold text-slate-900 mb-2">🛠 Usta ma'lumotlari</h2>
+                <p className="text-slate-500 text-sm mb-6">Quyidagi ma'lumotlarni to'ldiring</p>
+
+                <div className="space-y-4">
+                  {/* Profession */}
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Kasb / Mutaxassislik *</label>
+                    <select
+                      value={onboardingForm.professionId}
+                      onChange={e => setOnboardingForm(p => ({...p, professionId: e.target.value}))}
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm focus:outline-none focus:border-amber-500 focus:bg-white transition-all"
+                    >
+                      <option value="">— Kasb tanlang —</option>
+                      {bootstrap.professions.map(p => (
+                        <option key={p.id} value={p.id}>{p.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Region */}
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Viloyat</label>
+                    <select
+                      value={onboardingForm.regionId}
+                      onChange={e => setOnboardingForm(p => ({...p, regionId: e.target.value, districtId: ''}))}
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm focus:outline-none focus:border-amber-500 focus:bg-white transition-all"
+                    >
+                      <option value="">— Viloyat tanlang —</option>
+                      {bootstrap.regions.map(r => (
+                        <option key={r.id} value={r.id}>{r.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* District */}
+                  {onboardingRegionDistricts.length > 0 && (
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">Tuman</label>
+                      <select
+                        value={onboardingForm.districtId}
+                        onChange={e => setOnboardingForm(p => ({...p, districtId: e.target.value}))}
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm focus:outline-none focus:border-amber-500 focus:bg-white transition-all"
+                      >
+                        <option value="">— Tuman tanlang —</option>
+                        {onboardingRegionDistricts.map(d => (
+                          <option key={d.id} value={d.id}>{d.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  {/* Experience */}
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      Tajriba: <span className="text-amber-600 font-bold">{onboardingForm.experienceYears} yil</span>
+                    </label>
+                    <input
+                      type="range"
+                      min={1} max={30}
+                      value={onboardingForm.experienceYears}
+                      onChange={e => setOnboardingForm(p => ({...p, experienceYears: Number(e.target.value)}))}
+                      className="w-full accent-amber-500"
+                    />
+                    <div className="flex justify-between text-[11px] text-slate-400 mt-0.5">
+                      <span>1 yil</span><span>30 yil</span>
+                    </div>
+                  </div>
+
+                  {/* About */}
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">O'zingiz haqida (ixtiyoriy)</label>
+                    <textarea
+                      rows={3}
+                      value={onboardingForm.about}
+                      onChange={e => setOnboardingForm(p => ({...p, about: e.target.value}))}
+                      placeholder="Qisqacha o'zingiz haqida yozing..."
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm focus:outline-none focus:border-amber-500 focus:bg-white transition-all resize-none"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleCompleteOnboarding}
+                  disabled={isRegistering || !onboardingForm.professionId}
+                  className="mt-6 w-full py-4 bg-amber-500 text-white font-extrabold rounded-2xl text-base shadow-lg hover:bg-amber-600 active:scale-[0.98] transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+                >
+                  {isRegistering ? (
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <>✅ Boshlash — Ro'yxatdan o'tish</>
+                  )}
+                </button>
+              </div>
+            )}
+
+          </div>
+        </div>
+      )}
+      {/* ========== END ONBOARDING MODAL ========== */}
       {/* Top Header - Clean, spacious, uncluttered */}
       <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-4 py-2.5">
         <div className="flex items-center justify-between gap-2.5">

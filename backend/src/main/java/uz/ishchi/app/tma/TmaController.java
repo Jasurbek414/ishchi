@@ -86,6 +86,17 @@ public class TmaController {
         return tmaService.switchRole(principal.getId(), request);
     }
 
+    @PostMapping("/register")
+    public AuthResponse register(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestBody uz.ishchi.app.tma.dto.TmaRegisterRequest request
+    ) {
+        if (principal == null) {
+            throw uz.ishchi.app.common.exception.ApiException.unauthorized("Tizimga kirish talab qilinadi");
+        }
+        return tmaService.register(principal.getId(), request);
+    }
+
     @PostMapping("/toggle-availability")
     public java.util.Map<String, Object> toggleAvailability(@AuthenticationPrincipal UserPrincipal principal) {
         if (principal == null) {

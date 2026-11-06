@@ -375,6 +375,9 @@ public class TmaService {
         boolean hasWorker = workerOpt.isPresent();
         boolean hasEmployer = employerOpt.isPresent();
 
+        // isRegistered = false if phone is still the auto-generated TG placeholder
+        boolean isRegistered = user.getPhone() != null && !user.getPhone().startsWith("+998TG");
+
         if (user.getRole() == Role.WORKER && hasWorker) {
             WorkerProfile wp = workerOpt.get();
             List<Long> professionIds = wp.getProfessions().stream().map(Profession::getId).toList();
@@ -400,7 +403,8 @@ public class TmaService {
                     wp.getRatingAverage(),
                     wp.getRatingCount(),
                     hasWorker,
-                    hasEmployer
+                    hasEmployer,
+                    isRegistered
             );
         } else if (hasEmployer) {
             EmployerProfile ep = employerOpt.get();
@@ -425,7 +429,8 @@ public class TmaService {
                     null,
                     0,
                     hasWorker,
-                    hasEmployer
+                    hasEmployer,
+                    isRegistered
             );
         } else {
             return new TmaProfileDto(
@@ -449,9 +454,98 @@ public class TmaService {
                     null,
                     0,
                     hasWorker,
-                    hasEmployer
+                    hasEmployer,
+                    false
             );
         }
+    }
+
+    /**
+     * Complete onboarding / registration for a new TMA user.
+     * Sets their real role, name, region, profession, and marks them as registered.
+     */
+    @Transactional
+    public AuthResponse register(Long userId, TmaRegisterRequest req) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> ApiException.notFound("Foydalanuvchi topilmadi"));
+
+        // Determine target role
+        Role target = req.role() != null ? req.role() : Role.EMPLOYER;
+
+        if (target == Role.WORKER) {
+            WorkerProfile wp = workerProfileRepository.findByUserId(userId).orElseGet(() -> {
+                WorkerProfile fresh = new WorkerProfile();
+                fresh.setUser(user);
+                return fresh;
+            });
+
+            wp.setFirstName(req.firstName() != null && !req.firstName().isBlank() ? req.firstName() : "Usta");
+            wp.setLastName(req.lastName() != null ? req.lastName() : "");
+            if (req.about() != null) wp.setAbout(req.about());
+            wp.setExperienceYears(req.experienceYears() != null ? req.experienceYears() : 1);
+            wp.setAvailable(true);
+
+            if (req.regionId() != null) {
+                regionRepository.findById(req.regionId()).ifPresent(wp::setRegion);
+            }
+            if (wp.getRegion() == null) {
+                regionRepository.findAll().stream().findFirst().ifPresent(wp::setRegion);
+            }
+            if (req.districtId() != null) {
+                districtRepository.findById(req.districtId()).ifPresent(wp::setDistrict);
+            }
+            if (wp.getDistrict() == null && wp.getRegion() != null) {
+                districtRepository.findByRegionIdOrderByNameAsc(wp.getRegion().getId())
+                        .stream().findFirst().ifPresent(wp::setDistrict);
+            }
+            if (req.professionIds() != null && !req.professionIds().isEmpty()) {
+                List<Profession> profs = professionRepository.findAllById(req.professionIds());
+                wp.setProfessions(new HashSet<>(profs));
+            }
+            if (wp.getProfessions() == null || wp.getProfessions().isEmpty()) {
+                professionRepository.findByActiveTrueOrderByCategoryAscNameAsc()
+                        .stream().findFirst().ifPresent(p -> wp.setProfessions(new HashSet<>(Set.of(p))));
+            }
+            workerProfileRepository.save(wp);
+            user.setRole(Role.WORKER);
+        } else {
+            EmployerProfile ep = employerProfileRepository.findByUserId(userId).orElseGet(() -> {
+                EmployerProfile fresh = new EmployerProfile();
+                fresh.setUser(user);
+                return fresh;
+            });
+            ep.setFirstName(req.firstName() != null && !req.firstName().isBlank() ? req.firstName() : "Buyurtmachi");
+            ep.setLastName(req.lastName() != null ? req.lastName() : "");
+            if (req.about() != null) ep.setAbout(req.about());
+            if (req.regionId() != null) {
+                regionRepository.findById(req.regionId()).ifPresent(ep::setRegion);
+            }
+            if (ep.getRegion() == null) {
+                regionRepository.findAll().stream().findFirst().ifPresent(ep::setRegion);
+            }
+            if (req.districtId() != null) {
+                districtRepository.findById(req.districtId()).ifPresent(ep::setDistrict);
+            }
+            if (ep.getDistrict() == null && ep.getRegion() != null) {
+                districtRepository.findByRegionIdOrderByNameAsc(ep.getRegion().getId())
+                        .stream().findFirst().ifPresent(ep::setDistrict);
+            }
+            employerProfileRepository.save(ep);
+            user.setRole(Role.EMPLOYER);
+        }
+
+        // Mark as registered by setting a real phone placeholder (not +998TG...)
+        // We use "+998TGR" prefix for registered-but-no-phone users
+        if (user.getPhone() != null && user.getPhone().startsWith("+998TG")) {
+            // Replace placeholder with registered marker
+            String registeredPhone = "+998TGR" + userId;
+            if (registeredPhone.length() > 20) registeredPhone = registeredPhone.substring(0, 20);
+            user.setPhone(registeredPhone);
+        }
+        userRepository.save(user);
+
+        String newToken = jwtService.generateAccessToken(user.getId(), user.getPhone(), user.getRole());
+        return new AuthResponse(newToken, null, user.getId(), user.getRole());
     }
 
     @Transactional

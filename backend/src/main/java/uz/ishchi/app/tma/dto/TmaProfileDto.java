@@ -25,5 +25,6 @@ public record TmaProfileDto(
         Double ratingAverage,
         int ratingCount,
         boolean hasWorkerProfile,
-        boolean hasEmployerProfile
+        boolean hasEmployerProfile,
+        boolean isRegistered
 ) {}
