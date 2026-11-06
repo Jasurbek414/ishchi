@@ -17,10 +17,13 @@ import '../state/profile_provider.dart';
 import '../state/theme_provider.dart';
 import '../state/wallet_provider.dart';
 import '../widgets/async_view.dart';
+import 'package:latlong2/latlong.dart';
+
 import '../widgets/role_switch_sheet.dart';
 import '../widgets/user_avatar.dart';
 import '../widgets/app_bottom_nav.dart';
 import '../widgets/notification_bell_button.dart';
+import 'location_picker_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -43,6 +46,37 @@ class ProfileScreen extends ConsumerWidget {
     );
     if (confirmed == true) {
       await ref.read(authNotifierProvider.notifier).logout();
+    }
+  }
+
+  Future<void> _pinLocationOnMap(BuildContext context, WidgetRef ref, Profile profile) async {
+    final currentPoint = profile.latitude != null && profile.longitude != null
+        ? LatLng(profile.latitude!, profile.longitude!)
+        : null;
+    final picked = await Navigator.of(context).push<LatLng>(
+      MaterialPageRoute(builder: (_) => LocationPickerScreen(initial: currentPoint)),
+    );
+    if (picked != null && context.mounted) {
+      try {
+        await ref.read(profileProvider.notifier).updateProfile(
+              latitude: picked.latitude,
+              longitude: picked.longitude,
+            );
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Turgan joyingiz xaritada muvaffaqiyatli saqlandi!"),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+          );
+        }
+      }
     }
   }
 
@@ -166,7 +200,16 @@ class ProfileScreen extends ConsumerWidget {
               const SizedBox(height: 20),
               _SectionCard(
                 children: [
-                  _InfoTile(icon: PhosphorIcons.mapPin(), label: context.l10n.fieldRegion, value: '${profile.regionName}, ${profile.districtName}'),
+                  _InfoTile(
+                    icon: PhosphorIcons.mapPin(),
+                    label: context.l10n.fieldRegion,
+                    value: '${profile.regionName}, ${profile.districtName}',
+                    trailing: TextButton.icon(
+                      onPressed: () => _pinLocationOnMap(context, ref, profile),
+                      icon: const Icon(Icons.edit_location_alt_outlined, size: 16),
+                      label: const Text("Xaritada belgilash", style: TextStyle(fontSize: 12)),
+                    ),
+                  ),
                   if (profile.role == UserRole.worker) ...[
                     const Divider(height: 1),
                     _InfoTile(
@@ -218,6 +261,37 @@ class ProfileScreen extends ConsumerWidget {
               const SizedBox(height: 20),
               _SectionCard(
                 children: [
+                  if (profile.role == UserRole.worker) ...[
+                    _MenuTile(
+                      icon: PhosphorIcons.mapTrifold(PhosphorIconsStyle.bold),
+                      label: "Xaritada e'lonlar va ish beruvchilar",
+                      subtitle: "Atrofdagi barcha ish joylari va kompaniyalar",
+                      onTap: () => context.push('/worker/jobs-map'),
+                    ),
+                    const Divider(height: 1),
+                    _MenuTile(
+                      icon: PhosphorIcons.crosshair(PhosphorIconsStyle.bold),
+                      label: "Turgan joyimni xaritada belgilash",
+                      subtitle: profile.latitude != null ? "Aniq nuqta saqlangan" : "Xaritada nuqtani ko'rsating",
+                      onTap: () => _pinLocationOnMap(context, ref, profile),
+                    ),
+                    const Divider(height: 1),
+                  ] else if (profile.role == UserRole.employer) ...[
+                    _MenuTile(
+                      icon: PhosphorIcons.mapTrifold(PhosphorIconsStyle.bold),
+                      label: "Xaritada ishchilar",
+                      subtitle: "Atrofdagi barcha mutaxassislar",
+                      onTap: () => context.push('/employer/workers-map'),
+                    ),
+                    const Divider(height: 1),
+                    _MenuTile(
+                      icon: PhosphorIcons.crosshair(PhosphorIconsStyle.bold),
+                      label: "Turgan joyimni xaritada belgilash",
+                      subtitle: profile.latitude != null ? "Aniq nuqta saqlangan" : "Xaritada korxona nuqtasini ko'rsating",
+                      onTap: () => _pinLocationOnMap(context, ref, profile),
+                    ),
+                    const Divider(height: 1),
+                  ],
                   _MenuTile(
                     icon: PhosphorIcons.bell(),
                     label: 'Bildirishnomalar',
@@ -368,11 +442,12 @@ class _SectionCard extends StatelessWidget {
 }
 
 class _InfoTile extends StatelessWidget {
-  const _InfoTile({required this.icon, required this.label, required this.value});
+  const _InfoTile({required this.icon, required this.label, required this.value, this.trailing});
 
   final IconData icon;
   final String label;
   final String value;
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -380,7 +455,7 @@ class _InfoTile extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Icon(icon, color: cs.onSurfaceVariant, size: 20),
           const SizedBox(width: 12),
@@ -394,6 +469,7 @@ class _InfoTile extends StatelessWidget {
               ],
             ),
           ),
+          if (trailing != null) trailing!,
         ],
       ),
     );
@@ -456,10 +532,11 @@ class _AvailableTodayCardState extends ConsumerState<_AvailableTodayCard> {
 }
 
 class _MenuTile extends StatelessWidget {
-  const _MenuTile({required this.icon, required this.label, required this.onTap, this.color});
+  const _MenuTile({required this.icon, required this.label, required this.onTap, this.color, this.subtitle});
 
   final IconData icon;
   final String label;
+  final String? subtitle;
   final VoidCallback onTap;
   final Color? color;
 
@@ -470,12 +547,24 @@ class _MenuTile extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
         child: Row(
           children: [
             Icon(icon, color: itemColor, size: 20),
             const SizedBox(width: 14),
-            Expanded(child: Text(label, style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w500, color: itemColor))),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(label, style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w500, color: itemColor)),
+                  if (subtitle != null) ...[
+                    const SizedBox(height: 2),
+                    Text(subtitle!, style: TextStyle(fontSize: 12, color: cs.onSurfaceVariant)),
+                  ],
+                ],
+              ),
+            ),
             Icon(PhosphorIcons.caretRight(), color: color ?? cs.onSurfaceVariant, size: 16),
           ],
         ),

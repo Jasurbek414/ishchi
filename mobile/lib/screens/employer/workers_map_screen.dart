@@ -45,6 +45,7 @@ class WorkersMapScreen extends ConsumerWidget {
         idOf: (w) => w.id,
         pointOf: (w) => LatLng(w.latitude!, w.longitude!),
         markerSize: AvatarMarker.size,
+        onItemOpen: (w) => context.push('/employer/workers/${w.id}'),
         markerBuilder: (context, w, selected) => AvatarMarker(
           selected: selected,
           badgeColor: w.availableToday ? Colors.green.shade600 : null,

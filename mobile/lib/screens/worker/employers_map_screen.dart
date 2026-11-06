@@ -25,7 +25,16 @@ class EmployersMapScreen extends ConsumerWidget {
     final repository = ref.read(employerRepositoryProvider);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.employersMapTitle)),
+      appBar: AppBar(
+        title: Text(l10n.employersMapTitle),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.work_outline),
+            tooltip: "E'lonlarni xaritada ko'rish",
+            onPressed: () => context.push('/worker/jobs-map'),
+          ),
+        ],
+      ),
       body: ExploreMap<Employer>(
         load: (q) => repository.mapSearch(
           latitude: q.center?.latitude,
@@ -35,6 +44,10 @@ class EmployersMapScreen extends ConsumerWidget {
         idOf: (e) => e.id,
         pointOf: (e) => LatLng(e.latitude!, e.longitude!),
         markerSize: AvatarMarker.size,
+        onItemOpen: (e) => context.push(Uri(
+          path: '/worker/jobs-map',
+          queryParameters: {'employerId': '${e.id}', 'name': e.fullName},
+        ).toString()),
         markerBuilder: (context, e, selected) => AvatarMarker(
           selected: selected,
           child: UserAvatar(url: e.avatarUrl, name: e.fullName, radius: 20),

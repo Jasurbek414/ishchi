@@ -239,7 +239,7 @@ class _JobDetailBody extends StatelessWidget {
       children: [
         _JobHeader(job: job),
         Padding(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 36),
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 130),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

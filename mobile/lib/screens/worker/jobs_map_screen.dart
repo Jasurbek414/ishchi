@@ -34,6 +34,14 @@ class JobsMapScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(employerName != null ? l10n.employerJobsMapTitle(employerName!) : l10n.jobsMapTitle),
+        actions: [
+          if (employerId == null)
+            IconButton(
+              icon: const Icon(Icons.business_outlined),
+              tooltip: "Ish beruvchilarni xaritada ko'rish",
+              onPressed: () => context.push('/worker/employers-map'),
+            ),
+        ],
       ),
       body: ExploreMap<Job>(
         load: (q) => repository.mapSearch(
@@ -47,6 +55,11 @@ class JobsMapScreen extends ConsumerWidget {
         idOf: (job) => job.id,
         pointOf: (job) => LatLng(job.latitude!, job.longitude!),
         markerSize: PriceMarker.size,
+        onItemOpen: (job) async {
+          if (await confirmJobUnlock(context, ref, job)) {
+            if (context.mounted) context.push('/worker/jobs/${job.id}');
+          }
+        },
         markerBuilder: (context, job, selected) => PriceMarker(
           label: job.payment > 0 ? compactPrice(context, job.payment) : '—',
           urgent: job.urgent,

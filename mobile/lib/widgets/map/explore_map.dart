@@ -7,6 +7,7 @@ import 'package:latlong2/latlong.dart';
 
 import '../../core/api_exception.dart';
 import '../../core/my_location.dart';
+import '../../data/uzbekistan_regions_data.dart';
 import '../../l10n/l10n_x.dart';
 import 'app_map.dart';
 import 'map_tiles.dart';
@@ -45,6 +46,8 @@ class ExploreMap<T> extends StatefulWidget {
     this.filters = const [],
     this.showUrgentFilter = false,
     this.fallbackCenter,
+    this.onItemOpen,
+    this.showRegionSelector = true,
   });
 
   final Future<List<T>> Function(MapQuery query) load;
@@ -58,6 +61,12 @@ class ExploreMap<T> extends StatefulWidget {
   final String emptyText;
   final List<MapFilterOption> filters;
   final bool showUrgentFilter;
+
+  /// Optional callback when item is selected and tapped again or explicitly opened.
+  final void Function(T item)? onItemOpen;
+
+  /// Whether to show the top horizontal region selector chips.
+  final bool showRegionSelector;
 
   /// Where to look when there is nothing to show and the user's position is unknown, e.g. the
   /// place set in their profile.
@@ -81,6 +90,22 @@ class _ExploreMapState<T> extends State<ExploreMap<T>> {
   bool _fitPending = true;
   int? _professionId;
   bool _urgentOnly = false;
+
+  UzbekistanRegionGeo? _selectedRegion;
+
+  void _selectRegion(UzbekistanRegionGeo? region) {
+    setState(() {
+      _selectedRegion = region;
+      _moved = false;
+    });
+    if (region != null) {
+      _controller.move(region.center, region.defaultZoom);
+      _reload(area: true);
+    } else {
+      _fitPending = true;
+      _reload(area: false);
+    }
+  }
 
   /// Bumped per request, so an older, slower answer cannot overwrite a newer one.
   int _generation = 0;
@@ -193,7 +218,14 @@ class _ExploreMapState<T> extends State<ExploreMap<T>> {
           height: widget.markerSize.height,
           alignment: Alignment.topCenter,
           child: GestureDetector(
-            onTap: () => _select(item),
+            onTap: () {
+              final isAlreadySelected = selected != null && widget.idOf(selected) == widget.idOf(item);
+              if (isAlreadySelected && widget.onItemOpen != null) {
+                widget.onItemOpen!(item);
+              } else {
+                _select(item);
+              }
+            },
             child: widget.markerBuilder(
                 context, item, selected != null && widget.idOf(selected) == widget.idOf(item)),
           ),
@@ -216,6 +248,23 @@ class _ExploreMapState<T> extends State<ExploreMap<T>> {
             if (hasGesture && !_moved && !_loading) setState(() => _moved = true);
           },
           layers: [
+            CircleLayer(
+              circles: [
+                for (final r in uzbekistanRegionsGeo)
+                  CircleMarker(
+                    point: r.center,
+                    radius: r.radiusKm * 1000,
+                    useRadiusInMeter: true,
+                    color: _selectedRegion?.id == r.id
+                        ? cs.primary.withValues(alpha: 0.12)
+                        : Colors.transparent,
+                    borderColor: _selectedRegion?.id == r.id
+                        ? cs.primary
+                        : cs.primary.withValues(alpha: 0.25),
+                    borderStrokeWidth: _selectedRegion?.id == r.id ? 2.5 : 1.0,
+                  ),
+              ],
+            ),
             MarkerClusterLayerWidget(
               options: MarkerClusterLayerOptions(
                 markers: markers,
@@ -245,12 +294,35 @@ class _ExploreMapState<T> extends State<ExploreMap<T>> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (hasFilters)
+                if (widget.showRegionSelector)
                   SizedBox(
-                    height: 48,
+                    height: 44,
                     child: ListView(
                       scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+                      padding: const EdgeInsets.fromLTRB(12, 6, 12, 0),
+                      children: [
+                        _MapChip(
+                          label: 'Barcha hududlar',
+                          icon: Icons.public_rounded,
+                          selected: _selectedRegion == null,
+                          onTap: () => _selectRegion(null),
+                        ),
+                        for (final r in uzbekistanRegionsGeo)
+                          _MapChip(
+                            label: r.shortName,
+                            selected: _selectedRegion?.id == r.id,
+                            onTap: () => _selectRegion(_selectedRegion?.id == r.id ? null : r),
+                          ),
+                      ],
+                    ),
+                  ),
+                if (hasFilters) ...[
+                  const SizedBox(height: 4),
+                  SizedBox(
+                    height: 44,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),
                       children: [
                         if (widget.showUrgentFilter)
                           _MapChip(
@@ -285,6 +357,7 @@ class _ExploreMapState<T> extends State<ExploreMap<T>> {
                       ],
                     ),
                   ),
+                ],
                 Padding(
                   padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
                   child: AnimatedSwitcher(
@@ -312,7 +385,7 @@ class _ExploreMapState<T> extends State<ExploreMap<T>> {
           duration: const Duration(milliseconds: 220),
           curve: Curves.easeOutCubic,
           right: 12,
-          bottom: (selected != null ? 212 : 40) + MediaQuery.paddingOf(context).bottom,
+          bottom: (selected != null ? 220 : 38) + MediaQuery.paddingOf(context).bottom,
           child: MapControls(controller: _controller, onLocate: _locate, locating: _locating),
         ),
 
@@ -321,7 +394,7 @@ class _ExploreMapState<T> extends State<ExploreMap<T>> {
           left: 12,
           right: 12,
           // Leaves the strip at the very bottom for the map's attribution.
-          bottom: 28 + MediaQuery.paddingOf(context).bottom,
+          bottom: 24 + MediaQuery.paddingOf(context).bottom,
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 220),
             switchInCurve: Curves.easeOutCubic,
@@ -332,7 +405,29 @@ class _ExploreMapState<T> extends State<ExploreMap<T>> {
             child: selected != null
                 ? KeyedSubtree(
                     key: ValueKey(widget.idOf(selected)),
-                    child: widget.cardBuilder(context, selected, _distanceTo(selected)),
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        widget.cardBuilder(context, selected, _distanceTo(selected)),
+                        Positioned(
+                          top: 8,
+                          right: 8,
+                          child: Material(
+                            color: cs.surface.withValues(alpha: 0.94),
+                            elevation: 2,
+                            shape: const CircleBorder(),
+                            child: InkWell(
+                              customBorder: const CircleBorder(),
+                              onTap: () => setState(() => _selected = null),
+                              child: Padding(
+                                padding: const EdgeInsets.all(5),
+                                child: Icon(Icons.close_rounded, size: 18, color: cs.onSurfaceVariant),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   )
                 : _error != null
                     ? _NoticeCard(
@@ -467,6 +562,7 @@ class MapItemCard extends StatelessWidget {
     required this.actionLabel,
     required this.onAction,
     this.onTap,
+    this.onClose,
     this.badges = const [],
   });
 
@@ -478,6 +574,7 @@ class MapItemCard extends StatelessWidget {
   final String actionLabel;
   final VoidCallback onAction;
   final VoidCallback? onTap;
+  final VoidCallback? onClose;
 
   @override
   Widget build(BuildContext context) {
@@ -488,67 +585,86 @@ class MapItemCard extends StatelessWidget {
       shadowColor: Colors.black38,
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: InkWell(
-        onTap: onTap ?? onAction,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+      child: Stack(
+        children: [
+          InkWell(
+            onTap: onTap ?? onAction,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  leading,
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(title,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontSize: 15.5, fontWeight: FontWeight.w700, height: 1.25)),
-                        if (subtitle != null && subtitle!.isNotEmpty) ...[
-                          const SizedBox(height: 3),
-                          Text(subtitle!,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12.5)),
-                        ],
-                        if (badges.isNotEmpty) ...[
-                          const SizedBox(height: 6),
-                          Wrap(spacing: 6, runSpacing: 6, children: badges),
-                        ],
-                      ],
-                    ),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      leading,
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(right: 28),
+                              child: Text(title,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(fontSize: 15.5, fontWeight: FontWeight.w700, height: 1.25)),
+                            ),
+                            if (subtitle != null && subtitle!.isNotEmpty) ...[
+                              const SizedBox(height: 3),
+                              Text(subtitle!,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12.5)),
+                            ],
+                            if (badges.isNotEmpty) ...[
+                              const SizedBox(height: 6),
+                              Wrap(spacing: 6, runSpacing: 6, children: badges),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Wrap(
+                          spacing: 12,
+                          runSpacing: 4,
+                          children: [for (final f in facts) f],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      FilledButton(
+                        onPressed: onAction,
+                        style: FilledButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          minimumSize: const Size(0, 38),
+                        ),
+                        child: Text(actionLabel),
+                      ),
+                    ],
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(
-                    child: Wrap(
-                      spacing: 12,
-                      runSpacing: 4,
-                      children: [for (final f in facts) f],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  FilledButton(
-                    onPressed: onAction,
-                    style: FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      minimumSize: const Size(0, 38),
-                    ),
-                    child: Text(actionLabel),
-                  ),
-                ],
-              ),
-            ],
+            ),
           ),
-        ),
+          if (onClose != null)
+            Positioned(
+              top: 8,
+              right: 8,
+              child: IconButton(
+                visualDensity: VisualDensity.compact,
+                iconSize: 18,
+                icon: Icon(Icons.close_rounded, color: cs.onSurfaceVariant),
+                tooltip: 'Yopish',
+                onPressed: onClose,
+              ),
+            ),
+        ],
       ),
     );
   }

@@ -85,7 +85,7 @@ class _WorkerHomeScreenState extends ConsumerState<WorkerHomeScreen> {
           IconButton(
             icon: const Icon(Icons.map_outlined),
             tooltip: context.l10n.viewEmployersOnMapTooltip,
-            onPressed: () => context.push('/worker/employers-map'),
+            onPressed: () => context.push('/worker/jobs-map'),
           ),
         ],
       ),
