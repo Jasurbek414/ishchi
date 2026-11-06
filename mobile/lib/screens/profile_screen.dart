@@ -263,14 +263,14 @@ class ProfileScreen extends ConsumerWidget {
                 children: [
                   if (profile.role == UserRole.worker) ...[
                     _MenuTile(
-                      icon: PhosphorIcons.mapTrifold(PhosphorIconsStyle.bold),
+                      icon: Icons.map_outlined,
                       label: "Xaritada e'lonlar va ish beruvchilar",
                       subtitle: "Atrofdagi barcha ish joylari va kompaniyalar",
                       onTap: () => context.push('/worker/jobs-map'),
                     ),
                     const Divider(height: 1),
                     _MenuTile(
-                      icon: PhosphorIcons.crosshair(PhosphorIconsStyle.bold),
+                      icon: Icons.my_location_outlined,
                       label: "Turgan joyimni xaritada belgilash",
                       subtitle: profile.latitude != null ? "Aniq nuqta saqlangan" : "Xaritada nuqtani ko'rsating",
                       onTap: () => _pinLocationOnMap(context, ref, profile),
@@ -278,14 +278,14 @@ class ProfileScreen extends ConsumerWidget {
                     const Divider(height: 1),
                   ] else if (profile.role == UserRole.employer) ...[
                     _MenuTile(
-                      icon: PhosphorIcons.mapTrifold(PhosphorIconsStyle.bold),
+                      icon: Icons.map_outlined,
                       label: "Xaritada ishchilar",
                       subtitle: "Atrofdagi barcha mutaxassislar",
                       onTap: () => context.push('/employer/workers-map'),
                     ),
                     const Divider(height: 1),
                     _MenuTile(
-                      icon: PhosphorIcons.crosshair(PhosphorIconsStyle.bold),
+                      icon: Icons.my_location_outlined,
                       label: "Turgan joyimni xaritada belgilash",
                       subtitle: profile.latitude != null ? "Aniq nuqta saqlangan" : "Xaritada korxona nuqtasini ko'rsating",
                       onTap: () => _pinLocationOnMap(context, ref, profile),
