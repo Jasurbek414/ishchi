@@ -111,14 +111,19 @@ public class TelegramClient {
     }
 
     /** A reply-keyboard button. Set {@code requestContact} to have Telegram share the viewer's
-     *  own verified phone number when tapped — this can't be spoofed to a different number. */
-    public record KeyboardButton(String text, boolean requestContact) {
+     *  own verified phone number when tapped — this can't be spoofed to a different number.
+     *  Set {@code webAppUrl} to launch a Telegram Mini App when tapped. */
+    public record KeyboardButton(String text, boolean requestContact, String webAppUrl) {
         public static KeyboardButton of(String text) {
-            return new KeyboardButton(text, false);
+            return new KeyboardButton(text, false, null);
         }
 
         public static KeyboardButton contactRequest(String text) {
-            return new KeyboardButton(text, true);
+            return new KeyboardButton(text, true, null);
+        }
+
+        public static KeyboardButton webApp(String text, String webAppUrl) {
+            return new KeyboardButton(text, false, webAppUrl);
         }
     }
 
@@ -137,6 +142,11 @@ public class TelegramClient {
                     btn.put("text", button.text());
                     if (button.requestContact()) {
                         btn.put("request_contact", true);
+                    }
+                    if (button.webAppUrl() != null && !button.webAppUrl().isBlank()) {
+                        var webAppNode = mapper.createObjectNode();
+                        webAppNode.put("url", button.webAppUrl());
+                        btn.set("web_app", webAppNode);
                     }
                     rowNode.add(btn);
                 }
@@ -161,6 +171,37 @@ public class TelegramClient {
             return ok;
         } catch (Exception e) {
             log.error("Telegram sendMessage (keyboard) so'rovi muvaffaqiyatsiz", e);
+            return false;
+        }
+    }
+
+    /** Configures the persistent bot menu button (bottom-left) to launch a Telegram Mini App. */
+    public boolean setChatMenuButton(String token, String text, String webAppUrl) {
+        try {
+            var root = mapper.createObjectNode();
+            var menuButton = mapper.createObjectNode();
+            menuButton.put("type", "web_app");
+            menuButton.put("text", text);
+            var webApp = mapper.createObjectNode();
+            webApp.put("url", webAppUrl);
+            menuButton.set("web_app", webApp);
+            root.set("menu_button", menuButton);
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.telegram.org/bot" + token + "/setChatMenuButton"))
+                    .timeout(Duration.ofSeconds(10))
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(root)))
+                    .build();
+            HttpResponse<String> response = http.send(request, HttpResponse.BodyHandlers.ofString());
+            JsonNode body = mapper.readTree(response.body());
+            boolean ok = body.path("ok").asBoolean(false);
+            if (!ok) {
+                log.warn("Telegram setChatMenuButton muvaffaqiyatsiz: {}", response.body());
+            }
+            return ok;
+        } catch (Exception e) {
+            log.error("Telegram setChatMenuButton xatosi", e);
             return false;
         }
     }

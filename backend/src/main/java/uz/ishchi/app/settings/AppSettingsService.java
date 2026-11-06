@@ -77,6 +77,8 @@ public class AppSettingsService {
                 if (!webhookOk) {
                     throw ApiException.badRequest("Bot tokeni to'g'ri, lekin webhook o'rnatilmadi. Qaytadan urinib ko'ring");
                 }
+                String tmaUrl = (baseUrl.endsWith("/") ? baseUrl : baseUrl + "/") + "tma/";
+                telegramClient.setChatMenuButton(telegramBotToken, "📱 Ishchi", tmaUrl);
             }
         }
         return toResponse(settings);
@@ -138,6 +140,8 @@ public class AppSettingsService {
             log.warn("Telegram webhook'ni o'rnatib bo'lmadi ({}) — admin panelda bot tokenini qayta saqlang",
                     webhookUrl());
         }
+        String tmaUrl = (baseUrl.endsWith("/") ? baseUrl : baseUrl + "/") + "tma/";
+        telegramClient.setChatMenuButton(token, "📱 Ishchi", tmaUrl);
     }
 
     private String generateWebhookSecret() {
