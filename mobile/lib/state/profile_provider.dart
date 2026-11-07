@@ -50,6 +50,16 @@ class ProfileNotifier extends AsyncNotifier<Profile> {
     state = AsyncData(updated);
   }
 
+  Future<void> setPresetAvatar(String avatarUrl) async {
+    final updated = await ref.read(profileRepositoryProvider).setPresetAvatar(avatarUrl);
+    state = AsyncData(updated);
+  }
+
+  Future<void> deleteAvatar() async {
+    final updated = await ref.read(profileRepositoryProvider).deleteAvatar();
+    state = AsyncData(updated);
+  }
+
   Future<void> addExperience({
     required String companyName,
     required String positionTitle,

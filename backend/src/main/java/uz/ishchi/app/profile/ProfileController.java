@@ -10,7 +10,10 @@ import uz.ishchi.app.auth.dto.AuthResponse;
 import uz.ishchi.app.auth.dto.ChangePasswordRequest;
 import uz.ishchi.app.auth.dto.MessageResponse;
 import uz.ishchi.app.auth.dto.SwitchRoleRequest;
+import uz.ishchi.app.profile.dto.AvatarPresetDto;
+import uz.ishchi.app.profile.dto.PresetAvatarRequest;
 import uz.ishchi.app.profile.dto.ProfileResponse;
+import java.util.List;
 import uz.ishchi.app.profile.dto.ProfileUpdateRequest;
 import uz.ishchi.app.profile.dto.WorkExperienceRequest;
 import uz.ishchi.app.security.UserPrincipal;
@@ -68,6 +71,22 @@ public class ProfileController {
     @DeleteMapping("/experience/{id}")
     public ProfileResponse deleteExperience(@AuthenticationPrincipal UserPrincipal principal, @PathVariable Long id) {
         return profileService.deleteExperience(principal.getUser(), id);
+    }
+
+    @GetMapping("/avatar/presets")
+    public List<AvatarPresetDto> getAvatarPresets() {
+        return profileService.getAvatarPresets();
+    }
+
+    @PostMapping("/avatar/preset")
+    public ProfileResponse setPresetAvatar(@AuthenticationPrincipal UserPrincipal principal,
+                                           @Valid @RequestBody PresetAvatarRequest request) {
+        return profileService.setPresetAvatar(principal.getUser(), request.avatarUrl());
+    }
+
+    @DeleteMapping("/avatar")
+    public ProfileResponse deleteAvatar(@AuthenticationPrincipal UserPrincipal principal) {
+        return profileService.deleteAvatar(principal.getUser());
     }
 
     @DeleteMapping

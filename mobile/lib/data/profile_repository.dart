@@ -64,6 +64,16 @@ class ProfileRepository {
     return Profile.fromJson(res);
   }
 
+  Future<Profile> setPresetAvatar(String avatarUrl) async {
+    final res = await _client.post('/profile/avatar/preset', data: {'avatarUrl': avatarUrl});
+    return Profile.fromJson(res);
+  }
+
+  Future<Profile> deleteAvatar() async {
+    final res = await _client.delete('/profile/avatar');
+    return Profile.fromJson(res);
+  }
+
   Future<Profile> addExperience({
     required String companyName,
     required String positionTitle,

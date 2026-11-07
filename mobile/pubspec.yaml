@@ -46,6 +46,7 @@ flutter:
   generate: true
   assets:
     - assets/icon/
+    - assets/avatars/
 
 flutter_launcher_icons:
   android: true

@@ -25,20 +25,66 @@ class UserAvatar extends StatelessWidget {
     return '$base$url';
   }
 
+  bool get _isLocalPreset {
+    if (url == null) return false;
+    return url!.startsWith('/assets/avatars/') || url!.startsWith('assets/avatars/');
+  }
+
+  String get _localAssetPath {
+    if (url == null) return '';
+    if (url!.startsWith('/')) {
+      return url!.substring(1);
+    }
+    return url!;
+  }
+
+  Widget _buildFallback(ColorScheme cs) {
+    return CircleAvatar(
+      radius: radius,
+      backgroundColor: cs.primary.withValues(alpha: 0.12),
+      child: Text(
+        _initials,
+        style: TextStyle(
+          color: cs.primary,
+          fontWeight: FontWeight.w700,
+          fontSize: radius * 0.6,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final resolvedUrl = _fullUrl;
     if (resolvedUrl == null) {
-      return CircleAvatar(
-        radius: radius,
-        backgroundColor: cs.primary.withValues(alpha: 0.12),
-        child: Text(
-          _initials,
-          style: TextStyle(color: cs.primary, fontWeight: FontWeight.w700, fontSize: radius * 0.6),
+      return _buildFallback(cs);
+    }
+
+    if (_isLocalPreset) {
+      return ClipOval(
+        child: Image.asset(
+          _localAssetPath,
+          width: radius * 2,
+          height: radius * 2,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return CachedNetworkImage(
+              imageUrl: resolvedUrl,
+              width: radius * 2,
+              height: radius * 2,
+              fit: BoxFit.cover,
+              placeholder: (context, _) => CircleAvatar(
+                radius: radius,
+                backgroundColor: cs.surfaceContainerLowest,
+              ),
+              errorWidget: (context, _, __) => _buildFallback(cs),
+            );
+          },
         ),
       );
     }
+
     return ClipOval(
       child: CachedNetworkImage(
         imageUrl: resolvedUrl,
@@ -49,11 +95,7 @@ class UserAvatar extends StatelessWidget {
           radius: radius,
           backgroundColor: cs.surfaceContainerLowest,
         ),
-        errorWidget: (context, _, __) => CircleAvatar(
-          radius: radius,
-          backgroundColor: cs.primary.withValues(alpha: 0.12),
-          child: Text(_initials, style: TextStyle(color: cs.primary, fontWeight: FontWeight.w700)),
-        ),
+        errorWidget: (context, _, __) => _buildFallback(cs),
       ),
     );
   }

@@ -9,6 +9,10 @@ import uz.ishchi.app.auth.dto.AuthResponse;
 import uz.ishchi.app.common.dto.PageResponse;
 import uz.ishchi.app.security.UserPrincipal;
 import uz.ishchi.app.tma.dto.*;
+import org.springframework.web.multipart.MultipartFile;
+import jakarta.validation.Valid;
+import uz.ishchi.app.profile.ProfileService;
+import uz.ishchi.app.profile.dto.PresetAvatarRequest;
 
 @RestController
 @RequestMapping("/api/tma")
@@ -16,6 +20,7 @@ import uz.ishchi.app.tma.dto.*;
 public class TmaController {
 
     private final TmaService tmaService;
+    private final ProfileService profileService;
 
     @GetMapping("/bootstrap")
     public TmaBootstrapResponse getBootstrap() {
@@ -126,5 +131,38 @@ public class TmaController {
         }
         boolean available = tmaService.toggleAvailability(principal.getId());
         return java.util.Map.of("available", available);
+    }
+
+    @PostMapping(value = "/avatar", consumes = "multipart/form-data")
+    public TmaProfileDto uploadAvatar(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestParam("file") MultipartFile file
+    ) {
+        if (principal == null) {
+            throw uz.ishchi.app.common.exception.ApiException.unauthorized("Tizimga kirish talab qilinadi");
+        }
+        profileService.uploadAvatar(principal.getUser(), file);
+        return tmaService.getProfile(principal.getId());
+    }
+
+    @PostMapping("/avatar/preset")
+    public TmaProfileDto selectPresetAvatar(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @Valid @RequestBody PresetAvatarRequest request
+    ) {
+        if (principal == null) {
+            throw uz.ishchi.app.common.exception.ApiException.unauthorized("Tizimga kirish talab qilinadi");
+        }
+        profileService.setPresetAvatar(principal.getUser(), request.avatarUrl());
+        return tmaService.getProfile(principal.getId());
+    }
+
+    @DeleteMapping("/avatar")
+    public TmaProfileDto deleteAvatar(@AuthenticationPrincipal UserPrincipal principal) {
+        if (principal == null) {
+            throw uz.ishchi.app.common.exception.ApiException.unauthorized("Tizimga kirish talab qilinadi");
+        }
+        profileService.deleteAvatar(principal.getUser());
+        return tmaService.getProfile(principal.getId());
     }
 }

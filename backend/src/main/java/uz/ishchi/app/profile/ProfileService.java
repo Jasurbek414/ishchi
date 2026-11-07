@@ -15,6 +15,7 @@ import uz.ishchi.app.location.RegionRepository;
 import uz.ishchi.app.profession.Profession;
 import uz.ishchi.app.profession.ProfessionRepository;
 import uz.ishchi.app.profession.dto.ProfessionResponse;
+import uz.ishchi.app.profile.dto.AvatarPresetDto;
 import uz.ishchi.app.profile.dto.ProfileResponse;
 import uz.ishchi.app.profile.dto.ProfileUpdateRequest;
 import uz.ishchi.app.profile.dto.WorkExperienceRequest;
@@ -122,6 +123,67 @@ public class ProfileService {
                 p.setLatitude(null);
                 p.setLongitude(null);
             }
+            return toResponse(user, p);
+        }
+        throw ApiException.badRequest("Administrator uchun profil mavjud emas");
+    }
+
+    private static final List<AvatarPresetDto> PRESET_AVATARS = List.of(
+            new AvatarPresetDto("worker_1", "Quruvchi / Usta", "/assets/avatars/avatar_worker_1.png"),
+            new AvatarPresetDto("worker_2", "Usta / Duradgor", "/assets/avatars/avatar_worker_2.png"),
+            new AvatarPresetDto("electrician", "Elektrik / Montajchi", "/assets/avatars/avatar_electrician.png"),
+            new AvatarPresetDto("painter", "Pardozchi / Bo'yoqchi", "/assets/avatars/avatar_painter.png"),
+            new AvatarPresetDto("mechanic", "Avtochilanar / Texnik", "/assets/avatars/avatar_mechanic.png"),
+            new AvatarPresetDto("driver", "Haydovchi", "/assets/avatars/avatar_driver.png"),
+            new AvatarPresetDto("chef", "Oshpaz / Pazanda", "/assets/avatars/avatar_chef.png"),
+            new AvatarPresetDto("tailor", "Tikuvchi / Dizayner", "/assets/avatars/avatar_tailor.png"),
+            new AvatarPresetDto("businessman", "Ish beruvchi (Erkak)", "/assets/avatars/avatar_businessman.png"),
+            new AvatarPresetDto("businesswoman", "Ish beruvchi (Ayol)", "/assets/avatars/avatar_businesswoman.png"),
+            new AvatarPresetDto("young_man", "Yordamchi ishchi", "/assets/avatars/avatar_young_man.png"),
+            new AvatarPresetDto("neutral", "Neytral profil", "/assets/avatars/avatar_neutral.png")
+    );
+
+    public List<AvatarPresetDto> getAvatarPresets() {
+        return PRESET_AVATARS;
+    }
+
+    @Transactional
+    public ProfileResponse setPresetAvatar(User user, String avatarUrl) {
+        if (avatarUrl == null || avatarUrl.isBlank()) {
+            throw ApiException.badRequest("Avatar tanlanmadi");
+        }
+        if (!avatarUrl.startsWith("/assets/avatars/") && !avatarUrl.startsWith("/avatars/")) {
+            throw ApiException.badRequest("Noto'g'ri avatar manzili");
+        }
+        if (user.getRole() == Role.WORKER) {
+            WorkerProfile p = workerProfileRepository.findByUserId(user.getId())
+                    .orElseThrow(() -> ApiException.notFound("Profil topilmadi"));
+            fileStorageService.deleteAfterCommit(p.getAvatarUrl());
+            p.setAvatarUrl(avatarUrl);
+            return toResponse(user, p);
+        } else if (user.getRole() == Role.EMPLOYER) {
+            EmployerProfile p = employerProfileRepository.findByUserId(user.getId())
+                    .orElseThrow(() -> ApiException.notFound("Profil topilmadi"));
+            fileStorageService.deleteAfterCommit(p.getAvatarUrl());
+            p.setAvatarUrl(avatarUrl);
+            return toResponse(user, p);
+        }
+        throw ApiException.badRequest("Administrator uchun profil mavjud emas");
+    }
+
+    @Transactional
+    public ProfileResponse deleteAvatar(User user) {
+        if (user.getRole() == Role.WORKER) {
+            WorkerProfile p = workerProfileRepository.findByUserId(user.getId())
+                    .orElseThrow(() -> ApiException.notFound("Profil topilmadi"));
+            fileStorageService.deleteAfterCommit(p.getAvatarUrl());
+            p.setAvatarUrl(null);
+            return toResponse(user, p);
+        } else if (user.getRole() == Role.EMPLOYER) {
+            EmployerProfile p = employerProfileRepository.findByUserId(user.getId())
+                    .orElseThrow(() -> ApiException.notFound("Profil topilmadi"));
+            fileStorageService.deleteAfterCommit(p.getAvatarUrl());
+            p.setAvatarUrl(null);
             return toResponse(user, p);
         }
         throw ApiException.badRequest("Administrator uchun profil mavjud emas");

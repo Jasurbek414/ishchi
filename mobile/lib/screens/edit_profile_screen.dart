@@ -12,6 +12,7 @@ import '../state/profile_provider.dart';
 import '../widgets/profession_multi_selector.dart';
 import '../widgets/region_district_selector.dart';
 import '../widgets/user_avatar.dart';
+import '../widgets/avatar_picker_sheet.dart';
 import '../widgets/work_experience_dialog.dart';
 import '../widgets/map/location_preview.dart';
 
@@ -191,12 +192,15 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             Center(
               child: Stack(
                 children: [
-                  UserAvatar(url: profile?.avatarUrl, name: profile?.fullName ?? '', radius: 48),
+                  GestureDetector(
+                    onTap: () => AvatarPickerSheet.show(context, currentAvatarUrl: profile?.avatarUrl),
+                    child: UserAvatar(url: profile?.avatarUrl, name: profile?.fullName ?? '', radius: 48),
+                  ),
                   Positioned(
                     bottom: 0,
                     right: 0,
                     child: InkWell(
-                      onTap: _uploadingAvatar ? null : _pickAvatar,
+                      onTap: () => AvatarPickerSheet.show(context, currentAvatarUrl: profile?.avatarUrl),
                       child: CircleAvatar(
                         radius: 16,
                         backgroundColor: cs.primary,

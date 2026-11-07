@@ -70,6 +70,7 @@ public class SecurityConfig {
                                 "/api/professions/**",
                                 "/api/app-settings/**",
                                 "/api/landing/**",
+                                "/api/profile/avatar/presets",
                                 "/api/telegram/webhook", "/api/telegram/webhook/**",
                                 "/uploads/**",
                                 "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html",

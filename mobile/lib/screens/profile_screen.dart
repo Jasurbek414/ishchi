@@ -21,6 +21,7 @@ import 'package:latlong2/latlong.dart';
 
 import '../widgets/role_switch_sheet.dart';
 import '../widgets/user_avatar.dart';
+import '../widgets/avatar_picker_sheet.dart';
 import '../widgets/app_bottom_nav.dart';
 import '../widgets/notification_bell_button.dart';
 import 'location_picker_screen.dart';
@@ -153,7 +154,31 @@ class ProfileScreen extends ConsumerWidget {
               Center(
                 child: Column(
                   children: [
-                    UserAvatar(url: profile.avatarUrl, name: profile.fullName, radius: 42),
+                    GestureDetector(
+                      onTap: () => AvatarPickerSheet.show(context, currentAvatarUrl: profile.avatarUrl),
+                      child: Stack(
+                        children: [
+                          UserAvatar(url: profile.avatarUrl, name: profile.fullName, radius: 44),
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Material(
+                              color: cs.primary,
+                              shape: const CircleBorder(),
+                              elevation: 2,
+                              child: InkWell(
+                                customBorder: const CircleBorder(),
+                                onTap: () => AvatarPickerSheet.show(context, currentAvatarUrl: profile.avatarUrl),
+                                child: const Padding(
+                                  padding: EdgeInsets.all(6),
+                                  child: Icon(Icons.camera_alt, size: 16, color: Colors.white),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                     const SizedBox(height: 12),
                     Text(profile.fullName, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
                     const SizedBox(height: 4),

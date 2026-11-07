@@ -28,7 +28,10 @@ import {
   ToggleRight,
   Edit3,
   Lock,
-  Check
+  Check,
+  Camera,
+  Trash2,
+  Image as ImageIcon
 } from 'lucide-react';
 
 const API_BASE = '/api';
@@ -53,6 +56,23 @@ export default function App() {
     }
   });
   const [userProfile, setUserProfile] = useState(null);
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
+  const [isUpdatingAvatar, setIsUpdatingAvatar] = useState(false);
+
+  const PRESET_AVATARS = [
+    { id: 'worker_1', name: 'Quruvchi / Usta', url: '/assets/avatars/avatar_worker_1.png' },
+    { id: 'worker_2', name: 'Usta / Duradgor', url: '/assets/avatars/avatar_worker_2.png' },
+    { id: 'electrician', name: 'Elektrik', url: '/assets/avatars/avatar_electrician.png' },
+    { id: 'painter', name: 'Pardozchi', url: '/assets/avatars/avatar_painter.png' },
+    { id: 'mechanic', name: 'Avtochilanar', url: '/assets/avatars/avatar_mechanic.png' },
+    { id: 'driver', name: 'Haydovchi', url: '/assets/avatars/avatar_driver.png' },
+    { id: 'chef', name: 'Oshpaz', url: '/assets/avatars/avatar_chef.png' },
+    { id: 'tailor', name: 'Tikuvchi', url: '/assets/avatars/avatar_tailor.png' },
+    { id: 'businessman', name: 'Ish beruvchi (Erkak)', url: '/assets/avatars/avatar_businessman.png' },
+    { id: 'businesswoman', name: 'Ish beruvchi (Ayol)', url: '/assets/avatars/avatar_businesswoman.png' },
+    { id: 'young_man', name: 'Yordamchi', url: '/assets/avatars/avatar_young_man.png' },
+    { id: 'neutral', name: 'Neytral', url: '/assets/avatars/avatar_neutral.png' },
+  ];
   const [isSwitchingRole, setIsSwitchingRole] = useState(false);
   const [showWorkerModal, setShowWorkerModal] = useState(false);
 
@@ -400,6 +420,87 @@ export default function App() {
       console.error(e);
     } finally {
       setIsSwitchingRole(false);
+    }
+  };
+
+  // Upload avatar from device gallery
+  const handleUploadAvatarFile = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file || !authToken) return;
+    setIsUpdatingAvatar(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await fetch(`${API_BASE}/tma/avatar`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${authToken}` },
+        body: formData,
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setUserProfile(data);
+        setShowAvatarModal(false);
+        triggerHaptic('heavy');
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err.message || 'Rasm yuklashda xatolik yuz berdi');
+      }
+    } catch (err) {
+      alert('Rasm yuklashda xatolik yuz berdi');
+    } finally {
+      setIsUpdatingAvatar(false);
+      if (e.target) e.target.value = '';
+    }
+  };
+
+  // Select preset avatar
+  const handleSelectPresetAvatar = async (presetUrl) => {
+    if (!authToken) return;
+    setIsUpdatingAvatar(true);
+    try {
+      const res = await fetch(`${API_BASE}/tma/avatar/preset`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authToken}`,
+        },
+        body: JSON.stringify({ avatarUrl: presetUrl }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setUserProfile(data);
+        setShowAvatarModal(false);
+        triggerHaptic('medium');
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err.message || 'Avatar tanlashda xatolik');
+      }
+    } catch (err) {
+      alert('Avatar tanlashda xatolik');
+    } finally {
+      setIsUpdatingAvatar(false);
+    }
+  };
+
+  // Delete avatar
+  const handleDeleteAvatar = async () => {
+    if (!authToken) return;
+    setIsUpdatingAvatar(true);
+    try {
+      const res = await fetch(`${API_BASE}/tma/avatar`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setUserProfile(data);
+        setShowAvatarModal(false);
+        triggerHaptic('medium');
+      }
+    } catch (err) {
+      console.warn('Delete avatar error', err);
+    } finally {
+      setIsUpdatingAvatar(false);
     }
   };
 
@@ -1508,8 +1609,25 @@ export default function App() {
             {/* User Main Card */}
             <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm">
               <div className="flex items-center gap-3.5">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center font-extrabold text-xl shadow-md ring-4 ring-emerald-50 flex-shrink-0">
-                  {userProfile?.fullName ? userProfile.fullName[0].toUpperCase() : (tgUser?.first_name ? tgUser.first_name[0].toUpperCase() : 'U')}
+                <div className="relative group cursor-pointer" onClick={() => setShowAvatarModal(true)}>
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center font-extrabold text-2xl shadow-md ring-4 ring-emerald-50 flex-shrink-0 overflow-hidden">
+                    {userProfile?.avatarUrl ? (
+                      <img src={userProfile.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      <span>{userProfile?.fullName ? userProfile.fullName[0].toUpperCase() : (tgUser?.first_name ? tgUser.first_name[0].toUpperCase() : 'U')}</span>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowAvatarModal(true);
+                    }}
+                    className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-md border-2 border-white hover:bg-emerald-700 active:scale-95 transition-all"
+                    title="Rasmni o'zgartirish"
+                  >
+                    <Camera className="w-3.5 h-3.5" />
+                  </button>
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5">
@@ -2128,6 +2246,101 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* ===================== AVATAR PICKER MODAL ===================== */}
+      {showAvatarModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl max-h-[85vh] overflow-y-auto p-5 animate-in slide-in-from-bottom duration-200">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h3 className="font-extrabold text-slate-900 text-base">Profil rasmini tanlash</h3>
+              <button
+                onClick={() => setShowAvatarModal(false)}
+                className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Quick Actions: Gallery upload & Delete */}
+            <div className="mt-4 flex gap-2">
+              <label className="flex-1 py-3 px-4 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] text-white font-bold text-xs rounded-xl shadow cursor-pointer flex items-center justify-center gap-2 transition-all">
+                <ImageIcon className="w-4 h-4" />
+                <span>Galereyadan tanlash</span>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handleUploadAvatarFile}
+                  disabled={isUpdatingAvatar}
+                  className="hidden"
+                />
+              </label>
+
+              {userProfile?.avatarUrl && (
+                <button
+                  type="button"
+                  onClick={handleDeleteAvatar}
+                  disabled={isUpdatingAvatar}
+                  className="py-3 px-3.5 bg-red-50 hover:bg-red-100 text-red-600 font-bold text-xs rounded-xl border border-red-200 flex items-center gap-1.5 transition-all"
+                  title="Rasmni o'chirish"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>O'chirish</span>
+                </button>
+              )}
+            </div>
+
+            {/* Loading indicator */}
+            {isUpdatingAvatar && (
+              <div className="mt-3 p-2 bg-emerald-50 text-emerald-700 text-xs rounded-lg flex items-center justify-center gap-2 font-medium">
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                <span>Rasm saqlanmoqda...</span>
+              </div>
+            )}
+
+            {/* Built-in Presets */}
+            <div className="mt-5">
+              <h4 className="text-xs font-bold text-slate-700 mb-3">Yoki tayyor avatarlardan tanlang:</h4>
+              <div className="grid grid-cols-3 gap-2.5">
+                {PRESET_AVATARS.map((preset) => {
+                  const isSelected = userProfile?.avatarUrl === preset.url;
+                  return (
+                    <button
+                      key={preset.id}
+                      type="button"
+                      disabled={isUpdatingAvatar}
+                      onClick={() => handleSelectPresetAvatar(preset.url)}
+                      className={`p-2 rounded-2xl flex flex-col items-center justify-center transition-all ${
+                        isSelected
+                          ? 'bg-emerald-50 ring-2 ring-emerald-600 shadow-sm'
+                          : 'bg-slate-50 hover:bg-slate-100 active:scale-95'
+                      }`}
+                    >
+                      <div className="w-16 h-16 rounded-full overflow-hidden relative shadow-sm">
+                        <img
+                          src={preset.url}
+                          alt={preset.name}
+                          className="w-full h-full object-cover"
+                        />
+                        {isSelected && (
+                          <div className="absolute inset-0 bg-emerald-600/20 flex items-center justify-center">
+                            <span className="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs">✓</span>
+                          </div>
+                        )}
+                      </div>
+                      <span className={`text-[11px] mt-1.5 font-bold truncate max-w-full ${
+                        isSelected ? 'text-emerald-700' : 'text-slate-700'
+                      }`}>
+                        {preset.name}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
