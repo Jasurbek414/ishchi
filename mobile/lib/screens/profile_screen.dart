@@ -338,6 +338,13 @@ class ProfileScreen extends ConsumerWidget {
                   if (profile.role == UserRole.worker) ...[
                     const Divider(height: 1),
                     _MenuTile(
+                      icon: PhosphorIcons.handshake(),
+                      label: "Ishchi bilan shartnoma",
+                      subtitle: "Favqulodda mutaxassis arizasi va holati",
+                      onTap: () => context.push('/worker/contract'),
+                    ),
+                    const Divider(height: 1),
+                    _MenuTile(
                       icon: PhosphorIcons.checkCircle(),
                       label: context.l10n.myResponsesMenu,
                       onTap: () => context.push('/worker/my-applications'),

@@ -29,6 +29,7 @@ import '../screens/worker/job_detail_screen.dart';
 import '../screens/worker/jobs_map_screen.dart';
 import '../screens/worker/my_applications_screen.dart';
 import '../screens/worker/worker_shell.dart';
+import '../screens/worker/worker_contract_screen.dart';
 import '../state/auth_provider.dart';
 import 'navigator_key.dart';
 import 'push_notifications.dart';
@@ -119,6 +120,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: 'my-applications',
             builder: (context, state) => const MyApplicationsScreen(),
+          ),
+          GoRoute(
+            path: 'contract',
+            builder: (context, state) => const WorkerContractScreen(),
           ),
         ],
       ),

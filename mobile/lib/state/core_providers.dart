@@ -19,6 +19,7 @@ import '../data/profile_repository.dart';
 import '../data/promo_banner_repository.dart';
 import '../data/wallet_repository.dart';
 import '../data/worker_repository.dart';
+import '../data/contract_repository.dart';
 
 /// Overridden in `main()` with an instance opened before `runApp`, so providers that restore a
 /// saved setting can read it synchronously on their first build. Reading it asynchronously made
@@ -78,3 +79,5 @@ final reportRepositoryProvider =
     Provider<ReportRepository>((ref) => ReportRepository(ref.watch(apiClientProvider)));
 
 final geoRepositoryProvider = Provider<GeoRepository>((ref) => GeoRepository(ref.watch(apiClientProvider)));
+
+final contractRepositoryProvider = Provider<ContractRepository>((ref) => ContractRepository(ref.watch(apiClientProvider)));

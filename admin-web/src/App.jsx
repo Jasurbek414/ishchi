@@ -15,6 +15,7 @@ import WalletPage from './pages/WalletPage.jsx';
 import SettingsPage from './pages/SettingsPage.jsx';
 import LandingPage from './pages/LandingPage.jsx';
 import ReportsPage from './pages/ReportsPage.jsx';
+import EmergencyPage from './pages/EmergencyPage.jsx';
 import { ToastProvider } from './components/Toast.jsx';
 
 export default function App() {
@@ -37,6 +38,7 @@ export default function App() {
             <Route index element={<DashboardPage />} />
             <Route path="map" element={<MapManagementPage />} />
             <Route path="users" element={<UsersPage />} />
+            <Route path="emergency" element={<EmergencyPage />} />
             <Route path="jobs" element={<JobsPage />} />
             <Route path="professions" element={<ProfessionsPage />} />
             <Route path="promo-banners" element={<PromoBannersPage />} />

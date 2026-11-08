@@ -56,6 +56,10 @@ public class FileStorageService {
         return storeImage(file, "promo-banners");
     }
 
+    public String storeContractDocument(MultipartFile file) {
+        return storeImage(file, "contracts");
+    }
+
     /** For photos downloaded from the Telegram bot API, which always serves them as JPEG. */
     public String storeJobImageFromBytes(byte[] bytes) {
         if (bytes == null || bytes.length == 0) {
