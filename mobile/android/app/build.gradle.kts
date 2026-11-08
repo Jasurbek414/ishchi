@@ -25,7 +25,7 @@ if (hasReleaseKeystore) {
 
 android {
     namespace = "uz.ecos.ishchi.app"
-    compileSdk = 36
+    compileSdk = 35
     ndkVersion = "27.0.12077973"
 
     compileOptions {
@@ -43,9 +43,8 @@ android {
         applicationId = "uz.ecos.ishchi.app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        // Play's automatic protection requires minSdk 24+ (Android 7.0); Flutter's default is 21.
-        minSdk = 24
-        targetSdk = 36
+        minSdk = 21
+        targetSdk = 35
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
