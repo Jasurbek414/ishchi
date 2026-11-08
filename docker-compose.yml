@@ -74,7 +74,7 @@ services:
     restart: unless-stopped
     depends_on:
       - backend
-    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_LANDING_TUNNEL_TOKEN:?CLOUDFLARE_LANDING_TUNNEL_TOKEN is required}
+    command: tunnel --no-autoupdate run --protocol http2 --token ${CLOUDFLARE_LANDING_TUNNEL_TOKEN:?CLOUDFLARE_LANDING_TUNNEL_TOKEN is required}
     mem_limit: 256m
 
 volumes:

@@ -119,6 +119,12 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponse.of(413, "Payload Too Large", "Fayl hajmi 5MB dan oshmasligi kerak"));
     }
 
+    @ExceptionHandler(org.apache.catalina.connector.ClientAbortException.class)
+    public void handleClientAbort(org.apache.catalina.connector.ClientAbortException ex) {
+        // Client aborted/canceled stream (e.g., download paused, network dropped, app closed).
+        log.debug("Mijoz ulanishni to'xtatdi (client aborted): {}", ex.getMessage());
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneric(Exception ex) {
         log.error("Kutilmagan xatolik", ex);
