@@ -800,7 +800,7 @@ class _WorkerContractScreenState extends ConsumerState<WorkerContractScreen> {
               right: 4,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(color: Colors.black60, borderRadius: BorderRadius.circular(6)),
+                decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(6)),
                 child: Text(
                   title,
                   style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
