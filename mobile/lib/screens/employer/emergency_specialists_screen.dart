@@ -229,7 +229,7 @@ class _EmergencySpecialistsScreenState extends ConsumerState<EmergencySpecialist
                   selected: isSelected,
                   selectedColor: const Color(0xFFE11D48),
                   labelStyle: TextStyle(
-                    color: isSelected ? Colors.white : (isDark ? Colors.white70 : Colors.black80),
+                    color: isSelected ? Colors.white : (isDark ? Colors.white70 : Colors.black87),
                     fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                     fontSize: 12.5,
                   ),
