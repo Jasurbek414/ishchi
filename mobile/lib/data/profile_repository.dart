@@ -70,8 +70,8 @@ class ProfileRepository {
   }
 
   Future<Profile> deleteAvatar() async {
-    final res = await _client.delete('/profile/avatar');
-    return Profile.fromJson(res);
+    await _client.delete('/profile/avatar');
+    return getProfile();
   }
 
   Future<Profile> addExperience({
