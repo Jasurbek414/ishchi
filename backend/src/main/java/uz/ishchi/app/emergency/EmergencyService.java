@@ -5,7 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import uz.ishchi.app.auth.User;
+import uz.ishchi.app.user.User;
 import uz.ishchi.app.common.FileStorageService;
 import uz.ishchi.app.common.exception.ApiException;
 import uz.ishchi.app.emergency.dto.*;
