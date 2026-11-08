@@ -2294,7 +2294,7 @@ export default function App() {
       {/* ===================== EMERGENCY SPECIALISTS MODAL ===================== */}
       {showEmergencyModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="bg-white w-full sm:max-w-lg rounded-t-3xl sm:rounded-2xl max-h-[90vh] flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-200">
+          <div className="bg-white w-full sm:max-w-lg h-full sm:h-auto sm:max-h-[90vh] rounded-none sm:rounded-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-200">
             {/* Modal Header */}
             <div className="p-4 bg-gradient-to-r from-rose-500 to-orange-500 text-white flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2.5">
@@ -2331,19 +2331,19 @@ export default function App() {
             )}
 
             {/* Emergency Content: Either Specialty Cards OR Workers List */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+            <div className="flex-1 overflow-y-auto p-4 pb-8 space-y-3">
               {!emergencyCategory ? (
                 <div className="space-y-2.5">
                   <h4 className="text-xs font-bold text-slate-700 mb-2">Mutaxassislik yo'nalishini tanlang:</h4>
                   {[
-                    { id: 'santexnik', title: 'Santexnik', subtitle: 'Suv toshishi, kran, quvurlar va kanalizatsiya', icon: '💧', color: 'from-sky-500 to-blue-600' },
-                    { id: 'elektrik', title: 'Elektrik', subtitle: 'Qisqa tutashuv, elektr uzilishi, montaj', icon: '⚡', color: 'from-amber-500 to-orange-600' },
-                    { id: 'qulf', title: 'Qulf ustasi / Ochish', subtitle: 'Eshik qulfini ochish, qulflar almashiruvi', icon: '🔑', color: 'from-emerald-500 to-teal-600' },
-                    { id: 'gaz', title: 'Gaz va isitish qozoni', subtitle: 'Kotyol, kolonka va gaz quvurlari nosozligi', icon: '🔥', color: 'from-rose-500 to-red-600' },
-                    { id: 'evakuator', title: 'Evakuator / Avto SOS', subtitle: "Avariya, tortib olib ketish, yo'lda yordam", icon: '🚗', color: 'from-indigo-500 to-purple-600' },
-                    { id: 'konditsioner', title: 'Konditsioner ustasi', subtitle: 'Freon quyish, sovutish tizimlari, tozalash', icon: '❄️', color: 'from-cyan-500 to-blue-600' },
-                    { id: 'maishiy', title: 'Maishiy texnika ustasi', subtitle: "Kir yuvish, muzlatgich, texnika ta'mirlash", icon: '🧰', color: 'from-slate-600 to-slate-700' },
-                    { id: '', title: 'Barcha mutaxassislar', subtitle: "Barcha tezkor ustalarni to'liq ko'rish", icon: '🚨', color: 'from-rose-600 to-pink-600' },
+                    { id: 'santexnik', title: 'Santexnik', subtitle: 'Suv toshishi, kran, quvurlar va kanalizatsiya', icon: '💧' },
+                    { id: 'elektrik', title: 'Elektrik', subtitle: 'Qisqa tutashuv, elektr uzilishi, montaj', icon: '⚡' },
+                    { id: 'qulf', title: 'Qulf ustasi / Ochish', subtitle: 'Eshik qulfini ochish, qulflar almashiruvi', icon: '🔑' },
+                    { id: 'gaz', title: 'Gaz va isitish qozoni', subtitle: 'Kotyol, kolonka va gaz quvurlari nosozligi', icon: '🔥' },
+                    { id: 'evakuator', title: 'Evakuator / Avto SOS', subtitle: "Avariya, tortib olib ketish, yo'lda yordam", icon: '🚗' },
+                    { id: 'konditsioner', title: 'Konditsioner ustasi', subtitle: 'Freon quyish, sovutish tizimlari, tozalash', icon: '❄️' },
+                    { id: 'maishiy', title: 'Maishiy texnika ustasi', subtitle: "Kir yuvish, muzlatgich, texnika ta'mirlash", icon: '🧰' },
+                    { id: '', title: 'Barcha mutaxassislar', subtitle: "Barcha tezkor ustalarni to'liq ko'rish", icon: '🚨', isAll: true },
                   ].map((item) => (
                     <div
                       key={item.id}
@@ -2352,13 +2352,13 @@ export default function App() {
                         setEmergencyCategory(item);
                         fetchEmergencyWorkers(item.id);
                       }}
-                      className="p-3.5 bg-white border border-slate-200 rounded-2xl shadow-sm hover:border-rose-300 active:scale-[0.98] transition-all cursor-pointer flex items-center gap-3.5"
+                      className={`p-3.5 bg-white border ${item.isAll ? 'border-rose-200 bg-rose-50/30' : 'border-slate-200'} rounded-2xl shadow-sm hover:border-rose-300 active:scale-[0.98] transition-all cursor-pointer flex items-center gap-3.5`}
                     >
-                      <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center text-white text-xl shadow-sm shrink-0`}>
+                      <div className={`w-11 h-11 rounded-xl ${item.isAll ? 'bg-rose-100 text-rose-600' : 'bg-slate-100 text-slate-700 border border-slate-200/80'} flex items-center justify-center text-xl shrink-0`}>
                         {item.icon}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-bold text-sm text-slate-900 truncate">{item.title}</h4>
+                        <h4 className={`font-bold text-sm ${item.isAll ? 'text-rose-600' : 'text-slate-900'} truncate`}>{item.title}</h4>
                         <p className="text-[11.5px] text-slate-500 truncate mt-0.5">{item.subtitle}</p>
                       </div>
                       <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />
