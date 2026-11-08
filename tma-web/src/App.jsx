@@ -1212,32 +1212,21 @@ export default function App() {
               onClick={() => {
                 triggerHaptic('light');
                 setShowEmergencyModal(true);
+                setEmergencyCategory(null);
                 fetchEmergencyWorkers('');
               }}
-              className="mb-3 bg-gradient-to-r from-rose-50 to-orange-50 border border-rose-300 rounded-2xl p-3.5 shadow-sm active:scale-[0.98] transition-all cursor-pointer"
+              className="mb-3 bg-gradient-to-r from-rose-50 to-orange-50 border border-rose-300 rounded-2xl p-4 shadow-sm active:scale-[0.98] transition-all cursor-pointer"
             >
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-rose-500 to-orange-500 flex items-center justify-center text-white shadow-md shadow-rose-500/20 shrink-0 text-xl">
+              <div className="flex items-center gap-3.5">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-rose-500 to-orange-500 flex items-center justify-center text-white shadow-md shadow-rose-500/20 shrink-0 text-2xl">
                   🚨
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-1">
-                    <h3 className="font-extrabold text-sm text-slate-800 truncate">Favqulodda mutaxassis</h3>
-                    <span className="bg-rose-500 text-white text-[9.5px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0 flex items-center gap-0.5">
-                      ⚡ 24/7 TEZKOR
-                    </span>
-                  </div>
-                  <p className="text-[11.5px] text-slate-600 truncate mt-0.5">
-                    Santexnik, elektrik, qulf ochish va boshqa tezkor ustalar
+                  <h3 className="font-extrabold text-base text-slate-800 truncate">Favqulodda mutaxassis</h3>
+                  <p className="text-xs text-slate-600 truncate mt-0.5">
+                    Avariya va shoshilinch xizmatlar uchun tezkor ustalar
                   </p>
                 </div>
-                <ChevronRight className="w-4 h-4 text-rose-500 shrink-0" />
-              </div>
-              <div className="flex items-center gap-1.5 mt-2.5 overflow-x-auto no-scrollbar">
-                <span className="text-[11px] bg-white/90 text-slate-700 px-2 py-0.5 rounded border border-rose-200 font-medium shrink-0">💧 Santexnik</span>
-                <span className="text-[11px] bg-white/90 text-slate-700 px-2 py-0.5 rounded border border-rose-200 font-medium shrink-0">⚡ Elektrik</span>
-                <span className="text-[11px] bg-white/90 text-slate-700 px-2 py-0.5 rounded border border-rose-200 font-medium shrink-0">🔑 Qulf ustasi</span>
-                <span className="text-[11px] bg-white/90 text-slate-700 px-2 py-0.5 rounded border border-rose-200 font-medium shrink-0">🚗 Avto SOS</span>
               </div>
             </div>
             {/* Horizontal Profession Chips */}
@@ -2323,40 +2312,60 @@ export default function App() {
               </button>
             </div>
 
-            {/* Category Quick Chips */}
-            <div className="p-3 bg-slate-50 border-b border-slate-100 shrink-0">
-              <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
-                {[
-                  { id: '', label: '🚨 Barchasi' },
-                  { id: 'santexnik', label: '💧 Santexnik' },
-                  { id: 'elektrik', label: '⚡ Elektrik' },
-                  { id: 'qulf', label: '🔑 Qulf ustasi' },
-                  { id: 'gaz', label: '🔥 Gaz / Isitish' },
-                  { id: 'evakuator', label: '🚗 Evakuator' },
-                  { id: 'konditsioner', label: '❄️ Konditsioner' },
-                  { id: 'maishiy', label: '🧰 Maishiy texnika' },
-                ].map((cat) => (
-                  <button
-                    key={cat.id}
-                    onClick={() => {
-                      triggerHaptic('light');
-                      fetchEmergencyWorkers(cat.id);
-                    }}
-                    className={`px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
-                      emergencyCategory === cat.id
-                        ? 'bg-rose-600 text-white shadow-sm'
-                        : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
-                    }`}
-                  >
-                    {cat.label}
-                  </button>
-                ))}
+            {/* Breadcrumb if category selected */}
+            {emergencyCategory && (
+              <div className="p-2.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between text-xs">
+                <span className="font-bold text-slate-700 flex items-center gap-1.5">
+                  <span>{emergencyCategory.icon}</span> {emergencyCategory.title} bo'yicha ustalar
+                </span>
+                <button
+                  onClick={() => {
+                    triggerHaptic('light');
+                    setEmergencyCategory(null);
+                  }}
+                  className="text-rose-600 font-bold hover:underline"
+                >
+                  Barcha yo'nalishlar
+                </button>
               </div>
-            </div>
+            )}
 
-            {/* Emergency Workers List */}
+            {/* Emergency Content: Either Specialty Cards OR Workers List */}
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
-              {emergencyLoading ? (
+              {!emergencyCategory ? (
+                <div className="space-y-2.5">
+                  <h4 className="text-xs font-bold text-slate-700 mb-2">Mutaxassislik yo'nalishini tanlang:</h4>
+                  {[
+                    { id: 'santexnik', title: 'Santexnik', subtitle: 'Suv toshishi, kran, quvurlar va kanalizatsiya', icon: '💧', color: 'from-sky-500 to-blue-600' },
+                    { id: 'elektrik', title: 'Elektrik', subtitle: 'Qisqa tutashuv, elektr uzilishi, montaj', icon: '⚡', color: 'from-amber-500 to-orange-600' },
+                    { id: 'qulf', title: 'Qulf ustasi / Ochish', subtitle: 'Eshik qulfini ochish, qulflar almashiruvi', icon: '🔑', color: 'from-emerald-500 to-teal-600' },
+                    { id: 'gaz', title: 'Gaz va isitish qozoni', subtitle: 'Kotyol, kolonka va gaz quvurlari nosozligi', icon: '🔥', color: 'from-rose-500 to-red-600' },
+                    { id: 'evakuator', title: 'Evakuator / Avto SOS', subtitle: "Avariya, tortib olib ketish, yo'lda yordam", icon: '🚗', color: 'from-indigo-500 to-purple-600' },
+                    { id: 'konditsioner', title: 'Konditsioner ustasi', subtitle: 'Freon quyish, sovutish tizimlari, tozalash', icon: '❄️', color: 'from-cyan-500 to-blue-600' },
+                    { id: 'maishiy', title: 'Maishiy texnika ustasi', subtitle: "Kir yuvish, muzlatgich, texnika ta'mirlash", icon: '🧰', color: 'from-slate-600 to-slate-700' },
+                    { id: '', title: 'Barcha mutaxassislar', subtitle: "Barcha tezkor ustalarni to'liq ko'rish", icon: '🚨', color: 'from-rose-600 to-pink-600' },
+                  ].map((item) => (
+                    <div
+                      key={item.id}
+                      onClick={() => {
+                        triggerHaptic('light');
+                        setEmergencyCategory(item);
+                        fetchEmergencyWorkers(item.id);
+                      }}
+                      className="p-3.5 bg-white border border-slate-200 rounded-2xl shadow-sm hover:border-rose-300 active:scale-[0.98] transition-all cursor-pointer flex items-center gap-3.5"
+                    >
+                      <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center text-white text-xl shadow-sm shrink-0`}>
+                        {item.icon}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-bold text-sm text-slate-900 truncate">{item.title}</h4>
+                        <p className="text-[11.5px] text-slate-500 truncate mt-0.5">{item.subtitle}</p>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />
+                    </div>
+                  ))}
+                </div>
+              ) : emergencyLoading ? (
                 <div className="py-12 flex flex-col items-center justify-center text-slate-400 gap-2">
                   <RefreshCw className="w-6 h-6 animate-spin text-rose-500" />
                   <span className="text-xs font-medium">Ustalar yuklanmoqda...</span>
