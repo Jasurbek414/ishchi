@@ -10,6 +10,7 @@ import '../screens/auth/otp_screen.dart';
 import '../screens/auth/register_screen.dart';
 import '../screens/change_password_screen.dart';
 import '../screens/edit_profile_screen.dart';
+import '../screens/employer/emergency_specialists_screen.dart';
 import '../screens/employer/employer_shell.dart';
 import '../screens/employer/job_form_screen.dart';
 import '../screens/employer/job_applications_screen.dart';
@@ -125,6 +126,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/employer',
         builder: (context, state) => const EmployerShell(),
         routes: [
+          GoRoute(
+            path: 'emergency-specialists',
+            builder: (context, state) => const EmergencySpecialistsScreen(),
+          ),
           GoRoute(
             path: 'workers/:id',
             builder: (context, state) => WorkerDetailScreen(workerId: int.parse(state.pathParameters['id']!)),

@@ -28,6 +28,7 @@ class Worker {
     this.ratingAverage,
     this.ratingCount = 0,
     this.verified = false,
+    this.emergency = false,
   });
 
   final int id;
@@ -58,6 +59,7 @@ class Worker {
 
   /// Documents checked by an admin — the one signal the platform itself vouches for.
   final bool verified;
+  final bool emergency;
 
   /// True only while the "I can work today" window is still open.
   bool get availableToday => availableUntil != null && availableUntil!.isAfter(DateTime.now());
@@ -92,6 +94,7 @@ class Worker {
         ratingAverage: (json['ratingAverage'] as num?)?.toDouble(),
         ratingCount: (json['ratingCount'] as num?)?.toInt() ?? 0,
         verified: json['verified'] as bool? ?? false,
+        emergency: json['emergency'] as bool? ?? false,
         experiences: (json['experiences'] as List<dynamic>? ?? [])
             .map((e) => WorkExperience.fromJson(e as Map<String, dynamic>))
             .toList(),

@@ -205,12 +205,13 @@ public class TmaService {
      * Public search for workers (ustalar va ishchilar).
      */
     @Transactional(readOnly = true)
-    public Page<TmaWorkerDto> searchWorkers(Long regionId, Long districtId, Long professionId, String search, Pageable pageable) {
+    public Page<TmaWorkerDto> searchWorkers(Long regionId, Long districtId, Long professionId, String search, Boolean emergency, Pageable pageable) {
         Specification<WorkerProfile> spec = Specification.where(WorkerSpecifications.activeUser());
         if (regionId != null) spec = spec.and(WorkerSpecifications.regionId(regionId));
         if (districtId != null) spec = spec.and(WorkerSpecifications.districtId(districtId));
         if (professionId != null) spec = spec.and(WorkerSpecifications.professionId(professionId));
         if (search != null && !search.isBlank()) spec = spec.and(WorkerSpecifications.search(search));
+        if (Boolean.TRUE.equals(emergency)) spec = spec.and(WorkerSpecifications.emergency(true));
 
         Pageable effective = pageable.getSort().isSorted() ? pageable
                 : PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Sort.Direction.DESC, "ratingAverage", "updatedAt"));
@@ -240,6 +241,7 @@ public class TmaService {
                 p.getRatingCount(),
                 p.isAvailable(),
                 p.isVerified(),
+                p.isEmergency(),
                 p.getUser() != null ? p.getUser().getPhone() : null,
                 profNames,
                 p.getAbout()

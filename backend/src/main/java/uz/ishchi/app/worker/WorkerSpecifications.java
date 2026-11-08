@@ -46,6 +46,11 @@ public final class WorkerSpecifications {
     }
 
     /** Workers who said they can work today, and whose "today" has not expired. */
+    public static Specification<WorkerProfile> emergency(Boolean emergency) {
+        return (root, query, cb) -> emergency == null || !emergency ? null
+                : cb.isTrue(root.get("emergency"));
+    }
+
     public static Specification<WorkerProfile> availableToday(Boolean availableToday) {
         return (root, query, cb) -> availableToday == null || !availableToday ? null
                 : cb.greaterThan(root.get("availableUntil"), cb.literal(java.time.Instant.now()));

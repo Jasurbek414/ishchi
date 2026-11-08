@@ -33,10 +33,11 @@ public class WorkerController {
             @RequestParam(required = false) String search,
             @RequestParam(required = false) WorkPreference workPreference,
             @RequestParam(required = false) Boolean availableToday,
+            @RequestParam(required = false) Boolean emergency,
             Pageable pageable
     ) {
         Long currentUserId = principal != null && principal.getUser() != null ? principal.getUser().getId() : null;
-        return PageResponse.of(workerService.search(regionId, districtId, professionId, minExperience, search, workPreference, availableToday, currentUserId, pageable));
+        return PageResponse.of(workerService.search(regionId, districtId, professionId, minExperience, search, workPreference, availableToday, emergency, currentUserId, pageable));
     }
 
     @GetMapping("/map")

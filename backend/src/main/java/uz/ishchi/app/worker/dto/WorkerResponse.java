@@ -32,6 +32,7 @@ public record WorkerResponse(
         Integer ratingCount,
         /** Checked by an admin — the one trust signal the platform itself vouches for. */
         boolean verified,
+        boolean emergency,
         boolean hasDriverLicense,
         String driverLicenseCategories,
         List<WorkExperienceResponse> experiences
@@ -58,6 +59,10 @@ public record WorkerResponse(
     }
 
     /** The single-worker detail view an employer opens — the one place the phone is served. */
+    public static WorkerResponse forEmergencyList(WorkerProfile p) {
+        return build(p, p.getUser().getPhone(), p.getLatitude(), p.getLongitude(), null);
+    }
+
     public static WorkerResponse forDetail(WorkerProfile p, List<WorkExperienceResponse> experiences) {
         return build(p, p.getUser().getPhone(), p.getLatitude(), p.getLongitude(), experiences);
     }
@@ -86,6 +91,7 @@ public record WorkerResponse(
                 p.getRatingAverage(),
                 p.getRatingCount(),
                 p.isVerified(),
+                p.isEmergency(),
                 p.isHasDriverLicense(),
                 p.getDriverLicenseCategories(),
                 experiences

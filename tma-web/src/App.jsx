@@ -75,6 +75,10 @@ export default function App() {
   ];
   const [isSwitchingRole, setIsSwitchingRole] = useState(false);
   const [showWorkerModal, setShowWorkerModal] = useState(false);
+  const [showEmergencyModal, setShowEmergencyModal] = useState(false);
+  const [emergencyWorkers, setEmergencyWorkers] = useState([]);
+  const [emergencyLoading, setEmergencyLoading] = useState(false);
+  const [emergencyCategory, setEmergencyCategory] = useState('');
 
   // Onboarding state
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -294,6 +298,24 @@ export default function App() {
       })
       .catch((err) => console.error('Workers error', err))
       .finally(() => setLoading(false));
+  };
+
+  // Fetch Emergency Workers
+  const fetchEmergencyWorkers = (categoryKeyword = '') => {
+    setEmergencyLoading(true);
+    setEmergencyCategory(categoryKeyword);
+    const params = new URLSearchParams();
+    params.append('emergency', 'true');
+    if (categoryKeyword) params.append('search', categoryKeyword);
+    params.append('size', '50');
+
+    fetch(`${API_BASE}/tma/workers?${params.toString()}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        setEmergencyWorkers(data?.content || []);
+      })
+      .catch((err) => console.error('Emergency workers error', err))
+      .finally(() => setEmergencyLoading(false));
   };
 
   // Fetch Jobs
@@ -1185,6 +1207,39 @@ export default function App() {
         {/* ===================== TAB 1: WORKERS (USTALAR) ===================== */}
         {activeTab === 'workers' && (
           <div>
+            {/* Favqulodda Mutaxassis Card */}
+            <div 
+              onClick={() => {
+                triggerHaptic('light');
+                setShowEmergencyModal(true);
+                fetchEmergencyWorkers('');
+              }}
+              className="mb-3 bg-gradient-to-r from-rose-50 to-orange-50 border border-rose-300 rounded-2xl p-3.5 shadow-sm active:scale-[0.98] transition-all cursor-pointer"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-rose-500 to-orange-500 flex items-center justify-center text-white shadow-md shadow-rose-500/20 shrink-0 text-xl">
+                  🚨
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-1">
+                    <h3 className="font-extrabold text-sm text-slate-800 truncate">Favqulodda mutaxassis</h3>
+                    <span className="bg-rose-500 text-white text-[9.5px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0 flex items-center gap-0.5">
+                      ⚡ 24/7 TEZKOR
+                    </span>
+                  </div>
+                  <p className="text-[11.5px] text-slate-600 truncate mt-0.5">
+                    Santexnik, elektrik, qulf ochish va boshqa tezkor ustalar
+                  </p>
+                </div>
+                <ChevronRight className="w-4 h-4 text-rose-500 shrink-0" />
+              </div>
+              <div className="flex items-center gap-1.5 mt-2.5 overflow-x-auto no-scrollbar">
+                <span className="text-[11px] bg-white/90 text-slate-700 px-2 py-0.5 rounded border border-rose-200 font-medium shrink-0">💧 Santexnik</span>
+                <span className="text-[11px] bg-white/90 text-slate-700 px-2 py-0.5 rounded border border-rose-200 font-medium shrink-0">⚡ Elektrik</span>
+                <span className="text-[11px] bg-white/90 text-slate-700 px-2 py-0.5 rounded border border-rose-200 font-medium shrink-0">🔑 Qulf ustasi</span>
+                <span className="text-[11px] bg-white/90 text-slate-700 px-2 py-0.5 rounded border border-rose-200 font-medium shrink-0">🚗 Avto SOS</span>
+              </div>
+            </div>
             {/* Horizontal Profession Chips */}
             <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1.5 -mx-4 px-4 mb-2.5">
               <button
@@ -2242,6 +2297,161 @@ export default function App() {
               ) : (
                 <div className="text-center text-xs text-slate-400">Aloqa ma'lumoti mavjud emas</div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===================== EMERGENCY SPECIALISTS MODAL ===================== */}
+      {showEmergencyModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-white w-full sm:max-w-lg rounded-t-3xl sm:rounded-2xl max-h-[90vh] flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-200">
+            {/* Modal Header */}
+            <div className="p-4 bg-gradient-to-r from-rose-500 to-orange-500 text-white flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-2.5">
+                <span className="text-2xl">🚨</span>
+                <div>
+                  <h3 className="font-extrabold text-base leading-tight">Favqulodda mutaxassislar</h3>
+                  <p className="text-xs text-rose-100">24/7 Shoshilinch ta'mirlash va xizmatlar</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowEmergencyModal(false)}
+                className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Category Quick Chips */}
+            <div className="p-3 bg-slate-50 border-b border-slate-100 shrink-0">
+              <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
+                {[
+                  { id: '', label: '🚨 Barchasi' },
+                  { id: 'santexnik', label: '💧 Santexnik' },
+                  { id: 'elektrik', label: '⚡ Elektrik' },
+                  { id: 'qulf', label: '🔑 Qulf ustasi' },
+                  { id: 'gaz', label: '🔥 Gaz / Isitish' },
+                  { id: 'evakuator', label: '🚗 Evakuator' },
+                  { id: 'konditsioner', label: '❄️ Konditsioner' },
+                  { id: 'maishiy', label: '🧰 Maishiy texnika' },
+                ].map((cat) => (
+                  <button
+                    key={cat.id}
+                    onClick={() => {
+                      triggerHaptic('light');
+                      fetchEmergencyWorkers(cat.id);
+                    }}
+                    className={`px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
+                      emergencyCategory === cat.id
+                        ? 'bg-rose-600 text-white shadow-sm'
+                        : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
+                    }`}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Emergency Workers List */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              {emergencyLoading ? (
+                <div className="py-12 flex flex-col items-center justify-center text-slate-400 gap-2">
+                  <RefreshCw className="w-6 h-6 animate-spin text-rose-500" />
+                  <span className="text-xs font-medium">Ustalar yuklanmoqda...</span>
+                </div>
+              ) : emergencyWorkers.length === 0 ? (
+                <div className="py-12 text-center">
+                  <div className="w-14 h-14 mx-auto rounded-full bg-rose-50 flex items-center justify-center text-rose-400 text-2xl mb-2">
+                    🔍
+                  </div>
+                  <h4 className="font-bold text-sm text-slate-800">Mutaxassis topilmadi</h4>
+                  <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto">
+                    Tanlangan toifa bo'yicha favqulodda mutaxassis topilmadi. Boshqa toifani tanlab ko'ring.
+                  </p>
+                  <button
+                    onClick={() => fetchEmergencyWorkers('')}
+                    className="mt-3 px-3.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold rounded-lg border border-rose-200 inline-flex items-center gap-1.5"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" /> Barchasini ko'rish
+                  </button>
+                </div>
+              ) : (
+                emergencyWorkers.map((w) => (
+                  <div
+                    key={w.id}
+                    className="p-3.5 bg-white border border-rose-200/80 rounded-2xl shadow-sm flex flex-col gap-2.5"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
+                        {w.avatarUrl ? (
+                          <img src={w.avatarUrl} alt={w.fullName} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-rose-100 text-rose-700 font-bold text-sm">
+                            {w.fullName?.slice(0, 2).toUpperCase() || 'U'}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1">
+                          <h4 className="font-extrabold text-sm text-slate-900 truncate">{w.fullName}</h4>
+                          {w.verified && <CheckCircle2 className="w-4 h-4 text-sky-500 shrink-0" />}
+                        </div>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <span className="text-[11px] bg-rose-50 text-rose-700 font-bold px-2 py-0.5 rounded border border-rose-100 truncate">
+                            {w.professions?.[0]?.name || 'Mutaxassis'}
+                          </span>
+                          <span className="text-[10.5px] bg-emerald-50 text-emerald-700 font-bold px-1.5 py-0.5 rounded">
+                            ⚡ Tezkor
+                          </span>
+                        </div>
+                        <div className="text-[11px] text-slate-500 mt-1 flex items-center gap-1">
+                          <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                          <span className="truncate">
+                            {w.region?.name ? `${w.region.name}${w.district?.name ? ', ' + w.district.name : ''}` : "O'zbekiston"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Direct Contact Button */}
+                    <div className="pt-2 border-t border-slate-100 flex items-center gap-2">
+                      {w.phone ? (
+                        <a
+                          href={`tel:${w.phone}`}
+                          onClick={() => triggerHaptic('medium')}
+                          className="flex-1 py-2 px-3 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition text-center"
+                        >
+                          <Phone className="w-3.5 h-3.5" />
+                          <span>Qo'ng'iroq qilish ({w.phone})</span>
+                        </a>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            setSelectedWorker(w);
+                            setShowWorkerModal(true);
+                          }}
+                          className="flex-1 py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5"
+                        >
+                          Profilni ko'rish
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
+
+              {/* Join Banner */}
+              <div className="mt-4 p-3.5 bg-slate-50 rounded-2xl border border-slate-200 text-xs">
+                <div className="flex items-center gap-2 font-bold text-slate-800 mb-1">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                  <span>Siz ham tezkor mutaxassis bo'lmoqchimisiz?</span>
+                </div>
+                <p className="text-slate-600 text-[11.5px] leading-relaxed">
+                  Ishchi profilida "Ishchi bilan shartnoma" bo'limida ariza qoldiring. Admin tekshiruvidan so'ng ushbu ro'yxatda chiqasiz.
+                </p>
+              </div>
             </div>
           </div>
         </div>

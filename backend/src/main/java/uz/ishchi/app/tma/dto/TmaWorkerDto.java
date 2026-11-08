@@ -15,6 +15,7 @@ public record TmaWorkerDto(
         int ratingCount,
         boolean available,
         boolean verified,
+        boolean emergency,
         String phone,
         List<String> professions,
         String about

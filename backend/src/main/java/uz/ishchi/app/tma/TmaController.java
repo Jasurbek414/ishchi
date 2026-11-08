@@ -38,9 +38,10 @@ public class TmaController {
             @RequestParam(required = false) Long districtId,
             @RequestParam(required = false) Long professionId,
             @RequestParam(required = false) String search,
+            @RequestParam(required = false) Boolean emergency,
             Pageable pageable
     ) {
-        return PageResponse.of(tmaService.searchWorkers(regionId, districtId, professionId, search, pageable));
+        return PageResponse.of(tmaService.searchWorkers(regionId, districtId, professionId, search, emergency, pageable));
     }
 
     @GetMapping("/workers/{id}")

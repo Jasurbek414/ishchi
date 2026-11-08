@@ -303,6 +303,13 @@ class ProfileScreen extends ConsumerWidget {
                     const Divider(height: 1),
                   ] else if (profile.role == UserRole.employer) ...[
                     _MenuTile(
+                      icon: PhosphorIcons.siren(),
+                      label: "Favqulodda mutaxassislar",
+                      subtitle: "24/7 tezkor ustalar (santexnik, elektrik...)",
+                      onTap: () => context.push('/employer/emergency-specialists'),
+                    ),
+                    const Divider(height: 1),
+                    _MenuTile(
                       icon: Icons.map_outlined,
                       label: "Xaritada ishchilar",
                       subtitle: "Atrofdagi barcha mutaxassislar",

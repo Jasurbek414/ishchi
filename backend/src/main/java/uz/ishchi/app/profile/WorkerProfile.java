@@ -88,6 +88,9 @@ public class WorkerProfile {
     @Column(name = "verified_at")
     private java.time.Instant verifiedAt;
 
+    @Column(name = "is_emergency", nullable = false)
+    private boolean emergency = false;
+
     @BatchSize(size = 50)
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(

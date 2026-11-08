@@ -16,6 +16,7 @@ class WorkerRepository {
     String? search,
     WorkPreference? workPreference,
     bool? availableToday,
+    bool? emergency,
     int page = 0,
     int size = 20,
   }) async {
@@ -27,6 +28,7 @@ class WorkerRepository {
       if (search != null && search.isNotEmpty) 'search': search,
       if (workPreference != null) 'workPreference': workPreference.apiValue,
       if (availableToday == true) 'availableToday': true,
+      if (emergency == true) 'emergency': true,
       'page': page,
       'size': size,
     });

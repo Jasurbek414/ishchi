@@ -27,7 +27,7 @@ public class WorkerService {
     @Transactional(readOnly = true)
     public Page<WorkerResponse> search(Long regionId, Long districtId, Long professionId,
                                         Integer minExperience, String keyword, WorkPreference workPreference,
-                                        Boolean availableToday, Long excludeUserId, Pageable pageable) {
+                                        Boolean availableToday, Boolean emergency, Long excludeUserId, Pageable pageable) {
         Specification<WorkerProfile> spec = Specification.where(WorkerSpecifications.activeUser())
                 .and(WorkerSpecifications.notUserId(excludeUserId))
                 .and(WorkerSpecifications.regionId(regionId))
@@ -36,13 +36,22 @@ public class WorkerService {
                 .and(WorkerSpecifications.minExperience(minExperience))
                 .and(WorkerSpecifications.workPreference(workPreference))
                 .and(WorkerSpecifications.search(keyword))
-                .and(WorkerSpecifications.availableToday(availableToday));
+                .and(WorkerSpecifications.availableToday(availableToday))
+                .and(WorkerSpecifications.emergency(emergency));
 
         Pageable effective = pageable.getSort().isSorted() ? pageable
                 : org.springframework.data.domain.PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(),
                         Sort.by(Sort.Direction.DESC, "updatedAt"));
 
-        return workerProfileRepository.findAll(spec, effective).map(WorkerResponse::forList);
+        return workerProfileRepository.findAll(spec, effective).map(
+                Boolean.TRUE.equals(emergency) ? WorkerResponse::forEmergencyList : WorkerResponse::forList);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<WorkerResponse> search(Long regionId, Long districtId, Long professionId,
+                                        Integer minExperience, String keyword, WorkPreference workPreference,
+                                        Boolean availableToday, Long excludeUserId, Pageable pageable) {
+        return search(regionId, districtId, professionId, minExperience, keyword, workPreference, availableToday, null, excludeUserId, pageable);
     }
 
     @Transactional(readOnly = true)

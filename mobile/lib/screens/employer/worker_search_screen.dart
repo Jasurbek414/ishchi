@@ -8,6 +8,7 @@ import '../../state/profile_provider.dart';
 import '../../state/promo_banner_providers.dart';
 import '../../state/worker_providers.dart';
 import '../../widgets/async_view.dart';
+import '../../widgets/emergency_specialist_card.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/promo_banners.dart';
 import '../../widgets/promo_carousel.dart';
@@ -159,19 +160,28 @@ class _WorkerSearchScreenState extends ConsumerState<WorkerSearchScreen> {
 
                   if (workers.isEmpty) {
                     return ListView(
+                      padding: EdgeInsets.fromLTRB(16, 0, 16, 16 + bottomNavClearance(context)),
                       children: [
-                        const SizedBox(height: 60),
+                        EmergencySpecialistCard(
+                          onTap: () => context.push('/employer/emergency-specialists'),
+                        ),
+                        const SizedBox(height: 50),
                         EmptyState(message: context.l10n.noWorkersFound, icon: Icons.person_search_outlined),
                       ],
                     );
                   }
                   return ListView.separated(
                     padding: EdgeInsets.fromLTRB(16, 0, 16, 16 + bottomNavClearance(context)),
-                    itemCount: workers.length,
+                    itemCount: workers.length + 1,
                     separatorBuilder: (_, __) => const SizedBox(height: 12),
                     itemBuilder: (context, i) {
-                      final worker = workers[i];
-                      return WorkerCard(worker: worker, onTap: () => context.push('/employer/workers/${worker.id}'));
+                      if (i == 0) {
+                        return EmergencySpecialistCard(
+                          onTap: () => context.push('/employer/emergency-specialists'),
+                        );
+                      }
+                      final worker = workers[i - 1];
+                      return WorkerCard(worker: worker, onTap: () => context.push('/employer/workers/' + worker.id.toString()));
                     },
                   );
                 },
