@@ -455,14 +455,14 @@ class _EmergencySpecialistsScreenState extends ConsumerState<EmergencySpecialist
                 // Location & Experience Row
                 Row(
                   children: [
-                    if (worker.region != null) ...[
+                    if (worker.regionName.isNotEmpty) ...[
                       Icon(Icons.location_on_outlined, size: 14, color: Colors.grey.shade500),
                       const SizedBox(width: 3),
                       Flexible(
                         child: Text(
-                          worker.district != null
-                              ? "${worker.region!.name}, ${worker.district!.name}"
-                              : worker.region!.name,
+                          worker.districtName.isNotEmpty
+                              ? "${worker.regionName}, ${worker.districtName}"
+                              : worker.regionName,
                           style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -479,14 +479,14 @@ class _EmergencySpecialistsScreenState extends ConsumerState<EmergencySpecialist
                       ),
                     ],
                     const Spacer(),
-                    if (worker.rating != null && worker.rating! > 0)
+                    if (worker.ratingAverage != null && worker.ratingAverage! > 0)
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           const Icon(Icons.star, size: 14, color: Color(0xFFF59E0B)),
                           const SizedBox(width: 2),
                           Text(
-                            worker.rating!.toStringAsFixed(1),
+                            worker.ratingAverage!.toStringAsFixed(1),
                             style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                           ),
                         ],

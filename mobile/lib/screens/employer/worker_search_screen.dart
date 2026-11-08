@@ -56,6 +56,7 @@ class _WorkerSearchScreenState extends ConsumerState<WorkerSearchScreen> {
       search: _searchController.text.trim().isEmpty ? null : _searchController.text.trim(),
       workPreference: _filter.workPreference,
       availableToday: _filter.availableToday,
+      emergency: _filter.emergency,
     );
     final workersAsync = ref.watch(workersSearchProvider(filter));
     final profileAsync = ref.watch(profileProvider);
@@ -138,6 +139,7 @@ class _WorkerSearchScreenState extends ConsumerState<WorkerSearchScreen> {
                             search: _filter.search,
                             workPreference: selected ? wp : null,
                             availableToday: _filter.availableToday,
+                            emergency: _filter.emergency,
                           );
                         }),
                       ),
