@@ -301,12 +301,14 @@ export default function App() {
   };
 
   // Fetch Emergency Workers
-  const fetchEmergencyWorkers = (categoryKeyword = '') => {
+  const fetchEmergencyWorkers = (categoryKeyword = '', regionIdOverride = undefined) => {
     setEmergencyLoading(true);
     setEmergencyCategory(categoryKeyword);
     const params = new URLSearchParams();
     params.append('emergency', 'true');
     if (categoryKeyword) params.append('search', categoryKeyword);
+    const effectiveRegion = regionIdOverride !== undefined ? regionIdOverride : (selectedRegionId || '');
+    if (effectiveRegion) params.append('regionId', effectiveRegion);
     params.append('size', '50');
 
     fetch(`${API_BASE}/tma/workers?${params.toString()}`)

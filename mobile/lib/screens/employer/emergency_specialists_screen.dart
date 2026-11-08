@@ -5,6 +5,9 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../models/worker.dart';
+import '../../models/region.dart';
+import '../../state/location_providers.dart';
+import '../../state/profile_provider.dart';
 import '../../state/worker_providers.dart';
 import '../../widgets/async_view.dart';
 import '../../widgets/user_avatar.dart';
@@ -35,6 +38,9 @@ class EmergencySpecialistsScreen extends ConsumerStatefulWidget {
 class _EmergencySpecialistsScreenState extends ConsumerState<EmergencySpecialistsScreen> {
   final _searchController = TextEditingController();
   SpecialtyItem? _selectedSpecialty;
+  int? _selectedRegionId;
+  String? _selectedRegionName;
+  bool _initializedUserRegion = false;
 
   static const List<SpecialtyItem> _specialties = [
     SpecialtyItem(
@@ -119,12 +125,111 @@ class _EmergencySpecialistsScreenState extends ConsumerState<EmergencySpecialist
     }
   }
 
+  void _openRegionPicker(BuildContext context) {
+    final regionsAsync = ref.read(regionsProvider);
+    final regions = regionsAsync.valueOrNull ?? [];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        final isDark = Theme.of(ctx).brightness == Brightness.dark;
+        return Container(
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1E2128) : Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          "Viloyatni tanlang",
+                          style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close, size: 20),
+                          onPressed: () => Navigator.pop(ctx),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Divider(),
+                  Flexible(
+                    child: ListView(
+                      shrinkWrap: true,
+                      children: [
+                        ListTile(
+                          leading: const Icon(PhosphorIconsRegular.globe, color: Color(0xFF2563EB)),
+                          title: const Text(
+                            "Barcha viloyatlar (butun O'zbekiston)",
+                            style: TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                          trailing: _selectedRegionId == null
+                              ? const Icon(Icons.check, color: Color(0xFF2563EB))
+                              : null,
+                          onTap: () {
+                            setState(() {
+                              _selectedRegionId = null;
+                              _selectedRegionName = null;
+                            });
+                            Navigator.pop(ctx);
+                          },
+                        ),
+                        const Divider(height: 1),
+                        for (final r in regions)
+                          ListTile(
+                            leading: const Icon(PhosphorIconsRegular.mapPin, size: 20),
+                            title: Text(r.name),
+                            trailing: _selectedRegionId == r.id
+                                ? const Icon(Icons.check, color: Color(0xFF2563EB))
+                                : null,
+                            onTap: () {
+                              setState(() {
+                                _selectedRegionId = r.id;
+                                _selectedRegionName = r.name;
+                              });
+                              Navigator.pop(ctx);
+                            },
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final userSearch = _searchController.text.trim();
     final bottomInset = MediaQuery.paddingOf(context).bottom;
+
+    // Initialize user region from profile on first load
+    final profileAsync = ref.watch(profileProvider);
+    if (!_initializedUserRegion && profileAsync.hasValue) {
+      final p = profileAsync.value;
+      if (p != null) {
+        _selectedRegionId = p.regionId;
+        _selectedRegionName = p.regionName;
+        _initializedUserRegion = true;
+      }
+    }
 
     // Determine query
     final bool isSearching = userSearch.isNotEmpty;
@@ -172,7 +277,7 @@ class _EmergencySpecialistsScreenState extends ConsumerState<EmergencySpecialist
             children: [
               // Search Field
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
                 child: TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
@@ -192,6 +297,102 @@ class _EmergencySpecialistsScreenState extends ConsumerState<EmergencySpecialist
                   ),
                   onChanged: (_) => setState(() {}),
                   onSubmitted: (_) => setState(() {}),
+                ),
+              ),
+
+              // Region Filter Selector Row
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: InkWell(
+                        onTap: () => _openRegionPicker(context),
+                        borderRadius: BorderRadius.circular(10),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(0xFF1E2128) : const Color(0xFFF1F5F9),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: _selectedRegionId != null
+                                  ? (isDark ? const Color(0xFF3B82F6).withValues(alpha: 0.5) : const Color(0xFF93C5FD))
+                                  : (isDark ? Colors.white10 : const Color(0xFFE2E8F0)),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                PhosphorIconsRegular.mapPin,
+                                size: 16,
+                                color: _selectedRegionId != null
+                                    ? const Color(0xFF2563EB)
+                                    : (isDark ? Colors.white60 : const Color(0xFF64748B)),
+                              ),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  _selectedRegionName != null
+                                      ? "Hudud: $_selectedRegionName"
+                                      : "Hudud: Barcha viloyatlar",
+                                  style: TextStyle(
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: _selectedRegionId != null
+                                        ? (isDark ? Colors.white : const Color(0xFF1E293B))
+                                        : (isDark ? Colors.white70 : const Color(0xFF475569)),
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              Icon(
+                                PhosphorIconsRegular.caretDown,
+                                size: 14,
+                                color: isDark ? Colors.white38 : const Color(0xFF94A3B8),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    if (_selectedRegionId != null) ...[
+                      const SizedBox(width: 8),
+                      InkWell(
+                        onTap: () {
+                          setState(() {
+                            _selectedRegionId = null;
+                            _selectedRegionName = null;
+                          });
+                        },
+                        borderRadius: BorderRadius.circular(10),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(0xFF262B35) : const Color(0xFFF1F5F9),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: isDark ? Colors.white10 : const Color(0xFFE2E8F0),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(PhosphorIconsRegular.x, size: 13, color: isDark ? Colors.white60 : const Color(0xFF64748B)),
+                              const SizedBox(width: 4),
+                              Text(
+                                "Barchasi",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: isDark ? Colors.white70 : const Color(0xFF475569),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
 
@@ -344,7 +545,7 @@ class _EmergencySpecialistsScreenState extends ConsumerState<EmergencySpecialist
   Widget _buildSpecialistsList(BuildContext context, String? searchKeyword, bool isDark, double bottomInset) {
     final emergencyAsync = ref.watch(
       emergencySpecialistsProvider((
-        regionId: null,
+        regionId: _selectedRegionId,
         professionId: null,
         search: searchKeyword,
       )),
@@ -391,7 +592,7 @@ class _EmergencySpecialistsScreenState extends ConsumerState<EmergencySpecialist
         Expanded(
           child: RefreshIndicator(
             onRefresh: () => ref.refresh(emergencySpecialistsProvider((
-              regionId: null,
+              regionId: _selectedRegionId,
               professionId: null,
               search: searchKeyword,
             )).future),
@@ -422,24 +623,45 @@ class _EmergencySpecialistsScreenState extends ConsumerState<EmergencySpecialist
                       const SizedBox(height: 6),
                       Center(
                         child: Text(
-                          _selectedSpecialty != null || _searchController.text.isNotEmpty
-                              ? "Ushbu yo'nalish bo'yicha hozircha favqulodda usta yo'q"
-                              : "Hozircha tezkor mutaxassislar ro'yxati shakllanmoqda",
+                          _selectedRegionId != null
+                              ? "Hozircha ${_selectedRegionName ?? 'ushbu hudud'}da favqulodda usta yo'q"
+                              : (_selectedSpecialty != null || _searchController.text.isNotEmpty
+                                  ? "Ushbu so'rov bo'yicha usta topilmadi"
+                                  : "Hozircha tezkor mutaxassislar ro'yxati shakllanmoqda"),
                           style: const TextStyle(fontSize: 13, color: Colors.grey),
                           textAlign: TextAlign.center,
                         ),
                       ),
                       const SizedBox(height: 20),
-                      Center(
-                        child: OutlinedButton.icon(
-                          icon: const Icon(Icons.arrow_back, size: 16),
-                          label: const Text("Barcha yo'nalishlarga qaytish"),
-                          onPressed: () {
-                            _searchController.clear();
-                            setState(() => _selectedSpecialty = null);
-                          },
+                      if (_selectedRegionId != null)
+                        Center(
+                          child: ElevatedButton.icon(
+                            icon: const Icon(PhosphorIconsRegular.globe, size: 16),
+                            label: const Text("Barcha viloyatlar bo'yicha ko'rish"),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF2563EB),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _selectedRegionId = null;
+                                _selectedRegionName = null;
+                              });
+                            },
+                          ),
+                        )
+                      else
+                        Center(
+                          child: OutlinedButton.icon(
+                            icon: const Icon(Icons.arrow_back, size: 16),
+                            label: const Text("Barcha yo'nalishlarga qaytish"),
+                            onPressed: () {
+                              _searchController.clear();
+                              setState(() => _selectedSpecialty = null);
+                            },
+                          ),
                         ),
-                      ),
                       const SizedBox(height: 40),
                       _buildJoinBanner(context, isDark),
                     ],
