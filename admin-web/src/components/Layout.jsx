@@ -12,6 +12,7 @@ import {
   Tags,
   Users,
   Wallet,
+  FileCheck,
   Zap,
 } from 'lucide-react';
 import ThemeToggle from './ThemeToggle.jsx';
@@ -20,7 +21,7 @@ const NAV_ITEMS = [
   { to: '/', label: 'Statistika', icon: LayoutDashboard, end: true },
   { to: '/map', label: 'Xarita & Hududlar', icon: Map },
   { to: '/users', label: 'Foydalanuvchilar', icon: Users },
-  { to: '/emergency', label: 'Favqulodda & Shartnoma', icon: Zap },
+  { to: '/emergency', label: 'Shartnomalar', icon: FileCheck },
   { to: '/jobs', label: 'Buyurtmalar', icon: Briefcase },
   { to: '/professions', label: 'Kasblar', icon: Tags },
   { to: '/promo-banners', label: 'Reklama', icon: Megaphone },
