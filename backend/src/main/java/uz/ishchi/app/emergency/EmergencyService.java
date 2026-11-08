@@ -107,8 +107,10 @@ public class EmergencyService {
 
         EmergencyApplication app = new EmergencyApplication();
         app.setWorker(profile);
+        String defaultName = ((profile.getFirstName() != null ? profile.getFirstName() : "") + " "
+                + (profile.getLastName() != null ? profile.getLastName() : "")).trim();
         app.setFullName(request.fullName() != null && !request.fullName().isBlank()
-                ? request.fullName().trim() : user.getFullName());
+                ? request.fullName().trim() : (defaultName.isEmpty() ? user.getPhone() : defaultName));
         app.setPhone(request.phone() != null && !request.phone().isBlank()
                 ? request.phone().trim() : user.getPhone());
         app.setCategory(request.category() != null && !request.category().isBlank()
