@@ -4,10 +4,13 @@ import com.google.firebase.messaging.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uz.ishchi.app.admin.dto.AdminNotificationResponse;
 import uz.ishchi.app.common.DevicePlatform;
 import uz.ishchi.app.common.Role;
 import uz.ishchi.app.common.exception.ApiException;
@@ -61,6 +64,12 @@ public class NotificationService {
         return appNotificationRepository.findByUserIdOrderByCreatedAtDesc(
                 user.getId(), PageRequest.of(page, Math.min(size, 100))
         ).stream().map(NotificationResponse::from).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<AdminNotificationResponse> getRecentNotifications(Pageable pageable) {
+        return appNotificationRepository.findAllByOrderByCreatedAtDesc(pageable)
+                .map(AdminNotificationResponse::from);
     }
 
     @Transactional(readOnly = true)
