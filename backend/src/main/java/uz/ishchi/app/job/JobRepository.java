@@ -79,7 +79,7 @@ public interface JobRepository extends JpaRepository<Job, Long>, JpaSpecificatio
              where profession_id = :professionId
                and (:regionId is null or region_id = :regionId)
                and payment_type = :paymentType
-               and blocked = false
+               and is_blocked = false
                and created_at > now() - interval '180 days'
             """, nativeQuery = true)
     Object[] paymentPercentiles(@Param("professionId") Long professionId,
