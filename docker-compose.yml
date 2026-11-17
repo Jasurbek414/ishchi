@@ -45,6 +45,8 @@ services:
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-*}
       ADMIN_PHONE: ${ADMIN_PHONE:-}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      OPERATOR_PHONE: ${OPERATOR_PHONE:-+998900000002}
+      OPERATOR_PASSWORD: ${OPERATOR_PASSWORD:-Operator123!}
       # Used to build the Telegram webhook and bot deep-link URLs, so it has to be the public
       # address this backend is reachable at. Left unset it falls back to the built-in default,
       # which silently points a different deployment's bot at the wrong host.

@@ -47,6 +47,9 @@ app:
   admin:
     phone: ${ADMIN_PHONE:}
     password: ${ADMIN_PASSWORD:}
+  operator:
+    phone: ${OPERATOR_PHONE:+998900000002}
+    password: ${OPERATOR_PASSWORD:Operator123!}
   firebase:
     credentials-path: ${FIREBASE_CREDENTIALS_PATH:}
   telephony:
