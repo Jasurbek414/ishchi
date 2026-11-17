@@ -13,6 +13,7 @@ import {
   Users,
   Wallet,
   FileCheck,
+  Bell,
   Zap,
   Headphones,
 } from 'lucide-react';
@@ -23,6 +24,7 @@ const ADMIN_NAV_ITEMS = [
   { to: '/call-center', label: 'Call-Center', icon: Headphones },
   { to: '/map', label: 'Xarita & Hududlar', icon: Map },
   { to: '/users', label: 'Foydalanuvchilar', icon: Users },
+  { to: '/notifications', label: 'Bildirishnomalar', icon: Bell },
   { to: '/emergency', label: 'Shartnomalar', icon: FileCheck },
   { to: '/jobs', label: 'Buyurtmalar', icon: Briefcase },
   { to: '/professions', label: 'Kasblar', icon: Tags },
