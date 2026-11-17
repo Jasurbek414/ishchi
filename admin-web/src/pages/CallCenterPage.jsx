@@ -71,8 +71,9 @@ function playDtmfTone(key) {
 
 export default function CallCenterPage() {
   const toast = useToast();
+  const inputRef = useRef(null);
 
-  // Tab: 'tickets' | 'dialer' | 'calls'
+  // Main area tab: 'tickets' | 'calls'
   const [activeTab, setActiveTab] = useState('tickets');
 
   // Real-time Active Call state
@@ -181,7 +182,30 @@ export default function CallCenterPage() {
     };
   }, [activeCall?.status]);
 
-  // 4. SSE Subscription for Real-time Call Events
+  // 4. Global keyboard listener for instant typing into softphone
+  useEffect(() => {
+    const handleGlobalKeyDown = (e) => {
+      const tag = e.target.tagName?.toLowerCase();
+      if (tag === 'textarea') return;
+      if (tag === 'input' && e.target !== inputRef.current) return;
+      if (showCreateModal || showAssignModal) return;
+
+      if ((e.key >= '0' && e.key <= '9') || e.key === '*' || e.key === '#' || e.key === '+') {
+        playDtmfTone(e.key);
+        setDialPhone((prev) => (prev || '') + e.key);
+        inputRef.current?.focus();
+      } else if (e.key === 'Backspace' && e.target !== inputRef.current) {
+        handleKeypadBackspace();
+      } else if (e.key === 'Enter' && e.target !== inputRef.current) {
+        handleDial();
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [dialPhone, showCreateModal, showAssignModal]);
+
+  // 5. SSE Subscription for Real-time Call Events
   useEffect(() => {
     let eventSource = null;
     try {
@@ -208,16 +232,13 @@ export default function CallCenterPage() {
           toast.info(`Kiruvchi qo'ng'iroq: ${data.callerPhone}`);
           playDtmfTone('1');
 
-          // Auto prefill create form
           setNewTicket((prev) => ({
             ...prev,
             callId: data.callId,
             customerPhone: data.callerPhone,
             customerName: data.customerName || '',
           }));
-        } catch (err) {
-          console.error('SSE parse error:', err);
-        }
+        } catch (err) {}
       });
 
       eventSource.addEventListener('CALL_OUTGOING', (e) => {
@@ -266,7 +287,7 @@ export default function CallCenterPage() {
     };
   }, [activeCall?.callId]);
 
-  // 5. Customer Lookup on dial phone change
+  // 6. Customer Lookup on dial phone change
   useEffect(() => {
     const raw = dialPhone.replace(/\D/g, '');
     if (raw.length >= 9) {
@@ -280,7 +301,7 @@ export default function CallCenterPage() {
     }
   }, [dialPhone]);
 
-  // 6. Load districts when region changes
+  // 7. Load districts when region changes
   useEffect(() => {
     if (newTicket.regionId) {
       api.get(`/api/regions/${newTicket.regionId}/districts`).then(setDistricts).catch(() => setDistricts([]));
@@ -289,7 +310,7 @@ export default function CallCenterPage() {
     }
   }, [newTicket.regionId]);
 
-  // 7. Search available workers when modal is opened
+  // 8. Search available workers when modal is opened
   useEffect(() => {
     if (showCreateModal || showAssignModal) {
       fetchWorkers();
@@ -373,6 +394,7 @@ export default function CallCenterPage() {
     const phone = (targetPhone || dialPhone).trim();
     if (!phone || phone.replace(/\D/g, '').length < 9) {
       toast.error("Iltimos, to'liq telefon raqamini kiriting");
+      inputRef.current?.focus();
       return;
     }
     try {
@@ -436,17 +458,16 @@ export default function CallCenterPage() {
     }
   };
 
-  // Dialpad helper
+  // Dialpad helpers
   const handleKeypadPress = (val) => {
     playDtmfTone(val);
-    setDialPhone((prev) => prev + val);
+    setDialPhone((prev) => (prev || '') + val);
+    inputRef.current?.focus();
   };
 
   const handleKeypadBackspace = () => {
-    setDialPhone((prev) => {
-      if (prev.length <= 4 && prev.startsWith('+998')) return '+998';
-      return prev.slice(0, -1);
-    });
+    setDialPhone((prev) => (prev ? prev.slice(0, -1) : ''));
+    inputRef.current?.focus();
   };
 
   const formatTimer = (sec) => {
@@ -565,8 +586,8 @@ export default function CallCenterPage() {
 
   return (
     <div className="space-y-6">
-      {/* 1. Top Header with Live Status & Quick Action Buttons */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
+      {/* 1. TOP HEADER */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-xl bg-blue-600/10 text-blue-600 flex items-center justify-center">
             <Headphones size={26} />
@@ -578,40 +599,39 @@ export default function CallCenterPage() {
                 sseConnected ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' : 'bg-slate-100 text-slate-500'
               }`}>
                 <span className={`w-2 h-2 rounded-full ${sseConnected ? 'bg-emerald-500 animate-ping' : 'bg-slate-400'}`}></span>
-                {sseConnected ? 'Telefoniya Faol (Online)' : 'Ulanmoqda...'}
+                {sseConnected ? 'Telefoniya Faol (1055)' : 'Ulanmoqda...'}
               </span>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Qisqa raqam (1055) qo'ng'iroqlarini qabul qilish, raqam terish va ustalarni yo'naltirish
+              Qisqa raqam qo'ng'iroqlarini qabul qilish, doimiy softphone orqali raqam terish va ustalarni yo'naltirish
             </p>
           </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
-          {/* Quick Dialer Button */}
+          {/* Quick Focus Dialer Button */}
           <button
-            onClick={() => setActiveTab('dialer')}
-            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-semibold transition cursor-pointer ${
-              activeTab === 'dialer'
-                ? 'bg-emerald-600 text-white shadow-sm'
-                : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
-            }`}
+            onClick={() => {
+              inputRef.current?.focus();
+              toast.info("Raqam terish klaviaturasi faollashtirildi");
+            }}
+            className="flex items-center gap-1.5 px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 rounded-xl text-xs font-semibold transition cursor-pointer"
           >
-            <PhoneCall size={17} />
-            Raqam terish (Softphone)
+            <PhoneCall size={15} />
+            Raqam terish (Fokus)
           </button>
 
-          {/* Test Incoming Call button */}
+          {/* Simulate Call Button */}
           <button
             onClick={handleSimulateIncoming}
             className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-medium transition cursor-pointer"
-            title="Sinov tariqasida kiruvchi qo'ng'iroq kelishini tekshirish"
+            title="Sinov tariqasida kiruvchi qo'ng'iroqni tekshirish"
           >
             <Sparkles size={14} className="text-amber-500" />
             Sinov qo'ng'irog'i
           </button>
 
-          {/* New Manual Ticket button */}
+          {/* New Ticket Button */}
           <button
             onClick={() => {
               setNewTicket({
@@ -639,7 +659,7 @@ export default function CallCenterPage() {
         </div>
       </div>
 
-      {/* 2. ACTIVE LIVE CALL BANNER (Appears on incoming or ongoing call) */}
+      {/* 2. ACTIVE LIVE CALL TOP BANNER (Visible on Incoming or Outgoing Call) */}
       {activeCall && (
         <div className={`p-5 rounded-2xl shadow-xl text-white transition-all duration-300 ${
           activeCall.status === 'ANSWERED'
@@ -649,7 +669,6 @@ export default function CallCenterPage() {
             : 'bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-900 border-2 border-blue-400 animate-pulse'
         }`}>
           <div className="flex flex-col md:flex-row items-center justify-between gap-5">
-            {/* Caller Info */}
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center shadow-inner">
                 {activeCall.status === 'ANSWERED' ? (
@@ -662,12 +681,12 @@ export default function CallCenterPage() {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs uppercase tracking-wider font-extrabold px-2 py-0.5 rounded-full bg-white/20">
+                  <span className="text-xs uppercase tracking-wider font-extrabold px-2.5 py-0.5 rounded-full bg-white/20">
                     {activeCall.status === 'ANSWERED'
                       ? 'Aloqa o‘rnatilgan (Gaplashilmoqda)'
                       : activeCall.direction === 'OUTBOUND'
                       ? 'Chiquvchi qo‘ng‘iroq terilmoqda...'
-                      : 'Kiruvchi qo‘ng‘iroq (Qisqa raqam 1055)'}
+                      : 'Kiruvchi qo‘ng‘iroq (1055)'}
                   </span>
                   {activeCall.status === 'ANSWERED' && (
                     <span className="text-sm font-mono font-bold bg-black/30 px-2 py-0.5 rounded-md text-emerald-300 flex items-center gap-1.5">
@@ -686,23 +705,10 @@ export default function CallCenterPage() {
               </div>
             </div>
 
-            {/* Audio Wave Visualizer while in call */}
-            {activeCall.status === 'ANSWERED' && (
-              <div className="hidden lg:flex items-center gap-1.5 bg-black/20 px-4 py-2 rounded-xl">
-                <span className="w-1.5 h-6 bg-emerald-400 rounded-full animate-pulse"></span>
-                <span className="w-1.5 h-10 bg-emerald-300 rounded-full animate-bounce"></span>
-                <span className="w-1.5 h-4 bg-emerald-400 rounded-full animate-pulse"></span>
-                <span className="w-1.5 h-8 bg-emerald-300 rounded-full animate-bounce"></span>
-                <span className="w-1.5 h-5 bg-emerald-400 rounded-full animate-pulse"></span>
-                <span className="text-xs text-emerald-200 ml-2 font-mono">Audio Ovoz Faol</span>
-              </div>
-            )}
-
-            {/* In-Call Action Buttons */}
+            {/* In-Call Controls */}
             <div className="flex flex-wrap items-center gap-3">
               {activeCall.status === 'RINGING' && activeCall.direction === 'INBOUND' && (
                 <>
-                  {/* Answer Button */}
                   <button
                     onClick={handleAnswerCall}
                     className="flex items-center gap-2 px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm rounded-xl transition shadow-lg cursor-pointer transform hover:scale-105"
@@ -711,7 +717,6 @@ export default function CallCenterPage() {
                     Qabul qilish (Javob berish)
                   </button>
 
-                  {/* Reject Button */}
                   <button
                     onClick={handleHangupCall}
                     className="flex items-center gap-2 px-5 py-3 bg-red-500 hover:bg-red-600 text-white font-bold text-sm rounded-xl transition shadow cursor-pointer"
@@ -727,7 +732,6 @@ export default function CallCenterPage() {
                   <button
                     onClick={handleAnswerCall}
                     className="flex items-center gap-1.5 px-4 py-2.5 bg-white/20 hover:bg-white/30 text-white text-xs font-semibold rounded-xl transition cursor-pointer"
-                    title="Aloqa o'rnatildi deb belgilash"
                   >
                     <CheckCircle2 size={16} />
                     Ulandi (Test)
@@ -744,7 +748,6 @@ export default function CallCenterPage() {
 
               {activeCall.status === 'ANSWERED' && (
                 <>
-                  {/* Mute Toggle */}
                   <button
                     onClick={() => {
                       setIsMuted(!isMuted);
@@ -753,12 +756,10 @@ export default function CallCenterPage() {
                     className={`p-3 rounded-xl transition cursor-pointer ${
                       isMuted ? 'bg-amber-500 text-white' : 'bg-white/20 hover:bg-white/30 text-white'
                     }`}
-                    title={isMuted ? "Mikrofonni yoqish" : "Mikrofonni o'chirish"}
                   >
                     {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
                   </button>
 
-                  {/* Speaker Toggle */}
                   <button
                     onClick={() => {
                       setIsSpeaker(!isSpeaker);
@@ -767,12 +768,10 @@ export default function CallCenterPage() {
                     className={`p-3 rounded-xl transition cursor-pointer ${
                       !isSpeaker ? 'bg-amber-500 text-white' : 'bg-white/20 hover:bg-white/30 text-white'
                     }`}
-                    title="Ovozni boshqarish"
                   >
                     {!isSpeaker ? <VolumeX size={20} /> : <Volume2 size={20} />}
                   </button>
 
-                  {/* Instant Create Ticket Modal */}
                   <button
                     onClick={handleOpenTicketFromCall}
                     className="flex items-center gap-2 px-5 py-3 bg-white text-emerald-800 hover:bg-emerald-50 font-bold text-sm rounded-xl transition shadow-lg cursor-pointer"
@@ -781,7 +780,6 @@ export default function CallCenterPage() {
                     Ushbu qo'ng'iroqqa ariza ochish
                   </button>
 
-                  {/* Hangup Button */}
                   <button
                     onClick={handleHangupCall}
                     className="flex items-center gap-2 px-5 py-3 bg-red-600 hover:bg-red-700 text-white font-bold text-sm rounded-xl transition shadow-lg cursor-pointer transform hover:scale-105"
@@ -796,586 +794,525 @@ export default function CallCenterPage() {
         </div>
       )}
 
-      {/* 3. Stats Overview Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
-          <div className="text-xs text-slate-500 dark:text-slate-400">Bugungi qo'ng'iroqlar</div>
-          <div className="text-2xl font-bold text-slate-800 dark:text-white mt-1">{stats.totalCallsToday}</div>
-          <div className="text-xs text-emerald-600 dark:text-emerald-400 font-medium mt-1">Javob berildi: {stats.answeredCallsToday}</div>
-        </div>
-        <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
-          <div className="text-xs text-slate-500 dark:text-slate-400">O'tkazib yuborilgan</div>
-          <div className="text-2xl font-bold text-red-600 mt-1">{stats.missedCallsToday}</div>
-          <div className="text-xs text-slate-400 mt-1">Qayta aloqa talab qilinadi</div>
-        </div>
-        <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
-          <div className="text-xs text-slate-500 dark:text-slate-400">Faol arizalar</div>
-          <div className="text-2xl font-bold text-blue-600 mt-1">{stats.activeTickets}</div>
-          <div className="text-xs text-purple-600 font-medium mt-1">Usta yo'naltirilgan</div>
-        </div>
-        <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
-          <div className="text-xs text-slate-500 dark:text-slate-400">Bugun bajarildi</div>
-          <div className="text-2xl font-bold text-emerald-600 mt-1">{stats.completedTicketsToday}</div>
-          <div className="text-xs text-slate-400 mt-1">Yopilgan arizalar</div>
-        </div>
-      </div>
-
-      {/* 4. Tab Navigation (Tickets | Dialer | Calls) */}
-      <div className="flex border-b border-slate-200 dark:border-slate-700 gap-6">
-        <button
-          onClick={() => setActiveTab('tickets')}
-          className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 cursor-pointer transition ${
-            activeTab === 'tickets'
-              ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-              : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
-          }`}
-        >
-          <Wrench size={18} />
-          Murojaatlar & Dispetcherlik ({stats.activeTickets})
-        </button>
-
-        <button
-          onClick={() => setActiveTab('dialer')}
-          className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 cursor-pointer transition ${
-            activeTab === 'dialer'
-              ? 'border-emerald-600 text-emerald-600 dark:text-emerald-400'
-              : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
-          }`}
-        >
-          <PhoneCall size={18} />
-          Raqam terish (Web-telefon)
-        </button>
-
-        <button
-          onClick={() => setActiveTab('calls')}
-          className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 cursor-pointer transition ${
-            activeTab === 'calls'
-              ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-              : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
-          }`}
-        >
-          <Clock size={18} />
-          Qo'ng'iroqlar jurnali (SIP Asterisk)
-        </button>
-      </div>
-
-      {/* 5. TAB 1: TICKETS & DISPATCHER */}
-      {activeTab === 'tickets' && (
-        <div className="space-y-4">
-          {/* Filters Bar */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
-            <div className="relative">
-              <Search className="absolute left-3 top-2.5 text-slate-400" size={18} />
-              <input
-                type="text"
-                placeholder="Raqam, ism yoki chipta ID..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+      {/* 3. TWO-COLUMN SPLIT LAYOUT: MAIN TABLES (LEFT) + ALWAYS OPEN SOFTPHONE (RIGHT) */}
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+        {/* LEFT COLUMN (xl:col-span-8): Stats, Tabs and Tables */}
+        <div className="xl:col-span-8 space-y-5">
+          {/* Stats Overview */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
+            <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+              <div className="text-xs text-slate-500 dark:text-slate-400">Bugungi qo'ng'iroqlar</div>
+              <div className="text-2xl font-bold text-slate-800 dark:text-white mt-1">{stats.totalCallsToday}</div>
+              <div className="text-xs text-emerald-600 dark:text-emerald-400 font-medium mt-1">Javob berildi: {stats.answeredCallsToday}</div>
             </div>
+            <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+              <div className="text-xs text-slate-500 dark:text-slate-400">O'tkazib yuborilgan</div>
+              <div className="text-2xl font-bold text-red-600 mt-1">{stats.missedCallsToday}</div>
+              <div className="text-xs text-slate-400 mt-1">Qayta aloqa talab qilinadi</div>
+            </div>
+            <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+              <div className="text-xs text-slate-500 dark:text-slate-400">Faol arizalar</div>
+              <div className="text-2xl font-bold text-blue-600 mt-1">{stats.activeTickets}</div>
+              <div className="text-xs text-purple-600 font-medium mt-1">Usta yo'naltirilgan</div>
+            </div>
+            <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+              <div className="text-xs text-slate-500 dark:text-slate-400">Bugun bajarildi</div>
+              <div className="text-2xl font-bold text-emerald-600 mt-1">{stats.completedTicketsToday}</div>
+              <div className="text-xs text-slate-400 mt-1">Yopilgan arizalar</div>
+            </div>
+          </div>
 
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="py-2 px-3 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg"
+          {/* Navigation Tabs for Main Area */}
+          <div className="flex border-b border-slate-200 dark:border-slate-700 gap-6">
+            <button
+              onClick={() => setActiveTab('tickets')}
+              className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 cursor-pointer transition ${
+                activeTab === 'tickets'
+                  ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                  : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+              }`}
             >
-              <option value="">Barcha statuslar</option>
-              <option value="NEW">Yangi</option>
-              <option value="ASSIGNED">Usta biriktirilgan</option>
-              <option value="IN_PROGRESS">Jarayonda</option>
-              <option value="COMPLETED">Bajarildi</option>
-              <option value="CANCELLED">Bekor qilindi</option>
-            </select>
-
-            <select
-              value={urgencyFilter}
-              onChange={(e) => setUrgencyFilter(e.target.value)}
-              className="py-2 px-3 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg"
-            >
-              <option value="">Barcha shoshilinchlik darajalari</option>
-              <option value="NORMAL">Oddiy</option>
-              <option value="URGENT">Tezkor</option>
-              <option value="EMERGENCY">Shoshilinch (SOS)</option>
-            </select>
+              <Wrench size={18} />
+              Murojaatlar & Dispetcherlik ({stats.activeTickets})
+            </button>
 
             <button
-              onClick={() => {
-                setStatusFilter('');
-                urgencyFilter('');
-                setSearchQuery('');
-                fetchTickets();
-              }}
-              className="flex items-center justify-center gap-2 py-2 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-sm font-medium transition cursor-pointer"
+              onClick={() => setActiveTab('calls')}
+              className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 cursor-pointer transition ${
+                activeTab === 'calls'
+                  ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                  : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+              }`}
             >
-              <RefreshCw size={16} />
-              Tozalash
+              <Clock size={18} />
+              Qo'ng'iroqlar jurnali (SIP Asterisk)
             </button>
           </div>
 
-          {/* Tickets Table */}
-          <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-400 font-semibold border-b border-slate-200 dark:border-slate-700">
-                  <tr>
-                    <th className="py-3 px-4">Chipta ID</th>
-                    <th className="py-3 px-4">Mijoz / Telefon</th>
-                    <th className="py-3 px-4">Kategoriya / Muammo</th>
-                    <th className="py-3 px-4">Manzil</th>
-                    <th className="py-3 px-4">Biriktirilgan Usta</th>
-                    <th className="py-3 px-4">Status</th>
-                    <th className="py-3 px-4 text-right">Amal</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60">
-                  {ticketsLoading ? (
-                    <tr>
-                      <td colSpan="7" className="py-8 text-center text-slate-400">
-                        Arizalar yuklanmoqda...
-                      </td>
-                    </tr>
-                  ) : tickets.length === 0 ? (
-                    <tr>
-                      <td colSpan="7" className="py-8 text-center text-slate-400">
-                        Hech qanday ariza topilmadi
-                      </td>
-                    </tr>
-                  ) : (
-                    tickets.map((t) => (
-                      <tr key={t.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-700/40 transition">
-                        <td className="py-3.5 px-4 font-mono font-medium text-blue-600">
-                          {t.ticketNumber}
-                          <div className="mt-1">{getUrgencyBadge(t.urgency)}</div>
-                        </td>
-                        <td className="py-3.5 px-4">
-                          <div className="font-semibold text-slate-900 dark:text-white">
-                            {t.customerName || "Noma'lum mijoz"}
-                          </div>
-                          <div className="text-xs text-slate-500 font-mono flex items-center gap-1.5 mt-0.5">
-                            <span>{t.customerPhone}</span>
-                            <button
-                              onClick={() => {
-                                setDialPhone(t.customerPhone);
-                                handleDial(t.customerPhone);
-                              }}
-                              className="p-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded transition cursor-pointer"
-                              title="Mijozga qo'ng'iroq qilish"
-                            >
-                              <PhoneCall size={12} />
-                            </button>
-                          </div>
-                        </td>
-                        <td className="py-3.5 px-4">
-                          <span className="font-medium text-slate-800 dark:text-slate-200">{t.category}</span>
-                          <div className="text-xs text-slate-500 max-w-xs truncate mt-0.5">
-                            {t.problemDescription}
-                          </div>
-                        </td>
-                        <td className="py-3.5 px-4 text-xs text-slate-600 dark:text-slate-300">
-                          <div className="font-medium">{t.regionName} {t.districtName ? `, ${t.districtName}` : ''}</div>
-                          <div className="text-slate-400 truncate max-w-xs">{t.addressLine || '—'}</div>
-                        </td>
-                        <td className="py-3.5 px-4">
-                          {t.assignedWorkerName ? (
-                            <div>
-                              <div className="font-medium text-slate-900 dark:text-white flex items-center gap-1">
-                                <User size={13} className="text-emerald-600" />
-                                {t.assignedWorkerName}
-                              </div>
-                              <div className="text-xs text-slate-500 font-mono flex items-center gap-1">
-                                <span>{t.assignedWorkerPhone}</span>
-                                {t.assignedWorkerPhone && (
-                                  <button
-                                    onClick={() => {
-                                      setDialPhone(t.assignedWorkerPhone);
-                                      handleDial(t.assignedWorkerPhone);
-                                    }}
-                                    className="p-1 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded transition cursor-pointer"
-                                    title="Ustaga qo'ng'iroq qilish"
-                                  >
-                                    <PhoneCall size={11} />
-                                  </button>
-                                )}
-                              </div>
-                            </div>
-                          ) : (
-                            <button
-                              onClick={() => {
-                                setSelectedTicket(t);
-                                setShowAssignModal(true);
-                              }}
-                              className="px-2.5 py-1 text-xs bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-md font-medium transition cursor-pointer"
-                            >
-                              + Usta biriktirish
-                            </button>
-                          )}
-                        </td>
-                        <td className="py-3.5 px-4">
-                          {getStatusBadge(t.status)}
-                        </td>
-                        <td className="py-3.5 px-4 text-right space-x-1">
-                          <button
-                            onClick={() => {
-                              setSelectedTicket(t);
-                              setShowAssignModal(true);
-                            }}
-                            className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-700 rounded-lg transition"
-                            title="Tahrirlash / Usta biriktirish"
-                          >
-                            <Wrench size={16} />
-                          </button>
-                          {t.status === 'ASSIGNED' && (
-                            <button
-                              onClick={() => handleUpdateStatus(t.id, 'IN_PROGRESS')}
-                              className="px-2 py-1 text-xs bg-amber-500 text-white hover:bg-amber-600 rounded-md transition font-medium"
-                            >
-                              Boshlandi
-                            </button>
-                          )}
-                          {t.status === 'IN_PROGRESS' && (
-                            <button
-                              onClick={() => handleUpdateStatus(t.id, 'COMPLETED')}
-                              className="px-2 py-1 text-xs bg-emerald-600 text-white hover:bg-emerald-700 rounded-md transition font-medium"
-                            >
-                              Tugatildi
-                            </button>
-                          )}
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      )}
+          {/* TAB 1: TICKETS */}
+          {activeTab === 'tickets' && (
+            <div className="space-y-4">
+              {/* Filters Bar */}
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 bg-white dark:bg-slate-800 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <div className="relative">
+                  <Search className="absolute left-3 top-2.5 text-slate-400" size={17} />
+                  <input
+                    type="text"
+                    placeholder="Raqam, ism, ID..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
 
-      {/* 6. TAB 2: SOFTPHONE & DIALER */}
-      {activeTab === 'dialer' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* Dialer Keypad (Left Column) */}
-          <div className="lg:col-span-5 flex justify-center">
-            <div className="w-full max-w-[340px] bg-white dark:bg-slate-900 rounded-[36px] p-6 shadow-xl border border-slate-200/80 dark:border-slate-800 flex flex-col items-center">
-              {/* Speaker Bar & Status Indicator */}
-              <div className="w-12 h-1 bg-slate-200 dark:bg-slate-700 rounded-full mb-3"></div>
-              <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                SIP 1055 · Web Softphone
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="py-2 px-3 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg"
+                >
+                  <option value="">Barcha statuslar</option>
+                  <option value="NEW">Yangi</option>
+                  <option value="ASSIGNED">Usta biriktirilgan</option>
+                  <option value="IN_PROGRESS">Jarayonda</option>
+                  <option value="COMPLETED">Bajarildi</option>
+                  <option value="CANCELLED">Bekor qilindi</option>
+                </select>
+
+                <select
+                  value={urgencyFilter}
+                  onChange={(e) => setUrgencyFilter(e.target.value)}
+                  className="py-2 px-3 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg"
+                >
+                  <option value="">Barcha darajalar</option>
+                  <option value="NORMAL">Oddiy</option>
+                  <option value="URGENT">Tezkor</option>
+                  <option value="EMERGENCY">Shoshilinch (SOS)</option>
+                </select>
+
+                <button
+                  onClick={() => {
+                    setStatusFilter('');
+                    urgencyFilter('');
+                    setSearchQuery('');
+                    fetchTickets();
+                  }}
+                  className="flex items-center justify-center gap-1.5 py-2 px-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-medium transition cursor-pointer"
+                >
+                  <RefreshCw size={14} />
+                  Tozalash
+                </button>
               </div>
 
-              {/* Number Screen */}
-              <div className="w-full text-center py-2 px-1 relative min-h-[56px] flex items-center justify-center">
+              {/* Tickets Table */}
+              <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm">
+                    <thead className="bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-400 font-semibold border-b border-slate-200 dark:border-slate-700 text-xs">
+                      <tr>
+                        <th className="py-3 px-3.5">ID / Daraja</th>
+                        <th className="py-3 px-3.5">Mijoz / Telefon</th>
+                        <th className="py-3 px-3.5">Kategoriya / Muammo</th>
+                        <th className="py-3 px-3.5">Manzil</th>
+                        <th className="py-3 px-3.5">Biriktirilgan Usta</th>
+                        <th className="py-3 px-3.5">Status</th>
+                        <th className="py-3 px-3.5 text-right">Amal</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 text-xs">
+                      {ticketsLoading ? (
+                        <tr>
+                          <td colSpan="7" className="py-8 text-center text-slate-400">
+                            Arizalar yuklanmoqda...
+                          </td>
+                        </tr>
+                      ) : tickets.length === 0 ? (
+                        <tr>
+                          <td colSpan="7" className="py-8 text-center text-slate-400">
+                            Hech qanday ariza topilmadi
+                          </td>
+                        </tr>
+                      ) : (
+                        tickets.map((t) => (
+                          <tr key={t.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-700/40 transition">
+                            <td className="py-3 px-3.5 font-mono font-medium text-blue-600">
+                              {t.ticketNumber}
+                              <div className="mt-1">{getUrgencyBadge(t.urgency)}</div>
+                            </td>
+                            <td className="py-3 px-3.5">
+                              <div className="font-semibold text-slate-900 dark:text-white">
+                                {t.customerName || "Noma'lum mijoz"}
+                              </div>
+                              <div className="text-[11px] text-slate-500 font-mono flex items-center gap-1.5 mt-0.5">
+                                <span>{t.customerPhone}</span>
+                                <button
+                                  onClick={() => {
+                                    setDialPhone(t.customerPhone);
+                                    handleDial(t.customerPhone);
+                                  }}
+                                  className="p-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded transition cursor-pointer"
+                                  title="Mijozga qo'ng'iroq qilish"
+                                >
+                                  <PhoneCall size={12} />
+                                </button>
+                              </div>
+                            </td>
+                            <td className="py-3 px-3.5">
+                              <span className="font-medium text-slate-800 dark:text-slate-200">{t.category}</span>
+                              <div className="text-slate-500 max-w-[180px] truncate mt-0.5">
+                                {t.problemDescription}
+                              </div>
+                            </td>
+                            <td className="py-3 px-3.5 text-slate-600 dark:text-slate-300">
+                              <div className="font-medium">{t.regionName} {t.districtName ? `, ${t.districtName}` : ''}</div>
+                              <div className="text-slate-400 truncate max-w-[160px]">{t.addressLine || '—'}</div>
+                            </td>
+                            <td className="py-3 px-3.5">
+                              {t.assignedWorkerName ? (
+                                <div>
+                                  <div className="font-medium text-slate-900 dark:text-white flex items-center gap-1">
+                                    <User size={12} className="text-emerald-600" />
+                                    {t.assignedWorkerName}
+                                  </div>
+                                  <div className="text-[11px] text-slate-500 font-mono flex items-center gap-1">
+                                    <span>{t.assignedWorkerPhone}</span>
+                                    {t.assignedWorkerPhone && (
+                                      <button
+                                        onClick={() => {
+                                          setDialPhone(t.assignedWorkerPhone);
+                                          handleDial(t.assignedWorkerPhone);
+                                        }}
+                                        className="p-0.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded transition cursor-pointer"
+                                        title="Ustaga qo'ng'iroq qilish"
+                                      >
+                                        <PhoneCall size={10} />
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                              ) : (
+                                <button
+                                  onClick={() => {
+                                    setSelectedTicket(t);
+                                    setShowAssignModal(true);
+                                  }}
+                                  className="px-2 py-0.5 text-[11px] bg-blue-50 text-blue-700 hover:bg-blue-100 rounded font-medium transition cursor-pointer"
+                                >
+                                  + Usta biriktirish
+                                </button>
+                              )}
+                            </td>
+                            <td className="py-3 px-3.5">
+                              {getStatusBadge(t.status)}
+                            </td>
+                            <td className="py-3 px-3.5 text-right space-x-1">
+                              <button
+                                onClick={() => {
+                                  setSelectedTicket(t);
+                                  setShowAssignModal(true);
+                                }}
+                                className="p-1 text-slate-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-700 rounded transition"
+                                title="Tahrirlash / Usta biriktirish"
+                              >
+                                <Wrench size={15} />
+                              </button>
+                              {t.status === 'ASSIGNED' && (
+                                <button
+                                  onClick={() => handleUpdateStatus(t.id, 'IN_PROGRESS')}
+                                  className="px-2 py-0.5 text-[11px] bg-amber-500 text-white hover:bg-amber-600 rounded transition font-medium"
+                                >
+                                  Boshlandi
+                                </button>
+                              )}
+                              {t.status === 'IN_PROGRESS' && (
+                                <button
+                                  onClick={() => handleUpdateStatus(t.id, 'COMPLETED')}
+                                  className="px-2 py-0.5 text-[11px] bg-emerald-600 text-white hover:bg-emerald-700 rounded transition font-medium"
+                                >
+                                  Tugatildi
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 2: CALLS HISTORY */}
+          {activeTab === 'calls' && (
+            <div className="space-y-4">
+              <div className="bg-white dark:bg-slate-800 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row gap-3 shadow-sm">
                 <input
                   type="text"
-                  value={dialPhone}
-                  onChange={(e) => setDialPhone(e.target.value)}
-                  placeholder="Raqamni tering..."
-                  style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
-                  className="w-full text-center text-3xl font-light tracking-wider text-slate-900 dark:text-white bg-transparent font-mono focus:ring-0 focus:outline-none p-0 m-0"
+                  placeholder="Telefon raqam bo'yicha qidirish..."
+                  value={callSearchPhone}
+                  onChange={(e) => setCallSearchPhone(e.target.value)}
+                  className="py-1.5 px-3 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg flex-1"
                 />
+                <select
+                  value={callStatusFilter}
+                  onChange={(e) => setCallStatusFilter(e.target.value)}
+                  className="py-1.5 px-3 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg"
+                >
+                  <option value="">Barcha qo'ng'iroqlar</option>
+                  <option value="RINGING">Jiringlayotgan</option>
+                  <option value="ANSWERED">Ko'tarilgan</option>
+                  <option value="COMPLETED">Tugallangan</option>
+                  <option value="MISSED">O'tkazib yuborilgan</option>
+                  <option value="BUSY">Band</option>
+                </select>
               </div>
 
-              {/* Quick Preset Pills */}
-              <div className="flex items-center justify-center gap-2 mb-3">
-                <button
-                  type="button"
-                  onClick={() => setDialPhone('+998')}
-                  style={{ border: 'none', outline: 'none' }}
-                  className="px-3.5 py-1 text-xs font-semibold rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition cursor-pointer"
-                >
-                  +998
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDialPhone('1055')}
-                  style={{ border: 'none', outline: 'none' }}
-                  className="px-3.5 py-1 text-xs font-semibold rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition cursor-pointer"
-                >
-                  1055 (Dispetcher)
-                </button>
-                {dialPhone.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => setDialPhone('')}
-                    style={{ border: 'none', outline: 'none' }}
-                    className="px-3 py-1 text-xs font-semibold rounded-full bg-red-50 hover:bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400 transition cursor-pointer"
-                  >
-                    Tozalash
-                  </button>
-                )}
-              </div>
+              <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-400 font-semibold border-b border-slate-200 dark:border-slate-700 text-xs">
+                    <tr>
+                      <th className="py-3 px-3.5">ID</th>
+                      <th className="py-3 px-3.5">Raqam</th>
+                      <th className="py-3 px-3.5">Vaqt</th>
+                      <th className="py-3 px-3.5">Davomiyligi</th>
+                      <th className="py-3 px-3.5">Status</th>
+                      <th className="py-3 px-3.5 text-right">Qayta terish / Yozuv</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60 text-xs">
+                    {callsLoading ? (
+                      <tr>
+                        <td colSpan="6" className="py-8 text-center text-slate-400">
+                          Qo'ng'iroqlar yuklanmoqda...
+                        </td>
+                      </tr>
+                    ) : calls.length === 0 ? (
+                      <tr>
+                        <td colSpan="6" className="py-8 text-center text-slate-400">
+                          Qo'ng'iroqlar tarixi mavjud emas
+                        </td>
+                      </tr>
+                    ) : (
+                      calls.map((c) => (
+                        <tr key={c.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-700/40 transition">
+                          <td className="py-3 px-3.5 font-mono text-slate-500">{c.callId}</td>
+                          <td className="py-3 px-3.5 font-semibold text-slate-900 dark:text-white font-mono">
+                            <div className="flex items-center gap-1.5">
+                              {c.direction === 'OUTBOUND' ? (
+                                <PhoneOutgoing size={13} className="text-purple-500" />
+                              ) : (
+                                <PhoneIncoming size={13} className="text-blue-500" />
+                              )}
+                              {c.callerPhone}
+                            </div>
+                          </td>
+                          <td className="py-3 px-3.5 text-slate-500">
+                            {new Date(c.startTime).toLocaleString('uz-UZ')}
+                          </td>
+                          <td className="py-3 px-3.5 font-mono">
+                            {c.durationSeconds ? `${c.durationSeconds} sek` : '0 sek'}
+                          </td>
+                          <td className="py-3 px-3.5">
+                            <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${
+                              c.status === 'COMPLETED' ? 'bg-emerald-100 text-emerald-800' :
+                              c.status === 'MISSED' ? 'bg-red-100 text-red-800' :
+                              c.status === 'RINGING' ? 'bg-blue-100 text-blue-800 animate-pulse' :
+                              'bg-slate-100 text-slate-700'
+                            }`}>
+                              {c.status}
+                            </span>
+                          </td>
+                          <td className="py-3 px-3.5 text-right space-x-2">
+                            <button
+                              onClick={() => {
+                                setDialPhone(c.callerPhone);
+                                handleDial(c.callerPhone);
+                              }}
+                              className="p-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg inline-flex items-center gap-1 text-[11px] cursor-pointer"
+                              title="Qayta qo'ng'iroq qilish"
+                            >
+                              <PhoneCall size={12} /> Qayta terish
+                            </button>
 
-              {/* Circular Keypad Grid (1-9, *, 0, #) */}
-              <div className="grid grid-cols-3 gap-y-3.5 gap-x-5 my-2 justify-items-center w-full">
-                {[
-                  { key: '1', sub: ' ' },
-                  { key: '2', sub: 'ABC' },
-                  { key: '3', sub: 'DEF' },
-                  { key: '4', sub: 'GHI' },
-                  { key: '5', sub: 'JKL' },
-                  { key: '6', sub: 'MNO' },
-                  { key: '7', sub: 'PQRS' },
-                  { key: '8', sub: 'TUV' },
-                  { key: '9', sub: 'WXYZ' },
-                  { key: '*', sub: ' ' },
-                  { key: '0', sub: '+' },
-                  { key: '#', sub: ' ' },
-                ].map((item) => (
-                  <button
-                    key={item.key}
-                    type="button"
-                    onClick={() => handleKeypadPress(item.key)}
-                    style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
-                    className="w-[68px] h-[68px] rounded-full flex flex-col items-center justify-center bg-slate-100/90 hover:bg-slate-200/90 active:bg-blue-100 active:scale-90 dark:bg-slate-800 dark:hover:bg-slate-700 dark:active:bg-slate-600 text-slate-900 dark:text-white transition-all duration-150 select-none cursor-pointer shadow-xs"
-                  >
-                    <span className="text-2xl font-normal leading-none">{item.key}</span>
-                    <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 tracking-widest mt-0.5 uppercase h-3">
-                      {item.sub}
-                    </span>
-                  </button>
-                ))}
-              </div>
-
-              {/* Bottom Action Row (Call & Backspace) */}
-              <div className="grid grid-cols-3 gap-x-5 items-center justify-items-center w-full mt-3">
-                <div></div>
-
-                {/* Big Circular Green Call Button */}
-                <button
-                  type="button"
-                  onClick={() => handleDial()}
-                  style={{ border: 'none', outline: 'none' }}
-                  className="w-[68px] h-[68px] rounded-full bg-emerald-500 hover:bg-emerald-600 active:scale-90 text-white flex items-center justify-center shadow-lg shadow-emerald-500/35 transition-all cursor-pointer"
-                  title="Qo'ng'iroq qilish"
-                >
-                  <PhoneCall size={28} />
-                </button>
-
-                {/* Circular Delete Button */}
-                {dialPhone.length > 0 ? (
-                  <button
-                    type="button"
-                    onClick={handleKeypadBackspace}
-                    style={{ border: 'none', outline: 'none' }}
-                    className="w-[68px] h-[68px] rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 dark:text-slate-400 dark:hover:text-white transition-all cursor-pointer active:scale-90"
-                    title="Bitta raqamni o'chirish"
-                  >
-                    <Delete size={24} />
-                  </button>
-                ) : (
-                  <div></div>
-                )}
+                            {c.recordingUrl && (
+                              <button
+                                onClick={() => setPlayingAudioUrl(c.recordingUrl)}
+                                className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg inline-flex items-center gap-1 text-[11px] cursor-pointer"
+                              >
+                                <Play size={12} /> Eshitish
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
               </div>
             </div>
-          </div>
+          )}
+        </div>
 
-          {/* Customer Live Card & Quick Test Panel (Right Column) */}
-          <div className="lg:col-span-7 space-y-4">
-            {/* Live Customer Card */}
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
-              <div className="flex items-center justify-between border-b pb-3 dark:border-slate-700 mb-4">
-                <div className="flex items-center gap-2">
-                  <User className="text-blue-600" size={20} />
-                  <h3 className="font-bold text-slate-900 dark:text-white">Mijoz ma'lumotlari (Tezkor qidiruv)</h3>
-                </div>
-                {dialLookupLoading && (
-                  <span className="text-xs text-blue-500 animate-pulse">Tekshirilmoqda...</span>
-                )}
-              </div>
+        {/* RIGHT COLUMN (xl:col-span-4): ALWAYS OPEN SOFTPHONE (Doim ochiq) */}
+        <div className="xl:col-span-4 space-y-4 xl:sticky xl:top-4">
+          {/* Smartphone Frame Container */}
+          <div className="bg-white dark:bg-slate-900 rounded-[32px] p-5 shadow-xl border border-slate-200/80 dark:border-slate-800 flex flex-col items-center">
+            {/* Top Phone Ear-Speaker & Status */}
+            <div className="w-12 h-1 bg-slate-200 dark:bg-slate-700 rounded-full mb-3"></div>
+            <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              SIP 1055 · Web Softphone
+            </div>
 
-              {dialLookup && dialLookup.registered ? (
-                <div className="space-y-4">
-                  <div className="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl flex items-center justify-between">
-                    <div>
-                      <div className="text-xs font-semibold text-emerald-800 dark:text-emerald-300 uppercase">Mavjud mijoz</div>
-                      <div className="text-lg font-bold text-slate-900 dark:text-white mt-0.5">{dialLookup.fullName || "Ismsiz mijoz"}</div>
-                      <div className="text-xs text-slate-500 font-mono mt-0.5">{dialLookup.phone}</div>
-                    </div>
-                    <div className="text-right">
-                      <span className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-emerald-200 text-emerald-900">
-                        {dialLookup.role === 'WORKER' ? 'Usta / Ishchi' : 'Ish beruvchi / Buyurtmachi'}
-                      </span>
-                      <div className="text-xs text-slate-500 mt-1">
-                        {dialLookup.regionName || ''} {dialLookup.districtName ? `(${dialLookup.districtName})` : ''}
-                      </div>
-                    </div>
-                  </div>
+            {/* Clean Number Display (No borders) */}
+            <div className="w-full text-center py-2 px-1 relative min-h-[52px] flex items-center justify-center">
+              <input
+                ref={inputRef}
+                type="text"
+                value={dialPhone}
+                onChange={(e) => setDialPhone(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleDial();
+                  }
+                }}
+                placeholder="+998..."
+                style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
+                className="w-full text-center text-3xl font-light tracking-wider text-slate-900 dark:text-white bg-transparent font-mono focus:ring-0 focus:outline-none p-0 m-0 cursor-text"
+              />
+            </div>
 
-                  {/* Previous Tickets */}
-                  <div>
-                    <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">Oldingi arizalari tarixi:</h4>
-                    {dialLookup.previousTickets?.length ? (
-                      <div className="space-y-2 max-h-48 overflow-y-auto">
-                        {dialLookup.previousTickets.map((pt) => (
-                          <div key={pt.id} className="p-2.5 rounded-lg border bg-slate-50 dark:bg-slate-900 text-xs flex items-center justify-between">
-                            <div>
-                              <span className="font-mono font-bold text-blue-600">{pt.ticketNumber}</span>
-                              <span className="ml-2 font-medium">{pt.category}</span>
-                              <div className="text-slate-400 mt-0.5">{pt.problemDescription}</div>
-                            </div>
-                            <div>
-                              {getStatusBadge(pt.status)}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-xs text-slate-400">Oldingi arizalar yo'q.</p>
-                    )}
-                  </div>
-                </div>
-              ) : dialLookup && !dialLookup.registered ? (
-                <div className="p-6 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-dashed border-slate-300 text-center space-y-2">
-                  <AlertCircle size={28} className="mx-auto text-amber-500" />
-                  <div className="font-bold text-slate-800 dark:text-white">Yangi mijoz</div>
-                  <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                    Ushbu raqam bazada mavjud emas. Qo'ng'iroq vaqtida to'g'ridan-to'g'ri yangi ariza ochishingiz mumkin.
-                  </p>
-                </div>
-              ) : (
-                <div className="p-8 text-center text-slate-400 text-xs">
-                  Mijozni avtomatik aniqlash uchun chapdagi panelda kamida 9 ta raqam tering.
-                </div>
+            {/* Preset Buttons */}
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setDialPhone('+998');
+                  inputRef.current?.focus();
+                }}
+                style={{ border: 'none', outline: 'none' }}
+                className="px-3 py-1 text-xs font-semibold rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition cursor-pointer"
+              >
+                +998
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setDialPhone('1055');
+                  inputRef.current?.focus();
+                }}
+                style={{ border: 'none', outline: 'none' }}
+                className="px-3 py-1 text-xs font-semibold rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition cursor-pointer"
+              >
+                1055 (Dispetcher)
+              </button>
+              {dialPhone.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDialPhone('');
+                    inputRef.current?.focus();
+                  }}
+                  style={{ border: 'none', outline: 'none' }}
+                  className="px-3 py-1 text-xs font-semibold rounded-full bg-red-50 hover:bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400 transition cursor-pointer"
+                >
+                  Tozalash
+                </button>
               )}
             </div>
 
-            {/* Quick Test / Telephony Simulation Banner */}
-            <div className="bg-gradient-to-r from-slate-900 to-indigo-950 text-white p-5 rounded-2xl shadow-sm border border-slate-700 space-y-3">
-              <div className="flex items-center gap-2">
-                <Sparkles className="text-amber-400" size={18} />
-                <h4 className="text-sm font-bold">Telefoniya va Qisqa raqam simulyatsiyasi</h4>
-              </div>
-              <p className="text-xs text-slate-300">
-                Asterisk SIP yoki ATS ulanmagan paytda tizimni to'liq tekshirish uchun bitta bosish orqali operator ekraniga jonli kiruvchi qo'ng'iroq chaqiruvini yuborishingiz mumkin.
-              </p>
+            {/* Circular Keypad Grid (1-9, *, 0, #) */}
+            <div className="grid grid-cols-3 gap-y-3 gap-x-4 my-2 justify-items-center w-full">
+              {[
+                { key: '1', sub: ' ' },
+                { key: '2', sub: 'ABC' },
+                { key: '3', sub: 'DEF' },
+                { key: '4', sub: 'GHI' },
+                { key: '5', sub: 'JKL' },
+                { key: '6', sub: 'MNO' },
+                { key: '7', sub: 'PQRS' },
+                { key: '8', sub: 'TUV' },
+                { key: '9', sub: 'WXYZ' },
+                { key: '*', sub: ' ' },
+                { key: '0', sub: '+' },
+                { key: '#', sub: ' ' },
+              ].map((item) => (
+                <button
+                  key={item.key}
+                  type="button"
+                  onClick={() => handleKeypadPress(item.key)}
+                  style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
+                  className="w-16 h-16 rounded-full flex flex-col items-center justify-center bg-slate-100/90 hover:bg-slate-200/90 active:bg-blue-100 active:scale-90 dark:bg-slate-800 dark:hover:bg-slate-700 dark:active:bg-slate-600 text-slate-900 dark:text-white transition-all duration-150 select-none cursor-pointer shadow-xs"
+                >
+                  <span className="text-2xl font-normal leading-none">{item.key}</span>
+                  <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 tracking-widest mt-0.5 uppercase h-3">
+                    {item.sub}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {/* Bottom Action Row: Call Button & Backspace */}
+            <div className="grid grid-cols-3 gap-x-4 items-center justify-items-center w-full mt-2">
+              <div></div>
+
+              {/* Big Circular Green Call Button */}
               <button
-                onClick={handleSimulateIncoming}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl transition cursor-pointer flex items-center gap-2"
+                type="button"
+                onClick={() => handleDial()}
+                style={{ border: 'none', outline: 'none' }}
+                className="w-16 h-16 rounded-full bg-emerald-500 hover:bg-emerald-600 active:scale-90 text-white flex items-center justify-center shadow-lg shadow-emerald-500/35 transition-all cursor-pointer"
+                title="Qo'ng'iroq qilish (Enter)"
               >
-                <PhoneIncoming size={15} />
-                Sinov kiruvchi qo'ng'iroqni boshlash
+                <PhoneCall size={26} />
               </button>
+
+              {/* Circular Delete Button */}
+              {dialPhone.length > 0 ? (
+                <button
+                  type="button"
+                  onClick={handleKeypadBackspace}
+                  style={{ border: 'none', outline: 'none' }}
+                  className="w-16 h-16 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 dark:text-slate-400 dark:hover:text-white transition-all cursor-pointer active:scale-90"
+                  title="Bitta raqamni o'chirish (Backspace)"
+                >
+                  <Delete size={22} />
+                </button>
+              ) : (
+                <div></div>
+              )}
             </div>
           </div>
+
+          {/* Real-time Customer Card under Softphone */}
+          {dialLookup && dialLookup.registered && (
+            <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-emerald-200 dark:border-emerald-800/60 shadow-sm space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-full">
+                  Mijoz topildi
+                </span>
+                <span className="text-xs font-semibold text-slate-500">
+                  {dialLookup.role === 'WORKER' ? 'Usta' : 'Buyurtmachi'}
+                </span>
+              </div>
+              <div className="font-bold text-sm text-slate-900 dark:text-white">
+                {dialLookup.fullName || "Ismsiz mijoz"}
+              </div>
+              <div className="text-xs text-slate-500">
+                {dialLookup.regionName || ''} {dialLookup.districtName ? `(${dialLookup.districtName})` : ''}
+              </div>
+              {dialLookup.previousTickets?.length > 0 && (
+                <div className="text-[11px] text-blue-600 font-medium pt-1 border-t dark:border-slate-700">
+                  Oldingi arizalari soni: {dialLookup.previousTickets.length} ta
+                </div>
+              )}
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
-      {/* 7. TAB 3: CALLS HISTORY */}
-      {activeTab === 'calls' && (
-        <div className="space-y-4">
-          <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col md:flex-row gap-3 shadow-sm">
-            <input
-              type="text"
-              placeholder="Telefon raqam bo'yicha qidirish..."
-              value={callSearchPhone}
-              onChange={(e) => setCallSearchPhone(e.target.value)}
-              className="py-2 px-3 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg flex-1"
-            />
-            <select
-              value={callStatusFilter}
-              onChange={(e) => setCallStatusFilter(e.target.value)}
-              className="py-2 px-3 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg"
-            >
-              <option value="">Barcha qo'ng'iroqlar</option>
-              <option value="RINGING">Jiringlayotgan</option>
-              <option value="ANSWERED">Ko'tarilgan</option>
-              <option value="COMPLETED">Tugallangan</option>
-              <option value="MISSED">O'tkazib yuborilgan</option>
-              <option value="BUSY">Band</option>
-            </select>
-          </div>
-
-          <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-400 font-semibold border-b border-slate-200 dark:border-slate-700">
-                <tr>
-                  <th className="py-3 px-4">Qo'ng'iroq ID</th>
-                  <th className="py-3 px-4">Yo'nalish / Raqam</th>
-                  <th className="py-3 px-4">Qisqa raqam</th>
-                  <th className="py-3 px-4">Vaqt</th>
-                  <th className="py-3 px-4">Davomiyligi</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4 text-right">Qayta qo'ng'iroq / Yozuv</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60">
-                {callsLoading ? (
-                  <tr>
-                    <td colSpan="7" className="py-8 text-center text-slate-400">
-                      Qo'ng'iroqlar yuklanmoqda...
-                    </td>
-                  </tr>
-                ) : calls.length === 0 ? (
-                  <tr>
-                    <td colSpan="7" className="py-8 text-center text-slate-400">
-                      Qo'ng'iroqlar tarixi mavjud emas
-                    </td>
-                  </tr>
-                ) : (
-                  calls.map((c) => (
-                    <tr key={c.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-700/40 transition">
-                      <td className="py-3.5 px-4 font-mono text-xs text-slate-500">{c.callId}</td>
-                      <td className="py-3.5 px-4">
-                        <div className="font-semibold text-slate-900 dark:text-white font-mono flex items-center gap-1.5">
-                          {c.direction === 'OUTBOUND' ? (
-                            <PhoneOutgoing size={13} className="text-purple-500" />
-                          ) : (
-                            <PhoneIncoming size={13} className="text-blue-500" />
-                          )}
-                          {c.callerPhone}
-                        </div>
-                      </td>
-                      <td className="py-3.5 px-4 font-mono text-xs">{c.destinationNumber || '1055'}</td>
-                      <td className="py-3.5 px-4 text-xs text-slate-500">
-                        {new Date(c.startTime).toLocaleString('uz-UZ')}
-                      </td>
-                      <td className="py-3.5 px-4 text-xs font-mono">
-                        {c.durationSeconds ? `${c.durationSeconds} sek` : '0 sek'}
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                          c.status === 'COMPLETED' ? 'bg-emerald-100 text-emerald-800' :
-                          c.status === 'MISSED' ? 'bg-red-100 text-red-800' :
-                          c.status === 'RINGING' ? 'bg-blue-100 text-blue-800 animate-pulse' :
-                          'bg-slate-100 text-slate-700'
-                        }`}>
-                          {c.status}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-4 text-right space-x-2">
-                        {/* Call back button */}
-                        <button
-                          onClick={() => {
-                            setDialPhone(c.callerPhone);
-                            handleDial(c.callerPhone);
-                          }}
-                          className="p-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg inline-flex items-center gap-1 text-xs cursor-pointer"
-                          title="Qayta qo'ng'iroq qilish"
-                        >
-                          <PhoneCall size={13} /> Qayta terish
-                        </button>
-
-                        {c.recordingUrl && (
-                          <button
-                            onClick={() => setPlayingAudioUrl(c.recordingUrl)}
-                            className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg inline-flex items-center gap-1 text-xs cursor-pointer"
-                          >
-                            <Play size={13} /> Eshitish
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* 8. MODAL: Create Ticket (Ariza ochish & Dispatch) */}
+      {/* 4. MODAL: Create Ticket */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white dark:bg-slate-800 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-4 my-8">
@@ -1589,7 +1526,7 @@ export default function CallCenterPage() {
         </div>
       )}
 
-      {/* 9. MODAL: Assign Worker to Existing Ticket */}
+      {/* 5. MODAL: Assign Worker to Existing Ticket */}
       {showAssignModal && selectedTicket && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
           <div className="bg-white dark:bg-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
@@ -1649,7 +1586,7 @@ export default function CallCenterPage() {
         </div>
       )}
 
-      {/* 10. AUDIO PLAYER MODAL */}
+      {/* 6. AUDIO PLAYER MODAL */}
       {playingAudioUrl && (
         <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white p-4 rounded-2xl shadow-2xl border border-slate-700 flex items-center gap-3">
           <Volume2 size={24} className="text-blue-400 animate-pulse" />
