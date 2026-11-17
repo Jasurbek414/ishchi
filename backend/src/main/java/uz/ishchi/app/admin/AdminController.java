@@ -20,13 +20,13 @@ import uz.ishchi.app.telegram.TelegramService;
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
 
     private final AdminService adminService;
     private final TelegramService telegramService;
 
     @GetMapping("/users")
+    @PreAuthorize("hasRole('ADMIN')")
     public PageResponse<AdminUserResponse> listUsers(
             @RequestParam(required = false) Role role,
             @RequestParam(required = false) Boolean active,
@@ -37,31 +37,37 @@ public class AdminController {
     }
 
     @PatchMapping("/users/{id}/active")
+    @PreAuthorize("hasRole('ADMIN')")
     public AdminUserResponse setUserActive(@PathVariable Long id, @Valid @RequestBody ActiveRequest request) {
         return adminService.setUserActive(id, request.active());
     }
 
     @PatchMapping("/users/{id}/verified")
+    @PreAuthorize("hasRole('ADMIN')")
     public AdminUserResponse setWorkerVerified(@PathVariable Long id, @RequestParam boolean verified) {
         return adminService.setWorkerVerified(id, verified);
     }
 
     @DeleteMapping("/users/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public void deleteUser(@PathVariable Long id) {
         adminService.deleteUser(id);
     }
 
     @GetMapping("/users/{id}/profile")
+    @PreAuthorize("hasRole('ADMIN')")
     public ProfileResponse getUserProfile(@PathVariable Long id) {
         return adminService.getUserProfile(id);
     }
 
     @PostMapping("/users/{id}/telegram-message")
+    @PreAuthorize("hasRole('ADMIN')")
     public void sendTelegramMessage(@PathVariable Long id, @Valid @RequestBody TelegramMessageRequest request) {
         telegramService.sendDirectMessage(id, request.text());
     }
 
     @GetMapping("/jobs")
+    @PreAuthorize("hasRole('ADMIN')")
     public PageResponse<AdminJobResponse> listJobs(
             @RequestParam(required = false) JobStatus status,
             @RequestParam(required = false) String search,
@@ -70,16 +76,19 @@ public class AdminController {
     }
 
     @PatchMapping("/jobs/{id}/blocked")
+    @PreAuthorize("hasRole('ADMIN')")
     public AdminJobResponse setJobBlocked(@PathVariable Long id, @Valid @RequestBody BlockRequest request) {
         return adminService.setJobBlocked(id, request.blocked());
     }
 
     @DeleteMapping("/jobs/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public void deleteJob(@PathVariable Long id) {
         adminService.deleteJob(id);
     }
 
     @GetMapping("/stats")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
     public StatsResponse stats() {
         return adminService.stats();
     }

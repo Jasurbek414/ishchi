@@ -13,22 +13,24 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/admin/map")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
 public class AdminMapController {
 
     private final AdminMapService adminMapService;
 
     @GetMapping("/stats")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
     public AdminMapStatsResponse getStats() {
         return adminMapService.getStats();
     }
 
     @GetMapping("/regions")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
     public List<AdminRegionDetailResponse> getRegions() {
         return adminMapService.getRegions();
     }
 
     @PutMapping("/regions/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public AdminRegionDetailResponse updateRegion(
             @PathVariable Long id,
             @Valid @RequestBody AdminRegionUpdateRequest request) {
@@ -36,12 +38,14 @@ public class AdminMapController {
     }
 
     @GetMapping("/jobs")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
     public List<AdminMapJobMarkerResponse> getMapJobs() {
         return adminMapService.getMapJobs();
     }
 
     @PostMapping("/regions/{regionId}/districts")
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasRole('ADMIN')")
     public DistrictResponse addDistrict(
             @PathVariable Long regionId,
             @Valid @RequestBody AdminDistrictRequest request) {
@@ -49,6 +53,7 @@ public class AdminMapController {
     }
 
     @PutMapping("/districts/{districtId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public DistrictResponse updateDistrict(
             @PathVariable Long districtId,
             @Valid @RequestBody AdminDistrictRequest request) {
@@ -57,6 +62,7 @@ public class AdminMapController {
 
     @DeleteMapping("/districts/{districtId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasRole('ADMIN')")
     public void deleteDistrict(@PathVariable Long districtId) {
         adminMapService.deleteDistrict(districtId);
     }

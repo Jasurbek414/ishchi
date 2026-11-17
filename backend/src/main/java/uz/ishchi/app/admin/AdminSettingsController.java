@@ -15,17 +15,18 @@ import uz.ishchi.app.settings.dto.AppSettingsUpdateRequest;
 @RestController
 @RequestMapping("/api/admin/settings")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
 public class AdminSettingsController {
 
     private final AppSettingsService appSettingsService;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
     public AppSettingsResponse get() {
         return appSettingsService.get();
     }
 
     @PatchMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public AppSettingsResponse update(@Valid @RequestBody AppSettingsUpdateRequest request) {
         return appSettingsService.update(request);
     }
