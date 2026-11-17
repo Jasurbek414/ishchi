@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import ThemeToggle from './ThemeToggle.jsx';
 
-const NAV_ITEMS = [
+const ADMIN_NAV_ITEMS = [
   { to: '/', label: 'Statistika', icon: LayoutDashboard, end: true },
   { to: '/call-center', label: 'Call-Center', icon: Headphones },
   { to: '/map', label: 'Xarita & Hududlar', icon: Map },
@@ -34,15 +34,22 @@ const NAV_ITEMS = [
   { to: '/settings', label: 'Sozlamalar', icon: Settings },
 ];
 
+const OPERATOR_NAV_ITEMS = [
+  { to: '/call-center', label: 'Call-Center & Dispetcher', icon: Headphones },
+  { to: '/map', label: 'Xarita & Hududlar', icon: Map },
+  { to: '/', label: 'Statistika', icon: LayoutDashboard, end: true },
+];
+
 export default function Layout() {
-  const { logout } = useAuth();
+  const { logout, isOperator } = useAuth();
+  const navItems = isOperator ? OPERATOR_NAV_ITEMS : ADMIN_NAV_ITEMS;
 
   return (
     <div className="app-shell">
       <header className="topbar">
         <div className="topbar-title">
           <img className="topbar-badge" src={`${import.meta.env.BASE_URL}logo.png`} alt="" />
-          Ishchi — Admin
+          {isOperator ? 'Ishchi — Operator paneli' : 'Ishchi — Boshqaruv (Admin)'}
         </div>
         <div className="topbar-actions">
           <ThemeToggle />
@@ -51,7 +58,7 @@ export default function Layout() {
       </header>
       <div className="layout-body">
         <nav className="sidebar">
-          {NAV_ITEMS.map((item) => (
+          {navItems.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
@@ -68,7 +75,7 @@ export default function Layout() {
         </main>
       </div>
       <nav className="bottom-nav">
-        {NAV_ITEMS.map((item) => (
+        {navItems.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
