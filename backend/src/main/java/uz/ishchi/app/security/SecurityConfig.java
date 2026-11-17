@@ -85,6 +85,9 @@ public class SecurityConfig {
                         // anonymous POSTs let anyone inflate a banner's statistics at will.
                         .requestMatchers(HttpMethod.GET, "/api/promo-banners", "/api/promo-banners/**").permitAll()
                         .requestMatchers("/api/operator/**").hasAnyRole("ADMIN", "OPERATOR")
+                        .requestMatchers(HttpMethod.GET, "/api/admin/settings").hasAnyRole("ADMIN", "OPERATOR")
+                        .requestMatchers("/api/admin/map/**").hasAnyRole("ADMIN", "OPERATOR")
+                        .requestMatchers("/api/admin/stats").hasAnyRole("ADMIN", "OPERATOR")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )

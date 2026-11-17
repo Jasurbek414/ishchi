@@ -11,7 +11,8 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   if (status === 'authenticated') {
-    return <Navigate to="/" replace />;
+    const isOp = localStorage.getItem('ishchi_admin_role') === 'OPERATOR';
+    return <Navigate to={isOp ? "/call-center" : "/"} replace />;
   }
 
   async function handleSubmit(e) {
@@ -20,7 +21,8 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await login(phone.trim(), password);
-      navigate('/', { replace: true });
+      const isOp = localStorage.getItem('ishchi_admin_role') === 'OPERATOR';
+      navigate(isOp ? '/call-center' : '/', { replace: true });
     } catch (err) {
       setError(err.message || 'Kirishda xatolik yuz berdi');
     } finally {

@@ -197,8 +197,22 @@ public class OperatorTicketService {
                                                    String category,
                                                    String search,
                                                    Pageable pageable) {
-        return ticketRepository.findAllFiltered(status, urgency, category, search, pageable)
-                .map(OperatorTicketResponse::from);
+        org.springframework.data.jpa.domain.Specification<OperatorTicket> spec = (root, query, cb) -> {
+            var predicates = new java.util.ArrayList<jakarta.persistence.criteria.Predicate>();
+            if (status != null) predicates.add(cb.equal(root.get("status"), status));
+            if (urgency != null) predicates.add(cb.equal(root.get("urgency"), urgency));
+            if (category != null && !category.isBlank()) predicates.add(cb.equal(root.get("category"), category));
+            if (search != null && !search.isBlank()) {
+                String pattern = "%" + search.trim().toLowerCase() + "%";
+                var p1 = cb.like(cb.lower(root.get("customerPhone")), pattern);
+                var p2 = cb.like(cb.lower(root.get("customerName")), pattern);
+                var p3 = cb.like(cb.lower(root.get("ticketNumber")), pattern);
+                predicates.add(cb.or(p1, p2, p3));
+            }
+            return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
+        };
+        return ticketRepository.findAll(spec, pageable).map(OperatorTicketResponse::from);
+
     }
 
     @Transactional(readOnly = true)

@@ -266,7 +266,17 @@ public class TelephonyService {
 
     @Transactional(readOnly = true)
     public Page<CallLogResponse> getCalls(CallStatus status, String phone, Pageable pageable) {
-        return callLogRepository.findAllFiltered(status, phone, pageable)
-                .map(CallLogResponse::from);
+        org.springframework.data.jpa.domain.Specification<CallLog> spec = (root, query, cb) -> {
+            var predicates = new java.util.ArrayList<jakarta.persistence.criteria.Predicate>();
+            if (status != null) {
+                predicates.add(cb.equal(root.get("status"), status));
+            }
+            if (phone != null && !phone.isBlank()) {
+                predicates.add(cb.like(root.get("callerPhone"), "%" + phone.trim() + "%"));
+            }
+            return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
+        };
+        return callLogRepository.findAll(spec, pageable).map(CallLogResponse::from);
+
     }
 }

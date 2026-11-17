@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { api } from '../api/client.js';
+import { api, getAccessToken } from '../api/client.js';
 import { useToast } from '../components/Toast.jsx';
 import {
   PhoneCall,
@@ -117,7 +117,9 @@ export default function CallCenterPage() {
   useEffect(() => {
     let eventSource = null;
     try {
-      eventSource = new EventSource('/api/operator/stream');
+      const token = getAccessToken();
+      const streamUrl = '/api/operator/stream' + (token ? '?token=' + encodeURIComponent(token) : '');
+      eventSource = new EventSource(streamUrl);
 
       eventSource.onopen = () => {
         setSseConnected(true);
