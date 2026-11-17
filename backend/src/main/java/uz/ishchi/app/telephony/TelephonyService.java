@@ -233,14 +233,14 @@ public class TelephonyService {
         Integer duration = (request != null && request.durationSeconds() != null) ? request.durationSeconds() : 0;
         String notes = request != null ? request.notes() : null;
         String status = duration > 0 ? "ANSWERED" : "NO ANSWER";
-        return handleCallEnd(new CallEndWebhookDto(callId, duration, status, null, notes));
+        return handleCallEnd(new CallEndWebhookDto(callId, status, duration, duration, null, notes));
     }
 
     @Transactional
     public CallLogResponse simulateIncomingCall(String phone) {
         String callId = "IN-" + UUID.randomUUID().toString().substring(0, 8);
         String callerPhone = (phone != null && !phone.isBlank()) ? phone.trim() : "+998901234567";
-        return handleIncomingCall(new IncomingCallWebhookDto(callId, callerPhone, "1055"));
+        return handleIncomingCall(new IncomingCallWebhookDto(callId, callerPhone, "1055", "INBOUND", null));
     }
 
     @Transactional(readOnly = true)
