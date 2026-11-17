@@ -49,6 +49,10 @@ app:
     password: ${ADMIN_PASSWORD:}
   firebase:
     credentials-path: ${FIREBASE_CREDENTIALS_PATH:}
+  telephony:
+    webhook-secret: ${TELEPHONY_WEBHOOK_SECRET:telephony-secret-change-in-prod}
+    short-number: ${TELEPHONY_SHORT_NUMBER:1055}
+    asterisk-host: ${TELEPHONY_ASTERISK_HOST:localhost}
 
 # The API description lists every endpoint and field, so it is off unless a developer turns it on
 # (API_DOCS_ENABLED=true) on their own machine.

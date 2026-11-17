@@ -72,6 +72,7 @@ public class SecurityConfig {
                                 "/api/landing/**",
                                 "/api/profile/avatar/presets",
                                 "/api/telegram/webhook", "/api/telegram/webhook/**",
+                                "/api/telephony/webhook", "/api/telephony/webhook/**",
                                 "/uploads/**",
                                 "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html",
                                 "/actuator/health", "/actuator/info",
@@ -83,6 +84,7 @@ public class SecurityConfig {
                         // Reading banners stays public; the view/click counters do not, because
                         // anonymous POSTs let anyone inflate a banner's statistics at will.
                         .requestMatchers(HttpMethod.GET, "/api/promo-banners", "/api/promo-banners/**").permitAll()
+                        .requestMatchers("/api/operator/**").hasAnyRole("ADMIN", "OPERATOR")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )

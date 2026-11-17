@@ -5,6 +5,7 @@ import ProtectedRoute from './components/ProtectedRoute.jsx';
 import Layout from './components/Layout.jsx';
 import LoginPage from './pages/LoginPage.jsx';
 import DashboardPage from './pages/DashboardPage.jsx';
+import CallCenterPage from './pages/CallCenterPage.jsx';
 import MapManagementPage from './pages/MapManagementPage.jsx';
 import UsersPage from './pages/UsersPage.jsx';
 import JobsPage from './pages/JobsPage.jsx';
@@ -36,6 +37,7 @@ export default function App() {
             }
           >
             <Route index element={<DashboardPage />} />
+            <Route path="call-center" element={<CallCenterPage />} />
             <Route path="map" element={<MapManagementPage />} />
             <Route path="users" element={<UsersPage />} />
             <Route path="emergency" element={<EmergencyPage />} />

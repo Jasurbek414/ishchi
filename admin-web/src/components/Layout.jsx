@@ -14,11 +14,13 @@ import {
   Wallet,
   FileCheck,
   Zap,
+  Headphones,
 } from 'lucide-react';
 import ThemeToggle from './ThemeToggle.jsx';
 
 const NAV_ITEMS = [
   { to: '/', label: 'Statistika', icon: LayoutDashboard, end: true },
+  { to: '/call-center', label: 'Call-Center', icon: Headphones },
   { to: '/map', label: 'Xarita & Hududlar', icon: Map },
   { to: '/users', label: 'Foydalanuvchilar', icon: Users },
   { to: '/emergency', label: 'Shartnomalar', icon: FileCheck },
