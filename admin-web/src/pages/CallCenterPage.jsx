@@ -1054,59 +1054,63 @@ export default function CallCenterPage() {
 
       {/* 6. TAB 2: SOFTPHONE & DIALER */}
       {activeTab === 'dialer' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Dialer Keypad (Left Column) */}
-          <div className="lg:col-span-5 bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col items-center">
-            <div className="w-full max-w-xs space-y-4">
-              <div className="text-center">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Web Softphone</span>
-                <h3 className="text-base font-bold text-slate-800 dark:text-white">Raqam terish paneli</h3>
+          <div className="lg:col-span-5 flex justify-center">
+            <div className="w-full max-w-[340px] bg-white dark:bg-slate-900 rounded-[36px] p-6 shadow-xl border border-slate-200/80 dark:border-slate-800 flex flex-col items-center">
+              {/* Speaker Bar & Status Indicator */}
+              <div className="w-12 h-1 bg-slate-200 dark:bg-slate-700 rounded-full mb-3"></div>
+              <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                SIP 1055 · Web Softphone
               </div>
 
               {/* Number Screen */}
-              <div className="relative bg-slate-100 dark:bg-slate-900 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 flex items-center justify-between shadow-inner">
+              <div className="w-full text-center py-2 px-1 relative min-h-[56px] flex items-center justify-center">
                 <input
                   type="text"
                   value={dialPhone}
                   onChange={(e) => setDialPhone(e.target.value)}
-                  placeholder="+998..."
-                  className="bg-transparent text-xl font-bold font-mono tracking-wider text-slate-900 dark:text-white w-full focus:outline-none"
+                  placeholder="Raqamni tering..."
+                  style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
+                  className="w-full text-center text-3xl font-light tracking-wider text-slate-900 dark:text-white bg-transparent font-mono focus:ring-0 focus:outline-none p-0 m-0"
                 />
-                <button
-                  onClick={handleKeypadBackspace}
-                  className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition"
-                  title="O'chirish"
-                >
-                  <Delete size={20} />
-                </button>
               </div>
 
-              {/* Quick Preset Buttons */}
-              <div className="flex gap-2">
+              {/* Quick Preset Pills */}
+              <div className="flex items-center justify-center gap-2 mb-3">
                 <button
+                  type="button"
                   onClick={() => setDialPhone('+998')}
-                  className="flex-1 py-1 text-xs font-semibold bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-200 rounded-lg transition"
+                  style={{ border: 'none', outline: 'none' }}
+                  className="px-3.5 py-1 text-xs font-semibold rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition cursor-pointer"
                 >
                   +998
                 </button>
                 <button
+                  type="button"
                   onClick={() => setDialPhone('1055')}
-                  className="flex-1 py-1 text-xs font-semibold bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-200 rounded-lg transition"
+                  style={{ border: 'none', outline: 'none' }}
+                  className="px-3.5 py-1 text-xs font-semibold rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition cursor-pointer"
                 >
-                  1055 (Dispet.)
+                  1055 (Dispetcher)
                 </button>
-                <button
-                  onClick={() => setDialPhone('')}
-                  className="px-3 py-1 text-xs font-semibold text-red-500 hover:bg-red-50 rounded-lg transition"
-                >
-                  Tozalash
-                </button>
+                {dialPhone.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setDialPhone('')}
+                    style={{ border: 'none', outline: 'none' }}
+                    className="px-3 py-1 text-xs font-semibold rounded-full bg-red-50 hover:bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400 transition cursor-pointer"
+                  >
+                    Tozalash
+                  </button>
+                )}
               </div>
 
-              {/* Keypad Grid (1-9, *, 0, #) */}
-              <div className="grid grid-cols-3 gap-3 pt-2">
+              {/* Circular Keypad Grid (1-9, *, 0, #) */}
+              <div className="grid grid-cols-3 gap-y-3.5 gap-x-5 my-2 justify-items-center w-full">
                 {[
-                  { key: '1', sub: '' },
+                  { key: '1', sub: ' ' },
                   { key: '2', sub: 'ABC' },
                   { key: '3', sub: 'DEF' },
                   { key: '4', sub: 'GHI' },
@@ -1115,32 +1119,54 @@ export default function CallCenterPage() {
                   { key: '7', sub: 'PQRS' },
                   { key: '8', sub: 'TUV' },
                   { key: '9', sub: 'WXYZ' },
-                  { key: '*', sub: '' },
+                  { key: '*', sub: ' ' },
                   { key: '0', sub: '+' },
-                  { key: '#', sub: '' },
+                  { key: '#', sub: ' ' },
                 ].map((item) => (
                   <button
                     key={item.key}
+                    type="button"
                     onClick={() => handleKeypadPress(item.key)}
-                    className="h-16 flex flex-col items-center justify-center rounded-2xl bg-slate-50 hover:bg-blue-50 dark:bg-slate-700/60 dark:hover:bg-blue-900/30 border border-slate-200 dark:border-slate-700 transition active:scale-95 cursor-pointer shadow-sm"
+                    style={{ border: 'none', outline: 'none', boxShadow: 'none' }}
+                    className="w-[68px] h-[68px] rounded-full flex flex-col items-center justify-center bg-slate-100/90 hover:bg-slate-200/90 active:bg-blue-100 active:scale-90 dark:bg-slate-800 dark:hover:bg-slate-700 dark:active:bg-slate-600 text-slate-900 dark:text-white transition-all duration-150 select-none cursor-pointer shadow-xs"
                   >
-                    <span className="text-xl font-bold text-slate-800 dark:text-white leading-none">{item.key}</span>
-                    {item.sub && (
-                      <span className="text-[9px] font-semibold text-slate-400 tracking-wider mt-1">{item.sub}</span>
-                    )}
+                    <span className="text-2xl font-normal leading-none">{item.key}</span>
+                    <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 tracking-widest mt-0.5 uppercase h-3">
+                      {item.sub}
+                    </span>
                   </button>
                 ))}
               </div>
 
-              {/* Call Action Button */}
-              <div className="pt-2">
+              {/* Bottom Action Row (Call & Backspace) */}
+              <div className="grid grid-cols-3 gap-x-5 items-center justify-items-center w-full mt-3">
+                <div></div>
+
+                {/* Big Circular Green Call Button */}
                 <button
+                  type="button"
                   onClick={() => handleDial()}
-                  className="w-full h-14 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-bold text-lg rounded-2xl shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-3 transition transform active:scale-95 cursor-pointer"
+                  style={{ border: 'none', outline: 'none' }}
+                  className="w-[68px] h-[68px] rounded-full bg-emerald-500 hover:bg-emerald-600 active:scale-90 text-white flex items-center justify-center shadow-lg shadow-emerald-500/35 transition-all cursor-pointer"
+                  title="Qo'ng'iroq qilish"
                 >
-                  <PhoneCall size={22} />
-                  Qo'ng'iroq qilish
+                  <PhoneCall size={28} />
                 </button>
+
+                {/* Circular Delete Button */}
+                {dialPhone.length > 0 ? (
+                  <button
+                    type="button"
+                    onClick={handleKeypadBackspace}
+                    style={{ border: 'none', outline: 'none' }}
+                    className="w-[68px] h-[68px] rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 dark:text-slate-400 dark:hover:text-white transition-all cursor-pointer active:scale-90"
+                    title="Bitta raqamni o'chirish"
+                  >
+                    <Delete size={24} />
+                  </button>
+                ) : (
+                  <div></div>
+                )}
               </div>
             </div>
           </div>
