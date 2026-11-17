@@ -17,6 +17,7 @@ import uz.ishchi.app.user.UserRepository;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class TelephonyService {
@@ -185,6 +186,63 @@ public class TelephonyService {
         return CallLogResponse.from(saved);
     }
 
+    @Transactional
+    public CallLogResponse initiateOutboundCall(InitiateCallRequest request, Long operatorId) {
+        String callId = "OUT-" + UUID.randomUUID().toString().substring(0, 8);
+        String destinationPhone = request.phone().trim();
+
+        CallLog call = new CallLog();
+        call.setCallId(callId);
+        call.setCallerPhone("1055");
+        call.setDestinationNumber(destinationPhone);
+        call.setDirection(CallDirection.OUTBOUND);
+        call.setStatus(CallStatus.RINGING);
+        call.setStartTime(Instant.now());
+        call.setUpdatedAt(Instant.now());
+
+        if (operatorId != null) {
+            userRepository.findById(operatorId).ifPresent(call::setOperator);
+        }
+
+        CallLog saved = callLogRepository.save(call);
+
+        CustomerLookupResponse lookup = lookupCustomerByPhone(destinationPhone);
+        String customerName = lookup.fullName() != null ? lookup.fullName() : "Chiqish qo'ng'irog'i";
+
+        LiveCallEvent event = new LiveCallEvent(
+                "CALL_OUTGOING",
+                saved.getCallId(),
+                destinationPhone,
+                customerName,
+                lookup.userId(),
+                CallStatus.RINGING,
+                Instant.now()
+        );
+        sseService.broadcastCallEvent(event);
+
+        return CallLogResponse.from(saved);
+    }
+
+    @Transactional
+    public CallLogResponse answerCall(String callId, Long operatorId) {
+        return handleCallAnswered(callId, operatorId);
+    }
+
+    @Transactional
+    public CallLogResponse hangupCall(String callId, HangupCallRequest request) {
+        Integer duration = (request != null && request.durationSeconds() != null) ? request.durationSeconds() : 0;
+        String notes = request != null ? request.notes() : null;
+        String status = duration > 0 ? "ANSWERED" : "NO ANSWER";
+        return handleCallEnd(new CallEndWebhookDto(callId, duration, status, null, notes));
+    }
+
+    @Transactional
+    public CallLogResponse simulateIncomingCall(String phone) {
+        String callId = "IN-" + UUID.randomUUID().toString().substring(0, 8);
+        String callerPhone = (phone != null && !phone.isBlank()) ? phone.trim() : "+998901234567";
+        return handleIncomingCall(new IncomingCallWebhookDto(callId, callerPhone, "1055"));
+    }
+
     @Transactional(readOnly = true)
     public CustomerLookupResponse lookupCustomerByPhone(String phone) {
         if (phone == null || phone.isBlank()) {
@@ -277,6 +335,5 @@ public class TelephonyService {
             return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
         };
         return callLogRepository.findAll(spec, pageable).map(CallLogResponse::from);
-
     }
 }

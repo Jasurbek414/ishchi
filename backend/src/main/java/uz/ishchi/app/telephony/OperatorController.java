@@ -41,6 +41,47 @@ public class OperatorController {
     }
 
     /**
+     * Yangi chiquvchi qo'ng'iroqni boshlash (Raqam terish)
+     */
+    @PostMapping("/call/dial")
+    public ResponseEntity<CallLogResponse> initiateCall(
+            @Valid @RequestBody InitiateCallRequest request,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        Long opId = principal != null ? principal.getId() : null;
+        return ResponseEntity.ok(telephonyService.initiateOutboundCall(request, opId));
+    }
+
+    /**
+     * Qo'ng'iroqqa javob berish (Qabul qilish)
+     */
+    @PostMapping("/call/{callId}/answer")
+    public ResponseEntity<CallLogResponse> answerCall(
+            @PathVariable String callId,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        Long opId = principal != null ? principal.getId() : null;
+        return ResponseEntity.ok(telephonyService.answerCall(callId, opId));
+    }
+
+    /**
+     * Qo'ng'iroqni tugatish (Trubkani qo'yish)
+     */
+    @PostMapping("/call/{callId}/hangup")
+    public ResponseEntity<CallLogResponse> hangupCall(
+            @PathVariable String callId,
+            @RequestBody(required = false) HangupCallRequest request) {
+        return ResponseEntity.ok(telephonyService.hangupCall(callId, request));
+    }
+
+    /**
+     * Kiruvchi qo'ng'iroqni sinov tariqasida simulyatsiya qilish
+     */
+    @PostMapping("/call/simulate-incoming")
+    public ResponseEntity<CallLogResponse> simulateIncoming(
+            @RequestParam(required = false) String phone) {
+        return ResponseEntity.ok(telephonyService.simulateIncomingCall(phone));
+    }
+
+    /**
      * Telefon orqali mijoz ma'lumotlarini tezkor tekshirish
      */
     @GetMapping("/lookup")

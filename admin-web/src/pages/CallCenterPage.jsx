@@ -4,6 +4,7 @@ import { useToast } from '../components/Toast.jsx';
 import {
   PhoneCall,
   PhoneIncoming,
+  PhoneOutgoing,
   PhoneOff,
   PhoneMissed,
   User,
@@ -21,20 +22,72 @@ import {
   Filter,
   Play,
   Volume2,
+  VolumeX,
+  Mic,
+  MicOff,
   Calendar,
   X,
   Radio,
   Headphones,
+  Delete,
+  Hash,
+  Square,
+  Sparkles,
 } from 'lucide-react';
+
+// DTMF audio generator for keypad click sounds
+const DTMF_FREQS = {
+  '1': [697, 1209], '2': [697, 1336], '3': [697, 1477],
+  '4': [770, 1209], '5': [770, 1336], '6': [770, 1477],
+  '7': [852, 1209], '8': [852, 1336], '9': [852, 1477],
+  '*': [941, 1209], '0': [941, 1336], '#': [941, 1477],
+};
+
+function playDtmfTone(key) {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const freqs = DTMF_FREQS[key] || [440, 480];
+    const osc1 = ctx.createOscillator();
+    const osc2 = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc1.frequency.value = freqs[0];
+    osc2.frequency.value = freqs[1];
+    gain.gain.setValueAtTime(0.08, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+
+    osc1.connect(gain);
+    osc2.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc1.start();
+    osc2.start();
+    osc1.stop(ctx.currentTime + 0.12);
+    osc2.stop(ctx.currentTime + 0.12);
+  } catch (e) {}
+}
 
 export default function CallCenterPage() {
   const toast = useToast();
 
-  // Tab: 'tickets' | 'calls'
+  // Tab: 'tickets' | 'dialer' | 'calls'
   const [activeTab, setActiveTab] = useState('tickets');
 
-  // Live Call state (from SSE)
-  const [liveCall, setLiveCall] = useState(null);
+  // Real-time Active Call state
+  // { callId, phone, customerName, customerId, direction: 'INBOUND'|'OUTBOUND', status: 'RINGING'|'ANSWERED', startTime }
+  const [activeCall, setActiveCall] = useState(null);
+  const [callTimer, setCallTimer] = useState(0);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isSpeaker, setIsSpeaker] = useState(true);
+
+  // Softphone Dialer state
+  const [dialPhone, setDialPhone] = useState('+998');
+  const [dialLookup, setDialLookup] = useState(null);
+  const [dialLookupLoading, setDialLookupLoading] = useState(false);
+
+  // SSE connection status
   const [sseConnected, setSseConnected] = useState(false);
 
   // Stats
@@ -98,22 +151,37 @@ export default function CallCenterPage() {
   // Audio player state
   const [playingAudioUrl, setPlayingAudioUrl] = useState(null);
 
-  // 1. Load Initial Stats & Regions
+  // 1. Initial Data
   useEffect(() => {
     fetchStats();
     fetchRegions();
   }, []);
 
-  // 2. Fetch Tickets on filter change
+  // 2. Fetch Tickets or Calls on filter change
   useEffect(() => {
     if (activeTab === 'tickets') {
       fetchTickets();
-    } else {
+    } else if (activeTab === 'calls') {
       fetchCalls();
     }
   }, [activeTab, statusFilter, urgencyFilter, searchQuery, page, callStatusFilter, callSearchPhone, callsPage]);
 
-  // 3. Setup SSE for Real-time Call Popups
+  // 3. Live call timer
+  useEffect(() => {
+    let interval = null;
+    if (activeCall && activeCall.status === 'ANSWERED') {
+      interval = setInterval(() => {
+        setCallTimer((prev) => prev + 1);
+      }, 1000);
+    } else {
+      setCallTimer(0);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [activeCall?.status]);
+
+  // 4. SSE Subscription for Real-time Call Events
   useEffect(() => {
     let eventSource = null;
     try {
@@ -128,9 +196,19 @@ export default function CallCenterPage() {
       eventSource.addEventListener('CALL_INCOMING', (e) => {
         try {
           const data = JSON.parse(e.data);
-          setLiveCall(data);
+          setActiveCall({
+            callId: data.callId,
+            phone: data.callerPhone,
+            customerName: data.customerName || "Noma'lum mijoz",
+            customerId: data.customerId,
+            direction: 'INBOUND',
+            status: 'RINGING',
+            startTime: new Date(),
+          });
           toast.info(`Kiruvchi qo'ng'iroq: ${data.callerPhone}`);
-          // Auto lookup and prefill create form
+          playDtmfTone('1');
+
+          // Auto prefill create form
           setNewTicket((prev) => ({
             ...prev,
             callId: data.callId,
@@ -142,20 +220,34 @@ export default function CallCenterPage() {
         }
       });
 
+      eventSource.addEventListener('CALL_OUTGOING', (e) => {
+        try {
+          const data = JSON.parse(e.data);
+          setActiveCall({
+            callId: data.callId,
+            phone: data.callerPhone,
+            customerName: data.customerName || "Chiqish qo'ng'irog'i",
+            customerId: data.customerId,
+            direction: 'OUTBOUND',
+            status: 'RINGING',
+            startTime: new Date(),
+          });
+        } catch (err) {}
+      });
+
       eventSource.addEventListener('CALL_ANSWERED', (e) => {
         try {
           const data = JSON.parse(e.data);
-          if (liveCall && liveCall.callId === data.callId) {
-            setLiveCall((prev) => ({ ...prev, status: 'ANSWERED' }));
-          }
+          setActiveCall((prev) => (prev && prev.callId === data.callId ? { ...prev, status: 'ANSWERED' } : prev));
+          fetchStats();
         } catch (err) {}
       });
 
       eventSource.addEventListener('CALL_ENDED', (e) => {
         try {
           const data = JSON.parse(e.data);
-          if (liveCall && liveCall.callId === data.callId) {
-            setLiveCall(null);
+          if (activeCall && activeCall.callId === data.callId) {
+            setActiveCall(null);
           }
           fetchStats();
           fetchCalls();
@@ -172,9 +264,23 @@ export default function CallCenterPage() {
     return () => {
       if (eventSource) eventSource.close();
     };
-  }, []);
+  }, [activeCall?.callId]);
 
-  // 4. Load districts when region changes
+  // 5. Customer Lookup on dial phone change
+  useEffect(() => {
+    const raw = dialPhone.replace(/\D/g, '');
+    if (raw.length >= 9) {
+      setDialLookupLoading(true);
+      api.get('/api/operator/lookup', { phone: dialPhone.trim() })
+        .then((res) => setDialLookup(res))
+        .catch(() => setDialLookup(null))
+        .finally(() => setDialLookupLoading(false));
+    } else {
+      setDialLookup(null);
+    }
+  }, [dialPhone]);
+
+  // 6. Load districts when region changes
   useEffect(() => {
     if (newTicket.regionId) {
       api.get(`/api/regions/${newTicket.regionId}/districts`).then(setDistricts).catch(() => setDistricts([]));
@@ -183,7 +289,7 @@ export default function CallCenterPage() {
     }
   }, [newTicket.regionId]);
 
-  // 5. Search available workers when modal is opened or filters change
+  // 7. Search available workers when modal is opened
   useEffect(() => {
     if (showCreateModal || showAssignModal) {
       fetchWorkers();
@@ -253,61 +359,147 @@ export default function CallCenterPage() {
         search: workerSearch || undefined,
       });
       setAvailableWorkers(data || []);
-    } catch (e) {
-      setAvailableWorkers([]);
+    } catch (err) {
+      console.error(err);
     } finally {
       setWorkersLoading(false);
     }
   };
 
-  const handleLookupPhone = async (phone) => {
-    if (!phone || phone.length < 9) return;
-    try {
-      const res = await api.get('/api/operator/lookup', { phone });
-      if (res && res.exists) {
-        setNewTicket((prev) => ({
-          ...prev,
-          customerName: res.fullName || prev.customerName,
-          regionId: res.regionId || prev.regionId,
-          districtId: res.districtId || prev.districtId,
-        }));
-        toast.success(`Mijoz topildi: ${res.fullName || res.phone}`);
-      }
-    } catch (e) {}
-  };
+  // --- Call Actions ---
 
-  const handleCreateTicket = async (e) => {
-    e.preventDefault();
-    if (!newTicket.customerPhone || !newTicket.problemDescription) {
-      toast.error("Mijoz telefoni va muammo tavsifi majburiy");
+  // 1. Dial Outbound Call
+  const handleDial = async (targetPhone) => {
+    const phone = (targetPhone || dialPhone).trim();
+    if (!phone || phone.replace(/\D/g, '').length < 9) {
+      toast.error("Iltimos, to'liq telefon raqamini kiriting");
       return;
     }
-
     try {
-      await api.post('/api/operator/tickets', {
-        ...newTicket,
-        assignedWorkerId: selectedWorker ? selectedWorker.id : null,
-        priceAgreed: newTicket.priceAgreed ? Number(newTicket.priceAgreed) : null,
+      playDtmfTone('#');
+      const res = await api.post('/api/operator/call/dial', { phone });
+      setActiveCall({
+        callId: res.callId,
+        phone: res.destinationNumber || phone,
+        customerName: dialLookup?.fullName || "Chiqish qo'ng'irog'i",
+        direction: 'OUTBOUND',
+        status: 'RINGING',
+        startTime: new Date(),
       });
-      toast.success("Murojaat muvaffaqiyatli ro'yxatga olindi!");
+      setCallTimer(0);
+      toast.info(`${phone} raqamiga chaqiruv yo'llanmoqda...`);
+    } catch (e) {
+      toast.error(e.message || "Qo'ng'iroqni amalga oshirib bo'lmadi");
+    }
+  };
+
+  // 2. Answer Incoming Call
+  const handleAnswerCall = async () => {
+    if (!activeCall) return;
+    try {
+      await api.post(`/api/operator/call/${activeCall.callId}/answer`);
+      setActiveCall((prev) => prev ? { ...prev, status: 'ANSWERED' } : null);
+      toast.success("Qo'ng'iroq qabul qilindi — aloqa o'rnatildi");
+    } catch (e) {
+      toast.error("Qo'ng'iroqni qabul qilishda xatolik");
+    }
+  };
+
+  // 3. Hangup / End Call
+  const handleHangupCall = async () => {
+    if (!activeCall) return;
+    try {
+      await api.post(`/api/operator/call/${activeCall.callId}/hangup`, {
+        durationSeconds: callTimer,
+        notes: "Operator tomonidan yakunlandi",
+      });
+      toast.info(`Qo'ng'iroq yakunlandi (${formatTimer(callTimer)})`);
+      setActiveCall(null);
+      setCallTimer(0);
+      fetchStats();
+      fetchCalls();
+    } catch (e) {
+      setActiveCall(null);
+      setCallTimer(0);
+    }
+  };
+
+  // 4. Simulate Incoming Call (Test purpose)
+  const handleSimulateIncoming = async () => {
+    try {
+      const testPhones = ['+998901234567', '+998935552020', '+998971110099', '+998998887766'];
+      const randomPhone = testPhones[Math.floor(Math.random() * testPhones.length)];
+      await api.post(`/api/operator/call/simulate-incoming?phone=${encodeURIComponent(randomPhone)}`);
+      toast.info(`Sinov qo'ng'irog'i yuborildi: ${randomPhone}`);
+    } catch (e) {
+      toast.error("Sinov qo'ng'irog'ini yuborishda xatolik");
+    }
+  };
+
+  // Dialpad helper
+  const handleKeypadPress = (val) => {
+    playDtmfTone(val);
+    setDialPhone((prev) => prev + val);
+  };
+
+  const handleKeypadBackspace = () => {
+    setDialPhone((prev) => {
+      if (prev.length <= 4 && prev.startsWith('+998')) return '+998';
+      return prev.slice(0, -1);
+    });
+  };
+
+  const formatTimer = (sec) => {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+  };
+
+  // Create Ticket from Active Call
+  const handleOpenTicketFromCall = () => {
+    if (!activeCall) return;
+    setNewTicket({
+      callId: activeCall.callId,
+      customerPhone: activeCall.phone,
+      customerName: activeCall.customerName !== "Noma'lum mijoz" ? activeCall.customerName : '',
+      regionId: dialLookup?.regionId ? String(dialLookup.regionId) : '',
+      districtId: dialLookup?.districtId ? String(dialLookup.districtId) : '',
+      addressLine: '',
+      category: 'Santexnika',
+      problemDescription: '',
+      urgency: 'NORMAL',
+      priceAgreed: '',
+      paymentType: 'CASH',
+      notes: `Qo'ng'iroq orqali qabul qilindi. Davomiyligi: ${formatTimer(callTimer)}`,
+      assignedWorkerId: null,
+    });
+    setShowCreateModal(true);
+  };
+
+  // Submit Create Ticket
+  const handleCreateTicket = async (e) => {
+    e.preventDefault();
+    try {
+      const payload = {
+        callId: newTicket.callId || undefined,
+        customerPhone: newTicket.customerPhone,
+        customerName: newTicket.customerName,
+        regionId: newTicket.regionId ? Number(newTicket.regionId) : undefined,
+        districtId: newTicket.districtId ? Number(newTicket.districtId) : undefined,
+        addressLine: newTicket.addressLine,
+        category: newTicket.category,
+        problemDescription: newTicket.problemDescription,
+        urgency: newTicket.urgency,
+        priceAgreed: newTicket.priceAgreed ? Number(newTicket.priceAgreed) : undefined,
+        paymentType: newTicket.paymentType,
+        notes: newTicket.notes,
+        assignedWorkerId: selectedWorker ? selectedWorker.id : undefined,
+      };
+
+      await api.post('/api/operator/tickets', payload);
+      toast.success("Murojaat muvaffaqiyatli saqlandi va mutaxassisga yo'naltirildi!");
       setShowCreateModal(false);
       setSelectedWorker(null);
-      setLiveCall(null);
-      setNewTicket({
-        callId: '',
-        customerPhone: '',
-        customerName: '',
-        regionId: '',
-        districtId: '',
-        addressLine: '',
-        category: 'Santexnika',
-        problemDescription: '',
-        urgency: 'NORMAL',
-        priceAgreed: '',
-        paymentType: 'CASH',
-        notes: '',
-        assignedWorkerId: null,
-      });
       fetchTickets();
       fetchStats();
     } catch (err) {
@@ -315,31 +507,29 @@ export default function CallCenterPage() {
     }
   };
 
+  // Assign Worker to Ticket
   const handleAssignWorkerToExisting = async (workerId) => {
     if (!selectedTicket) return;
     try {
       await api.post(`/api/operator/tickets/${selectedTicket.id}/assign`, {
         workerId,
+        dispatchNotes: "Dispetcher tomonidan biriktirildi",
       });
-      toast.success("Mutaxassis muvaffaqiyatli biriktirildi va unga bildirishnoma yuborildi!");
+      toast.success("Mutaxassis muvaffaqiyatli biriktirildi va unga xabar yuborildi!");
       setShowAssignModal(false);
-      setSelectedTicket(null);
       fetchTickets();
       fetchStats();
     } catch (err) {
-      toast.error("Biriktirishda xatolik: " + err.message);
+      toast.error(err.message || "Mutaxassisni biriktirishda xatolik");
     }
   };
 
   const handleUpdateStatus = async (ticketId, newStatus) => {
     try {
       await api.patch(`/api/operator/tickets/${ticketId}`, { status: newStatus });
-      toast.success(`Status yangilandi: ${newStatus}`);
+      toast.success("Status yangilandi!");
       fetchTickets();
       fetchStats();
-      if (selectedTicket && selectedTicket.id === ticketId) {
-        setSelectedTicket((prev) => ({ ...prev, status: newStatus }));
-      }
     } catch (e) {
       toast.error("Statusni yangilashda xatolik");
     }
@@ -375,8 +565,8 @@ export default function CallCenterPage() {
 
   return (
     <div className="space-y-6">
-      {/* 1. Header with Live Status & Action */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
+      {/* 1. Top Header with Live Status & Quick Action Buttons */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-xl bg-blue-600/10 text-blue-600 flex items-center justify-center">
             <Headphones size={26} />
@@ -385,19 +575,43 @@ export default function CallCenterPage() {
             <div className="flex items-center gap-2">
               <h1 className="text-xl font-bold text-slate-900 dark:text-white">Call-Center & Dispetcherlik</h1>
               <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                sseConnected ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'
+                sseConnected ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' : 'bg-slate-100 text-slate-500'
               }`}>
                 <span className={`w-2 h-2 rounded-full ${sseConnected ? 'bg-emerald-500 animate-ping' : 'bg-slate-400'}`}></span>
-                {sseConnected ? 'Jonli efirda (Online)' : 'Ulanmoqda...'}
+                {sseConnected ? 'Telefoniya Faol (Online)' : 'Ulanmoqda...'}
               </span>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Qisqa raqam orqali kelayotgan qo'ng'iroqlarni qabul qilish va ustalarni yo'naltirish
+              Qisqa raqam (1055) qo'ng'iroqlarini qabul qilish, raqam terish va ustalarni yo'naltirish
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2.5">
+          {/* Quick Dialer Button */}
+          <button
+            onClick={() => setActiveTab('dialer')}
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-semibold transition cursor-pointer ${
+              activeTab === 'dialer'
+                ? 'bg-emerald-600 text-white shadow-sm'
+                : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
+            }`}
+          >
+            <PhoneCall size={17} />
+            Raqam terish (Softphone)
+          </button>
+
+          {/* Test Incoming Call button */}
+          <button
+            onClick={handleSimulateIncoming}
+            className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-medium transition cursor-pointer"
+            title="Sinov tariqasida kiruvchi qo'ng'iroq kelishini tekshirish"
+          >
+            <Sparkles size={14} className="text-amber-500" />
+            Sinov qo'ng'irog'i
+          </button>
+
+          {/* New Manual Ticket button */}
           <button
             onClick={() => {
               setNewTicket({
@@ -417,75 +631,196 @@ export default function CallCenterPage() {
               });
               setShowCreateModal(true);
             }}
-            className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium transition shadow-sm cursor-pointer"
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold transition shadow-sm cursor-pointer"
           >
-            <Plus size={18} />
+            <Plus size={17} />
             Yangi ariza ochish
           </button>
         </div>
       </div>
 
-      {/* 2. Live Incoming Call Alert (Banner) */}
-      {liveCall && (
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-5 rounded-2xl shadow-lg flex flex-col md:flex-row items-center justify-between gap-4 animate-bounce duration-1000">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center animate-pulse">
-              <PhoneIncoming size={32} />
-            </div>
-            <div>
-              <div className="text-xs uppercase tracking-wider text-blue-200 font-semibold">Kiruvchi qo'ng'iroq (Qisqa raqam)</div>
-              <div className="text-2xl font-black">{liveCall.callerPhone}</div>
-              <div className="text-sm text-blue-100">
-                {liveCall.customerName ? `Mijoz: ${liveCall.customerName}` : "Yangi murojaat"}
+      {/* 2. ACTIVE LIVE CALL BANNER (Appears on incoming or ongoing call) */}
+      {activeCall && (
+        <div className={`p-5 rounded-2xl shadow-xl text-white transition-all duration-300 ${
+          activeCall.status === 'ANSWERED'
+            ? 'bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-800 border-2 border-emerald-400'
+            : activeCall.direction === 'OUTBOUND'
+            ? 'bg-gradient-to-r from-indigo-700 via-purple-700 to-indigo-800 border-2 border-indigo-400'
+            : 'bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-900 border-2 border-blue-400 animate-pulse'
+        }`}>
+          <div className="flex flex-col md:flex-row items-center justify-between gap-5">
+            {/* Caller Info */}
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center shadow-inner">
+                {activeCall.status === 'ANSWERED' ? (
+                  <Headphones size={36} className="text-emerald-200 animate-bounce" />
+                ) : activeCall.direction === 'OUTBOUND' ? (
+                  <PhoneOutgoing size={36} className="text-purple-200 animate-pulse" />
+                ) : (
+                  <PhoneIncoming size={36} className="text-blue-200 animate-bounce" />
+                )}
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs uppercase tracking-wider font-extrabold px-2 py-0.5 rounded-full bg-white/20">
+                    {activeCall.status === 'ANSWERED'
+                      ? 'Aloqa o‘rnatilgan (Gaplashilmoqda)'
+                      : activeCall.direction === 'OUTBOUND'
+                      ? 'Chiquvchi qo‘ng‘iroq terilmoqda...'
+                      : 'Kiruvchi qo‘ng‘iroq (Qisqa raqam 1055)'}
+                  </span>
+                  {activeCall.status === 'ANSWERED' && (
+                    <span className="text-sm font-mono font-bold bg-black/30 px-2 py-0.5 rounded-md text-emerald-300 flex items-center gap-1.5">
+                      <Clock size={14} /> {formatTimer(callTimer)}
+                    </span>
+                  )}
+                </div>
+
+                <div className="text-3xl font-black tracking-tight mt-1 font-mono">
+                  {activeCall.phone}
+                </div>
+                <div className="text-sm text-blue-100 flex items-center gap-2 mt-0.5">
+                  <User size={14} />
+                  {activeCall.customerName}
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => {
-                setShowCreateModal(true);
-              }}
-              className="px-5 py-2.5 bg-white text-blue-700 hover:bg-blue-50 font-semibold text-sm rounded-xl transition shadow cursor-pointer"
-            >
-              Arizani to'ldirish
-            </button>
-            <button
-              onClick={() => setLiveCall(null)}
-              className="p-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl transition cursor-pointer"
-              title="Yopish"
-            >
-              <X size={20} />
-            </button>
+            {/* Audio Wave Visualizer while in call */}
+            {activeCall.status === 'ANSWERED' && (
+              <div className="hidden lg:flex items-center gap-1.5 bg-black/20 px-4 py-2 rounded-xl">
+                <span className="w-1.5 h-6 bg-emerald-400 rounded-full animate-pulse"></span>
+                <span className="w-1.5 h-10 bg-emerald-300 rounded-full animate-bounce"></span>
+                <span className="w-1.5 h-4 bg-emerald-400 rounded-full animate-pulse"></span>
+                <span className="w-1.5 h-8 bg-emerald-300 rounded-full animate-bounce"></span>
+                <span className="w-1.5 h-5 bg-emerald-400 rounded-full animate-pulse"></span>
+                <span className="text-xs text-emerald-200 ml-2 font-mono">Audio Ovoz Faol</span>
+              </div>
+            )}
+
+            {/* In-Call Action Buttons */}
+            <div className="flex flex-wrap items-center gap-3">
+              {activeCall.status === 'RINGING' && activeCall.direction === 'INBOUND' && (
+                <>
+                  {/* Answer Button */}
+                  <button
+                    onClick={handleAnswerCall}
+                    className="flex items-center gap-2 px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm rounded-xl transition shadow-lg cursor-pointer transform hover:scale-105"
+                  >
+                    <PhoneIncoming size={18} />
+                    Qabul qilish (Javob berish)
+                  </button>
+
+                  {/* Reject Button */}
+                  <button
+                    onClick={handleHangupCall}
+                    className="flex items-center gap-2 px-5 py-3 bg-red-500 hover:bg-red-600 text-white font-bold text-sm rounded-xl transition shadow cursor-pointer"
+                  >
+                    <PhoneOff size={18} />
+                    Rad etish
+                  </button>
+                </>
+              )}
+
+              {activeCall.status === 'RINGING' && activeCall.direction === 'OUTBOUND' && (
+                <>
+                  <button
+                    onClick={handleAnswerCall}
+                    className="flex items-center gap-1.5 px-4 py-2.5 bg-white/20 hover:bg-white/30 text-white text-xs font-semibold rounded-xl transition cursor-pointer"
+                    title="Aloqa o'rnatildi deb belgilash"
+                  >
+                    <CheckCircle2 size={16} />
+                    Ulandi (Test)
+                  </button>
+                  <button
+                    onClick={handleHangupCall}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-red-500 hover:bg-red-600 text-white font-bold text-sm rounded-xl transition shadow cursor-pointer"
+                  >
+                    <PhoneOff size={18} />
+                    Bekor qilish
+                  </button>
+                </>
+              )}
+
+              {activeCall.status === 'ANSWERED' && (
+                <>
+                  {/* Mute Toggle */}
+                  <button
+                    onClick={() => {
+                      setIsMuted(!isMuted);
+                      toast.info(isMuted ? "Mikrofon yoqildi" : "Mikrofon o'chirildi");
+                    }}
+                    className={`p-3 rounded-xl transition cursor-pointer ${
+                      isMuted ? 'bg-amber-500 text-white' : 'bg-white/20 hover:bg-white/30 text-white'
+                    }`}
+                    title={isMuted ? "Mikrofonni yoqish" : "Mikrofonni o'chirish"}
+                  >
+                    {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
+                  </button>
+
+                  {/* Speaker Toggle */}
+                  <button
+                    onClick={() => {
+                      setIsSpeaker(!isSpeaker);
+                      toast.info(isSpeaker ? "Karnay o'chirildi" : "Karnay yoqildi");
+                    }}
+                    className={`p-3 rounded-xl transition cursor-pointer ${
+                      !isSpeaker ? 'bg-amber-500 text-white' : 'bg-white/20 hover:bg-white/30 text-white'
+                    }`}
+                    title="Ovozni boshqarish"
+                  >
+                    {!isSpeaker ? <VolumeX size={20} /> : <Volume2 size={20} />}
+                  </button>
+
+                  {/* Instant Create Ticket Modal */}
+                  <button
+                    onClick={handleOpenTicketFromCall}
+                    className="flex items-center gap-2 px-5 py-3 bg-white text-emerald-800 hover:bg-emerald-50 font-bold text-sm rounded-xl transition shadow-lg cursor-pointer"
+                  >
+                    <Plus size={18} />
+                    Ushbu qo'ng'iroqqa ariza ochish
+                  </button>
+
+                  {/* Hangup Button */}
+                  <button
+                    onClick={handleHangupCall}
+                    className="flex items-center gap-2 px-5 py-3 bg-red-600 hover:bg-red-700 text-white font-bold text-sm rounded-xl transition shadow-lg cursor-pointer transform hover:scale-105"
+                  >
+                    <PhoneOff size={18} />
+                    Tugatish
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </div>
       )}
 
-      {/* 3. Top Stats Cards */}
+      {/* 3. Stats Overview Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
-          <div className="text-xs text-slate-500">Bugungi qo'ng'iroqlar</div>
+          <div className="text-xs text-slate-500 dark:text-slate-400">Bugungi qo'ng'iroqlar</div>
           <div className="text-2xl font-bold text-slate-800 dark:text-white mt-1">{stats.totalCallsToday}</div>
-          <div className="text-xs text-emerald-600 font-medium mt-1">Javob berildi: {stats.answeredCallsToday}</div>
+          <div className="text-xs text-emerald-600 dark:text-emerald-400 font-medium mt-1">Javob berildi: {stats.answeredCallsToday}</div>
         </div>
         <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
-          <div className="text-xs text-slate-500">O'tkazib yuborilgan</div>
+          <div className="text-xs text-slate-500 dark:text-slate-400">O'tkazib yuborilgan</div>
           <div className="text-2xl font-bold text-red-600 mt-1">{stats.missedCallsToday}</div>
-          <div className="text-xs text-slate-400 mt-1">Qayta aloqa kerak</div>
+          <div className="text-xs text-slate-400 mt-1">Qayta aloqa talab qilinadi</div>
         </div>
         <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
-          <div className="text-xs text-slate-500">Faol arizalar</div>
+          <div className="text-xs text-slate-500 dark:text-slate-400">Faol arizalar</div>
           <div className="text-2xl font-bold text-blue-600 mt-1">{stats.activeTickets}</div>
           <div className="text-xs text-purple-600 font-medium mt-1">Usta yo'naltirilgan</div>
         </div>
         <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
-          <div className="text-xs text-slate-500">Bugun bajarildi</div>
+          <div className="text-xs text-slate-500 dark:text-slate-400">Bugun bajarildi</div>
           <div className="text-2xl font-bold text-emerald-600 mt-1">{stats.completedTicketsToday}</div>
           <div className="text-xs text-slate-400 mt-1">Yopilgan arizalar</div>
         </div>
       </div>
 
-      {/* 4. Tab Navigation */}
+      {/* 4. Tab Navigation (Tickets | Dialer | Calls) */}
       <div className="flex border-b border-slate-200 dark:border-slate-700 gap-6">
         <button
           onClick={() => setActiveTab('tickets')}
@@ -496,8 +831,21 @@ export default function CallCenterPage() {
           }`}
         >
           <Wrench size={18} />
-          Murojaatlar & Arizalar ({stats.activeTickets})
+          Murojaatlar & Dispetcherlik ({stats.activeTickets})
         </button>
+
+        <button
+          onClick={() => setActiveTab('dialer')}
+          className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 cursor-pointer transition ${
+            activeTab === 'dialer'
+              ? 'border-emerald-600 text-emerald-600 dark:text-emerald-400'
+              : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+          }`}
+        >
+          <PhoneCall size={18} />
+          Raqam terish (Web-telefon)
+        </button>
+
         <button
           onClick={() => setActiveTab('calls')}
           className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 cursor-pointer transition ${
@@ -506,16 +854,16 @@ export default function CallCenterPage() {
               : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
           }`}
         >
-          <PhoneCall size={18} />
-          Qo'ng'iroqlar tarixi (SIP Asterisk)
+          <Clock size={18} />
+          Qo'ng'iroqlar jurnali (SIP Asterisk)
         </button>
       </div>
 
-      {/* 5. Content Section */}
-      {activeTab === 'tickets' ? (
+      {/* 5. TAB 1: TICKETS & DISPATCHER */}
+      {activeTab === 'tickets' && (
         <div className="space-y-4">
           {/* Filters Bar */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
             <div className="relative">
               <Search className="absolute left-3 top-2.5 text-slate-400" size={18} />
               <input
@@ -554,7 +902,7 @@ export default function CallCenterPage() {
             <button
               onClick={() => {
                 setStatusFilter('');
-                setUrgencyFilter('');
+                urgencyFilter('');
                 setSearchQuery('');
                 fetchTickets();
               }}
@@ -604,8 +952,18 @@ export default function CallCenterPage() {
                           <div className="font-semibold text-slate-900 dark:text-white">
                             {t.customerName || "Noma'lum mijoz"}
                           </div>
-                          <div className="text-xs text-slate-500 font-mono flex items-center gap-1 mt-0.5">
-                            <PhoneIncoming size={12} /> {t.customerPhone}
+                          <div className="text-xs text-slate-500 font-mono flex items-center gap-1.5 mt-0.5">
+                            <span>{t.customerPhone}</span>
+                            <button
+                              onClick={() => {
+                                setDialPhone(t.customerPhone);
+                                handleDial(t.customerPhone);
+                              }}
+                              className="p-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded transition cursor-pointer"
+                              title="Mijozga qo'ng'iroq qilish"
+                            >
+                              <PhoneCall size={12} />
+                            </button>
                           </div>
                         </td>
                         <td className="py-3.5 px-4">
@@ -625,7 +983,21 @@ export default function CallCenterPage() {
                                 <User size={13} className="text-emerald-600" />
                                 {t.assignedWorkerName}
                               </div>
-                              <div className="text-xs text-slate-500 font-mono">{t.assignedWorkerPhone}</div>
+                              <div className="text-xs text-slate-500 font-mono flex items-center gap-1">
+                                <span>{t.assignedWorkerPhone}</span>
+                                {t.assignedWorkerPhone && (
+                                  <button
+                                    onClick={() => {
+                                      setDialPhone(t.assignedWorkerPhone);
+                                      handleDial(t.assignedWorkerPhone);
+                                    }}
+                                    className="p-1 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded transition cursor-pointer"
+                                    title="Ustaga qo'ng'iroq qilish"
+                                  >
+                                    <PhoneCall size={11} />
+                                  </button>
+                                )}
+                              </div>
                             </div>
                           ) : (
                             <button
@@ -678,10 +1050,196 @@ export default function CallCenterPage() {
             </div>
           </div>
         </div>
-      ) : (
-        /* Calls History Tab */
+      )}
+
+      {/* 6. TAB 2: SOFTPHONE & DIALER */}
+      {activeTab === 'dialer' && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Dialer Keypad (Left Column) */}
+          <div className="lg:col-span-5 bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col items-center">
+            <div className="w-full max-w-xs space-y-4">
+              <div className="text-center">
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Web Softphone</span>
+                <h3 className="text-base font-bold text-slate-800 dark:text-white">Raqam terish paneli</h3>
+              </div>
+
+              {/* Number Screen */}
+              <div className="relative bg-slate-100 dark:bg-slate-900 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 flex items-center justify-between shadow-inner">
+                <input
+                  type="text"
+                  value={dialPhone}
+                  onChange={(e) => setDialPhone(e.target.value)}
+                  placeholder="+998..."
+                  className="bg-transparent text-xl font-bold font-mono tracking-wider text-slate-900 dark:text-white w-full focus:outline-none"
+                />
+                <button
+                  onClick={handleKeypadBackspace}
+                  className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition"
+                  title="O'chirish"
+                >
+                  <Delete size={20} />
+                </button>
+              </div>
+
+              {/* Quick Preset Buttons */}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setDialPhone('+998')}
+                  className="flex-1 py-1 text-xs font-semibold bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-200 rounded-lg transition"
+                >
+                  +998
+                </button>
+                <button
+                  onClick={() => setDialPhone('1055')}
+                  className="flex-1 py-1 text-xs font-semibold bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-200 rounded-lg transition"
+                >
+                  1055 (Dispet.)
+                </button>
+                <button
+                  onClick={() => setDialPhone('')}
+                  className="px-3 py-1 text-xs font-semibold text-red-500 hover:bg-red-50 rounded-lg transition"
+                >
+                  Tozalash
+                </button>
+              </div>
+
+              {/* Keypad Grid (1-9, *, 0, #) */}
+              <div className="grid grid-cols-3 gap-3 pt-2">
+                {[
+                  { key: '1', sub: '' },
+                  { key: '2', sub: 'ABC' },
+                  { key: '3', sub: 'DEF' },
+                  { key: '4', sub: 'GHI' },
+                  { key: '5', sub: 'JKL' },
+                  { key: '6', sub: 'MNO' },
+                  { key: '7', sub: 'PQRS' },
+                  { key: '8', sub: 'TUV' },
+                  { key: '9', sub: 'WXYZ' },
+                  { key: '*', sub: '' },
+                  { key: '0', sub: '+' },
+                  { key: '#', sub: '' },
+                ].map((item) => (
+                  <button
+                    key={item.key}
+                    onClick={() => handleKeypadPress(item.key)}
+                    className="h-16 flex flex-col items-center justify-center rounded-2xl bg-slate-50 hover:bg-blue-50 dark:bg-slate-700/60 dark:hover:bg-blue-900/30 border border-slate-200 dark:border-slate-700 transition active:scale-95 cursor-pointer shadow-sm"
+                  >
+                    <span className="text-xl font-bold text-slate-800 dark:text-white leading-none">{item.key}</span>
+                    {item.sub && (
+                      <span className="text-[9px] font-semibold text-slate-400 tracking-wider mt-1">{item.sub}</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+
+              {/* Call Action Button */}
+              <div className="pt-2">
+                <button
+                  onClick={() => handleDial()}
+                  className="w-full h-14 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-bold text-lg rounded-2xl shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-3 transition transform active:scale-95 cursor-pointer"
+                >
+                  <PhoneCall size={22} />
+                  Qo'ng'iroq qilish
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Customer Live Card & Quick Test Panel (Right Column) */}
+          <div className="lg:col-span-7 space-y-4">
+            {/* Live Customer Card */}
+            <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+              <div className="flex items-center justify-between border-b pb-3 dark:border-slate-700 mb-4">
+                <div className="flex items-center gap-2">
+                  <User className="text-blue-600" size={20} />
+                  <h3 className="font-bold text-slate-900 dark:text-white">Mijoz ma'lumotlari (Tezkor qidiruv)</h3>
+                </div>
+                {dialLookupLoading && (
+                  <span className="text-xs text-blue-500 animate-pulse">Tekshirilmoqda...</span>
+                )}
+              </div>
+
+              {dialLookup && dialLookup.registered ? (
+                <div className="space-y-4">
+                  <div className="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl flex items-center justify-between">
+                    <div>
+                      <div className="text-xs font-semibold text-emerald-800 dark:text-emerald-300 uppercase">Mavjud mijoz</div>
+                      <div className="text-lg font-bold text-slate-900 dark:text-white mt-0.5">{dialLookup.fullName || "Ismsiz mijoz"}</div>
+                      <div className="text-xs text-slate-500 font-mono mt-0.5">{dialLookup.phone}</div>
+                    </div>
+                    <div className="text-right">
+                      <span className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-emerald-200 text-emerald-900">
+                        {dialLookup.role === 'WORKER' ? 'Usta / Ishchi' : 'Ish beruvchi / Buyurtmachi'}
+                      </span>
+                      <div className="text-xs text-slate-500 mt-1">
+                        {dialLookup.regionName || ''} {dialLookup.districtName ? `(${dialLookup.districtName})` : ''}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Previous Tickets */}
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">Oldingi arizalari tarixi:</h4>
+                    {dialLookup.previousTickets?.length ? (
+                      <div className="space-y-2 max-h-48 overflow-y-auto">
+                        {dialLookup.previousTickets.map((pt) => (
+                          <div key={pt.id} className="p-2.5 rounded-lg border bg-slate-50 dark:bg-slate-900 text-xs flex items-center justify-between">
+                            <div>
+                              <span className="font-mono font-bold text-blue-600">{pt.ticketNumber}</span>
+                              <span className="ml-2 font-medium">{pt.category}</span>
+                              <div className="text-slate-400 mt-0.5">{pt.problemDescription}</div>
+                            </div>
+                            <div>
+                              {getStatusBadge(pt.status)}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-slate-400">Oldingi arizalar yo'q.</p>
+                    )}
+                  </div>
+                </div>
+              ) : dialLookup && !dialLookup.registered ? (
+                <div className="p-6 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-dashed border-slate-300 text-center space-y-2">
+                  <AlertCircle size={28} className="mx-auto text-amber-500" />
+                  <div className="font-bold text-slate-800 dark:text-white">Yangi mijoz</div>
+                  <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                    Ushbu raqam bazada mavjud emas. Qo'ng'iroq vaqtida to'g'ridan-to'g'ri yangi ariza ochishingiz mumkin.
+                  </p>
+                </div>
+              ) : (
+                <div className="p-8 text-center text-slate-400 text-xs">
+                  Mijozni avtomatik aniqlash uchun chapdagi panelda kamida 9 ta raqam tering.
+                </div>
+              )}
+            </div>
+
+            {/* Quick Test / Telephony Simulation Banner */}
+            <div className="bg-gradient-to-r from-slate-900 to-indigo-950 text-white p-5 rounded-2xl shadow-sm border border-slate-700 space-y-3">
+              <div className="flex items-center gap-2">
+                <Sparkles className="text-amber-400" size={18} />
+                <h4 className="text-sm font-bold">Telefoniya va Qisqa raqam simulyatsiyasi</h4>
+              </div>
+              <p className="text-xs text-slate-300">
+                Asterisk SIP yoki ATS ulanmagan paytda tizimni to'liq tekshirish uchun bitta bosish orqali operator ekraniga jonli kiruvchi qo'ng'iroq chaqiruvini yuborishingiz mumkin.
+              </p>
+              <button
+                onClick={handleSimulateIncoming}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl transition cursor-pointer flex items-center gap-2"
+              >
+                <PhoneIncoming size={15} />
+                Sinov kiruvchi qo'ng'iroqni boshlash
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 7. TAB 3: CALLS HISTORY */}
+      {activeTab === 'calls' && (
         <div className="space-y-4">
-          <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col md:flex-row gap-3">
+          <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col md:flex-row gap-3 shadow-sm">
             <input
               type="text"
               placeholder="Telefon raqam bo'yicha qidirish..."
@@ -708,12 +1266,12 @@ export default function CallCenterPage() {
               <thead className="bg-slate-50 dark:bg-slate-900/50 text-slate-600 dark:text-slate-400 font-semibold border-b border-slate-200 dark:border-slate-700">
                 <tr>
                   <th className="py-3 px-4">Qo'ng'iroq ID</th>
-                  <th className="py-3 px-4">Raqam</th>
+                  <th className="py-3 px-4">Yo'nalish / Raqam</th>
                   <th className="py-3 px-4">Qisqa raqam</th>
                   <th className="py-3 px-4">Vaqt</th>
                   <th className="py-3 px-4">Davomiyligi</th>
                   <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4 text-right">Ovoz yozuvi</th>
+                  <th className="py-3 px-4 text-right">Qayta qo'ng'iroq / Yozuv</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60">
@@ -733,8 +1291,15 @@ export default function CallCenterPage() {
                   calls.map((c) => (
                     <tr key={c.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-700/40 transition">
                       <td className="py-3.5 px-4 font-mono text-xs text-slate-500">{c.callId}</td>
-                      <td className="py-3.5 px-4 font-semibold text-slate-900 dark:text-white font-mono">
-                        {c.callerPhone}
+                      <td className="py-3.5 px-4">
+                        <div className="font-semibold text-slate-900 dark:text-white font-mono flex items-center gap-1.5">
+                          {c.direction === 'OUTBOUND' ? (
+                            <PhoneOutgoing size={13} className="text-purple-500" />
+                          ) : (
+                            <PhoneIncoming size={13} className="text-blue-500" />
+                          )}
+                          {c.callerPhone}
+                        </div>
                       </td>
                       <td className="py-3.5 px-4 font-mono text-xs">{c.destinationNumber || '1055'}</td>
                       <td className="py-3.5 px-4 text-xs text-slate-500">
@@ -753,16 +1318,26 @@ export default function CallCenterPage() {
                           {c.status}
                         </span>
                       </td>
-                      <td className="py-3.5 px-4 text-right">
-                        {c.recordingUrl ? (
+                      <td className="py-3.5 px-4 text-right space-x-2">
+                        {/* Call back button */}
+                        <button
+                          onClick={() => {
+                            setDialPhone(c.callerPhone);
+                            handleDial(c.callerPhone);
+                          }}
+                          className="p-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg inline-flex items-center gap-1 text-xs cursor-pointer"
+                          title="Qayta qo'ng'iroq qilish"
+                        >
+                          <PhoneCall size={13} /> Qayta terish
+                        </button>
+
+                        {c.recordingUrl && (
                           <button
                             onClick={() => setPlayingAudioUrl(c.recordingUrl)}
                             className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg inline-flex items-center gap-1 text-xs cursor-pointer"
                           >
-                            <Play size={14} /> Eshitish
+                            <Play size={13} /> Eshitish
                           </button>
-                        ) : (
-                          <span className="text-xs text-slate-400">—</span>
                         )}
                       </td>
                     </tr>
@@ -774,7 +1349,7 @@ export default function CallCenterPage() {
         </div>
       )}
 
-      {/* 6. Modal: Create Ticket (Ariza ochish & Dispatch) */}
+      {/* 8. MODAL: Create Ticket (Ariza ochish & Dispatch) */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white dark:bg-slate-800 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-4 my-8">
@@ -800,7 +1375,6 @@ export default function CallCenterPage() {
                     value={newTicket.customerPhone}
                     onChange={(e) => {
                       setNewTicket({ ...newTicket, customerPhone: e.target.value });
-                      handleLookupPhone(e.target.value);
                     }}
                     placeholder="+998901234567"
                     className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-900 border rounded-lg focus:ring-2 focus:ring-blue-500 font-mono"
@@ -829,7 +1403,7 @@ export default function CallCenterPage() {
                   >
                     <option value="">Tanlang...</option>
                     {regions.map((r) => (
-                      <option key={r.id} value={r.id}>{r.nameUz}</option>
+                      <option key={r.id} value={r.id}>{r.name || r.nameUz}</option>
                     ))}
                   </select>
                 </div>
@@ -844,7 +1418,7 @@ export default function CallCenterPage() {
                   >
                     <option value="">Tanlang...</option>
                     {districts.map((d) => (
-                      <option key={d.id} value={d.id}>{d.nameUz}</option>
+                      <option key={d.id} value={d.id}>{d.name || d.nameUz}</option>
                     ))}
                   </select>
                 </div>
@@ -940,7 +1514,21 @@ export default function CallCenterPage() {
                           <div className="text-slate-500 text-[11px] mt-0.5">
                             {w.regionName} {w.districtName ? `(${w.districtName})` : ''} · Tajriba: {w.experienceYears || 0} yil
                           </div>
-                          <div className="text-blue-600 font-mono text-[11px]">{w.phone}</div>
+                          <div className="text-blue-600 font-mono text-[11px] flex items-center gap-1">
+                            <span>{w.phone}</span>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setDialPhone(w.phone);
+                                handleDial(w.phone);
+                              }}
+                              className="p-1 hover:bg-blue-200 rounded text-blue-700"
+                              title="Ustaga qo'ng'iroq qilish"
+                            >
+                              <PhoneCall size={11} />
+                            </button>
+                          </div>
                         </div>
                         <div>
                           <span className={`px-2 py-1 rounded text-xs font-semibold ${
@@ -975,7 +1563,7 @@ export default function CallCenterPage() {
         </div>
       )}
 
-      {/* 7. Modal: Assign Worker to Existing Ticket */}
+      {/* 9. MODAL: Assign Worker to Existing Ticket */}
       {showAssignModal && selectedTicket && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
           <div className="bg-white dark:bg-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
@@ -1006,7 +1594,19 @@ export default function CallCenterPage() {
                   >
                     <div>
                       <div className="font-semibold text-sm">{w.fullName}</div>
-                      <div className="text-xs text-slate-500 font-mono">{w.phone}</div>
+                      <div className="text-xs text-slate-500 font-mono flex items-center gap-1.5">
+                        <span>{w.phone}</span>
+                        <button
+                          onClick={() => {
+                            setDialPhone(w.phone);
+                            handleDial(w.phone);
+                          }}
+                          className="p-1 hover:bg-blue-100 text-blue-600 rounded"
+                          title="Ustaga qo'ng'iroq qilish"
+                        >
+                          <PhoneCall size={12} />
+                        </button>
+                      </div>
                       <div className="text-xs text-slate-400">{w.regionName} {w.districtName ? `, ${w.districtName}` : ''}</div>
                     </div>
                     <button
@@ -1023,7 +1623,7 @@ export default function CallCenterPage() {
         </div>
       )}
 
-      {/* 8. Audio Player Modal */}
+      {/* 10. AUDIO PLAYER MODAL */}
       {playingAudioUrl && (
         <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white p-4 rounded-2xl shadow-2xl border border-slate-700 flex items-center gap-3">
           <Volume2 size={24} className="text-blue-400 animate-pulse" />
