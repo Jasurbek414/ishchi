@@ -23,7 +23,7 @@ public record AvailableWorkerDto(
     public static AvailableWorkerDto from(WorkerProfile w) {
         String phone = w.getUser() != null ? w.getUser().getPhone() : "";
         List<String> profs = w.getProfessions() != null
-                ? w.getProfessions().stream().map(p -> p.getNameUz()).toList()
+                ? w.getProfessions().stream().map(p -> p.getName()).toList()
                 : List.of();
 
         return new AvailableWorkerDto(
@@ -33,9 +33,9 @@ public record AvailableWorkerDto(
                 phone,
                 w.getAvatarUrl(),
                 w.getRegion() != null ? w.getRegion().getId() : null,
-                w.getRegion() != null ? w.getRegion().getNameUz() : null,
+                w.getRegion() != null ? w.getRegion().getName() : null,
                 w.getDistrict() != null ? w.getDistrict().getId() : null,
-                w.getDistrict() != null ? w.getDistrict().getNameUz() : null,
+                w.getDistrict() != null ? w.getDistrict().getName() : null,
                 w.getExperienceYears(),
                 w.isAvailable(),
                 w.getLatitude(),

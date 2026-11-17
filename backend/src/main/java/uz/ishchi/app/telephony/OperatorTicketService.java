@@ -247,8 +247,8 @@ public class OperatorTicketService {
                     boolean nameMatch = (w.getFirstName() + " " + (w.getLastName() != null ? w.getLastName() : ""))
                             .toLowerCase().contains(s);
                     boolean profMatch = w.getProfessions() != null && w.getProfessions().stream()
-                            .anyMatch(p -> p.getNameUz().toLowerCase().contains(s) ||
-                                           (p.getNameRu() != null && p.getNameRu().toLowerCase().contains(s)));
+                            .anyMatch(p -> p.getName() != null && p.getName().toLowerCase().contains(s));
+
                     return nameMatch || profMatch;
                 })
                 .limit(50)

@@ -228,11 +228,11 @@ public class TelephonyService {
             fullName = emp.getFirstName() + (emp.getLastName() != null ? " " + emp.getLastName() : "");
             if (emp.getRegion() != null) {
                 regionId = emp.getRegion().getId();
-                regionName = emp.getRegion().getNameUz();
+                regionName = emp.getRegion().getName();
             }
             if (emp.getDistrict() != null) {
                 districtId = emp.getDistrict().getId();
-                districtName = emp.getDistrict().getNameUz();
+                districtName = emp.getDistrict().getName();
             }
         } else {
             Optional<WorkerProfile> workerOpt = workerProfileRepository.findByUserId(user.getId());
@@ -241,11 +241,11 @@ public class TelephonyService {
                 fullName = worker.getFirstName() + (worker.getLastName() != null ? " " + worker.getLastName() : "");
                 if (worker.getRegion() != null) {
                     regionId = worker.getRegion().getId();
-                    regionName = worker.getRegion().getNameUz();
+                    regionName = worker.getRegion().getName();
                 }
                 if (worker.getDistrict() != null) {
                     districtId = worker.getDistrict().getId();
-                    districtName = worker.getDistrict().getNameUz();
+                    districtName = worker.getDistrict().getName();
                 }
             }
         }

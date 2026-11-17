@@ -58,6 +58,7 @@ public class OperatorSeeder implements CommandLineRunner {
         operator.setRole(Role.OPERATOR);
         operator.setActive(true);
         operator.setVerified(true);
+        operator.setRegistered(true);
 
         userRepository.save(operator);
         log.info("Boshlang'ich OPERATOR akkaunti yaratildi: phone={}", phone);
