@@ -13,9 +13,9 @@ const uzbekistanCenter = LatLng(41.3775, 64.5853);
 /// fling cannot leave the user looking at the ocean.
 final uzbekistanBounds = LatLngBounds(const LatLng(35.5, 54.0), const LatLng(46.5, 75.5));
 
-const _defaultTileUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
-const _defaultAttribution = 'OpenStreetMap';
-const _defaultAttributionUrl = 'https://www.openstreetmap.org/copyright';
+const _defaultTileUrl = 'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png';
+const _defaultAttribution = 'OpenStreetMap, CARTO';
+const _defaultAttributionUrl = 'https://carto.com/attributions';
 
 /// Which tiles the maps draw: the admin's choice from app settings, else OpenStreetMap.
 class MapTiles {

@@ -4,7 +4,8 @@ import Reveal from './Reveal.jsx';
 import SectionHead from './SectionHead.jsx';
 
 const QUESTIONS = [
-  ["Ilova pullikmi?", "Yo'q. Ilovani yuklab olish va ro'yxatdan o'tish bepul."],
+  ["Ilova pullikmi?", "Yo'q. Ilovani yuklab olish, ro'yxatdan o'tish, usta topish va bog'lanish mutlaqo bepul. Vositachi va yashirin to'lovlar yo'q."],
+  ["Tasdiqlash kodi qayerga keladi?", "Tasdiqlash kodi bizning rasmiy @Uzbishchi_bot orqali 1 soniyada bepul va xavfsiz yuboriladi. Hech qanday SMS to'lovlari talab qilinmaydi."],
   [
     "Ustaning ishonchli ekanini qanday bilaman?",
     "Har bir ishchining profilida kasbi va tajribasi ko'rinadi. Bajarilgan ishlardan keyin qo'yilgan reyting, tekshirilgan ustalardagi «tasdiqlangan» belgisi ham tanlashga yordam beradi. Muammo bo'lsa, e'lon yoki foydalanuvchi ustidan shikoyat qilish mumkin.",
@@ -14,7 +15,7 @@ const QUESTIONS = [
     "Ilovani o'rnatmasdan e'lon bera olamanmi?",
     "Ha, Telegram botimiz orqali. Bot savollar berib, e'loningizni o'zi tuzib chiqadi.",
   ],
-  ["iPhone uchun ham bormi?", "Hozircha ilova Android telefonlar uchun."],
+  ["iPhone uchun ham bormi?", "Hozircha rasmiy ilova Android telefonlar uchun, iPhone foydalanuvchilari esa Telegram botimiz orqali to'liq foydalanishlari mumkin."],
   ['Bitta akkauntda ham ishchi, ham ish beruvchi bo\'lsa bo\'ladimi?', "Ha. Rolni ilova ichida istalgan payt almashtirasiz, ikkala profil ma'lumotlari alohida saqlanadi."],
 ];
 

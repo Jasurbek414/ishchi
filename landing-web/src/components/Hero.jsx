@@ -113,14 +113,14 @@ export default function Hero({ data, botUrl }) {
               className="inline-flex items-center gap-2 rounded-full bg-navy-900 px-6 py-3.5 text-sm font-bold text-white shadow-xl shadow-navy-900/20 transition-all hover:-translate-y-0.5 hover:bg-brand-500"
             >
               <Download size={17} strokeWidth={2.5} />
-              Android uchun yuklab olish
+              Google Play (Android)
             </a>
             <a
               href={botUrl}
               className="inline-flex items-center gap-2 rounded-full border border-navy-900/12 bg-white px-6 py-3.5 text-sm font-bold text-navy-900 transition-all hover:-translate-y-0.5 hover:border-brand-500 hover:text-brand-500"
             >
               <Send size={16} strokeWidth={2.5} />
-              Telegram bot
+              Telegram bot (@Uzbishchi_bot)
             </a>
           </div>
 
